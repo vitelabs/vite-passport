@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	.xy {
+		@apply flex justify-center items-center;
+	}
+
+	.fx {
+		@apply flex items-center;
+	}
+
+	.fy {
+		@apply flex flex-col items-center;
+	}
+
+	.b {
+		border: 1px solid red;
+	}
+
+	.o {
+		outline: 1px solid red;
+	}
+
+	.blue-rect {
+		@apply bg-skin-highlight xy rounded-sm h-9 w-full text-sm font-extrabold text-white;
+	}
+
+	.round-solid-button,
+	.round-outline-button {
+		@apply xy rounded-full shadow-md font-bold p-1.5 text-lg w-full;
+	}
+
+	.round-solid-button {
+		@apply bg-gradient-to-r from-skin-lowlight to-skin-highlight text-white;
+	}
+
+	.round-outline-button {
+		@apply bg-skin-middleground border-skin-highlight border-2 text-skin-lowlight;
+	}
+}
