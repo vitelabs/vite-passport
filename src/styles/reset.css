@@ -2,9 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+body,
 #root {
 	-webkit-font-smoothing: antialiased;
-	@apply text-skin-base bg-skin-base h-[30rem] w-[18rem] text-base overflow-scroll;
+	@apply bg-skin-base h-[30rem] w-[18rem] overflow-scroll;
+}
+
+#root::-webkit-scrollbar {
+	display: none;
+}
+
+#root {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+* {
+	@apply text-skin-base text-base font-semibold;
 }
 
 button,

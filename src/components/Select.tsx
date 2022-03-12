@@ -21,7 +21,7 @@ const Select = ({ value, options, onUserInput }: Props) => {
 			<ChevronDown size={20} className="text-skin-muted absolute right-0" />
 			<select
 				ref={select}
-				className="text-sm font-semibold cursor-pointer text-skin-muted z-10 pr-5"
+				className="text-sm cursor-pointer text-skin-muted z-10 pr-5"
 				onChange={handleInput}
 				value={value}
 			>

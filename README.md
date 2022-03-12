@@ -1,1 +1,1 @@
-withhttps://dev.to/jacksteamdev/create-a-vite-react-chrome-extension-in-90-seconds-3df7
+with https://dev.to/jacksteamdev/create-a-vite-react-chrome-extension-in-90-seconds-3df7

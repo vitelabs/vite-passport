@@ -2,18 +2,25 @@ import { setStateType } from './global-context';
 
 export type Networks = 'vite' | 'bsc';
 export type NetworkTypes = 'testnet' | 'mainnet';
+export type ToastTypes = 'success' | 'warning' | 'error' | 'info';
 
 export type State = {
 	setState: setStateType;
 	networkType: NetworkTypes;
-	copyWithToast: (text: string) => void;
+	copyWithToast: (text: string, type?: ToastTypes) => void;
 	currentAddress: string;
 	language: string;
 	i18n: { [key: string]: string };
-	toast: string;
+	toast: [string, ToastTypes];
 	balances: {
 		[tokenId: string]: TokenInfo;
 	};
+};
+
+export type TextInputRefObject = {
+	tag: HTMLElement | null;
+	issueSet: React.Dispatch<React.SetStateAction<string>>;
+	readonly isValid: boolean;
 };
 
 export type TokenInfo = {

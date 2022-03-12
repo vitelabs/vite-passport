@@ -1,4 +1,7 @@
-type Props = {};
+import { connect } from '../utils/global-context';
+import { State } from '../utils/types';
+
+type Props = State;
 
 // eslint-disable-next-line
 const _____ = ({}: Props) => {
@@ -9,4 +12,4 @@ const _____ = ({}: Props) => {
 	);
 };
 
-export default _____;
+export default connect(_____);

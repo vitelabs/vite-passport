@@ -1,0 +1,19 @@
+{
+  "name": "Vite Passport",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "description": "The official Vite browser wallet extension",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "clipboardWrite",
+    "activeTab",
+    "webRequest",
+    "notifications"
+  ],
+  "minimum_chrome_version": "35",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "browser_action": {
+    "default_popup": "index.html"
+  }
+}

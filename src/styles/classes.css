@@ -37,6 +37,6 @@
 	}
 
 	.round-outline-button {
-		@apply bg-skin-middleground border-skin-highlight border-2 text-skin-lowlight;
+		@apply bg-skin-middleground border-skin-highlight dark:border-skin-lowlight border-2 text-skin-lowlight dark:text-skin-highlight;
 	}
 }

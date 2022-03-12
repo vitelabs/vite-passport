@@ -1,12 +1,14 @@
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Start from '../pages/Start';
 import PageContainer from './PageContainer';
 import { connect } from '../utils/global-context';
 import { useCallback, useEffect } from 'react';
-import { NewAccountBlock, State, TokenInfo } from '../utils/types';
+import { NewAccountBlock, State, ToastTypes, TokenInfo } from '../utils/types';
 import { getBalanceInfo, subscribe } from '../utils/vitescripts';
 import { copyToClipboardAsync, toBiggestUnit } from '../utils/strings';
 import Create from '../pages/Create';
+import Create2 from '../pages/Create2';
+import Import from '../pages/Import';
 import Toast from '../containers/Toast';
 
 type Props = State;
@@ -69,23 +71,26 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 
 	useEffect(() => {
 		setState({
-			copyWithToast: (text = '') => {
+			copyWithToast: (text = '', type: ToastTypes = 'success') => {
 				copyToClipboardAsync(text);
-				setState({ toast: i18n.successfullyCopied });
+				setState({ toast: [i18n.successfullyCopied, type] });
 			},
 		});
 	}, [i18n]);
 
 	return (
-		<BrowserRouter>
+		// https://v5.reactrouter.com/web/api/MemoryRouter
+		// <MemoryRouter initialEntries={['/create']}>
+		<MemoryRouter initialEntries={['/create2']}>
 			<Routes>
 				<Route path="/" element={<Start />} />
 				<Route path="/create" element={<Create />} />
-				{/* <Route path="/import" element={<Start />} /> */}
+				<Route path="/create2" element={<Create2 />} />
+				<Route path="/import" element={<Import />} />
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
 			<Toast />
-		</BrowserRouter>
+		</MemoryRouter>
 	);
 };
 

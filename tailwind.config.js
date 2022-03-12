@@ -9,6 +9,7 @@ module.exports = {
 			colors: {
 				skin: {
 					'pending-green': 'var(--pending-green-color)',
+					'alert-red': 'var(--alert-red-color)',
 					highlight: 'var(--highlight-color)',
 					lowlight: 'var(--lowlight-color)',
 				},
@@ -27,14 +28,14 @@ module.exports = {
 					middleground: 'var(--bg-middleground-color)',
 					foreground: 'var(--bg-foreground-color)',
 					// // highlight: 'var(--highlight-color)',
-					input: 'var(--bg-input-color)',
 					'line-divider': 'var(--bg-line-divider-color)',
-					'reminder-red': 'var(--reminder-red-color)',
+					'alert-red': 'var(--alert-red-color)',
 				},
 			},
 			borderColor: {
 				skin: {
-					muted: 'var(--border-muted-color)',
+					foreground: 'var(--bg-foreground-color)',
+					input: 'var(--border-input-color)',
 					// // highlight: 'var(--highlight-color)',
 					lowlight: 'var(--lowlight-color)',
 				},

@@ -27,15 +27,12 @@ const PageContainer = ({ setState, language, networkType, i18n, children }: Prop
 		<div className="min-h-screen">
 			<header className="flex px-2.5 h-12 border-skin-muted border-b justify-between">
 				<div className="flex gap-7">
-					<A
-						to="/"
-						className={`relative text-sm font-semibold xy ${pathname === '/' ? 'active-tab' : 'text-skin-muted'}`}
-					>
+					<A to="/" className={`relative text-sm xy ${pathname === '/' ? 'active-tab' : 'text-skin-muted'}`}>
 						{i18n.bridge}
 					</A>
 					{/* <A
 						to="/history"
-						className={`relative text-sm font-semibold xy ${
+						className={`relative text-sm xy ${
 							pathname === '/history' ? 'active-tab' : 'text-skin-muted'
 						}`}
 					>
@@ -43,17 +40,17 @@ const PageContainer = ({ setState, language, networkType, i18n, children }: Prop
 					</A> */}
 					<A
 						href="https://medium.com/vitelabs/vitebridge-0-1-bug-bounty-program-109ce87bda2e"
-						className={`relative text-sm font-semibold xy text-skin-muted`}
+						className={`relative text-sm xy text-skin-muted`}
 					>
 						{i18n.bugBounty}
 					</A>
 					<A
 						href="https://medium.com/vitelabs/vitebridge-0-1-testnet-tutorial-1f3382f389f7"
-						className={`relative text-sm font-semibold xy text-skin-muted`}
+						className={`relative text-sm xy text-skin-muted`}
 					>
 						{i18n.tutorial}
 					</A>
-					<A href="https://t.me/vite_en" className={`relative text-sm font-semibold xy text-skin-muted`}>
+					<A href="https://t.me/vite_en" className={`relative text-sm xy text-skin-muted`}>
 						{i18n.help}
 					</A>
 				</div>
