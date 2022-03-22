@@ -5,7 +5,8 @@ type Props = HTMLProps<HTMLInputElement> & {
 	label: string;
 	value: string;
 	onUserInput: (value: string) => void;
-	className?: string;
+	containerClassName?: string;
+	inputClassName?: string;
 	textarea?: boolean;
 	numeric?: boolean;
 	maxDecimals?: number;
@@ -34,7 +35,8 @@ const normalizeNumericInput = (str: string, decimals = 6, removeInsignificantZer
 };
 
 const TextInput = ({
-	className,
+	containerClassName,
+	inputClassName,
 	textarea,
 	numeric,
 	maxDecimals,
@@ -51,16 +53,22 @@ const TextInput = ({
 }: Props) => {
 	const input = useRef<HTMLElement | null>();
 	const [issue, issueSet] = useState('');
+	const [focused, focusedSet] = useState(false);
 	const id = useMemo(() => label.toLowerCase().replace(/\s+/g, '-'), [label]);
 	const Tag = useMemo(() => (textarea ? 'textarea' : 'input'), [textarea]);
 
 	return (
-		<div className="w-full">
-			<label htmlFor={id} onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}>
-				<span className="text-sm font-black text-skin-muted">
-					{label}
-					{optional && ' - optional'}
-				</span>
+		<div className={`w-full relative ${containerClassName}`}>
+			<label
+				htmlFor={id}
+				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}
+				className={`absolute transition-all duration-200 ${
+					focused || value ? 'top-1 left-2 font-bold text-sm' : 'top-3 left-4 text-lg'
+				} ${focused ? 'text-skin-highlight' : 'text-skin-muted'}`}
+			>
+				{label}
+				{/* {optional && ' - optional'} */}
+				{optional && ' (?)'}
 			</label>
 			<Tag
 				id={id}
@@ -68,7 +76,9 @@ const TextInput = ({
 				value={value}
 				disabled={disabled}
 				autoComplete="off"
-				className={`mt-1 w-full text-lg block bg-skin-middleground transition duration-200 border-2 border-skin-input focus:border-skin-highlight rounded shadow px-2 py-1 resize-none ${className}`}
+				className={`px-2 pt-5 w-full text-lg block bg-skin-middleground transition duration-200 border-2 ${
+					focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-input')
+				} rounded resize-none ${inputClassName}`}
 				{...(numeric
 					? {
 							type: 'number',
@@ -76,8 +86,12 @@ const TextInput = ({
 							inputMode: 'decimal',
 					  }
 					: { type })}
-				onFocus={() => issueSet('')}
+				onFocus={() => {
+					focusedSet(true);
+					issueSet('');
+				}}
 				onBlur={({ target: { value } }) => {
+					focusedSet(false);
 					if (numeric) {
 						value = normalizeNumericInput(value, maxDecimals, true);
 						onUserInput(value);
@@ -128,7 +142,7 @@ const TextInput = ({
 					}
 				}}
 			/>
-			{issue && <p className="mt-1 text-sm leading-3 font-bold text-skin-alert-red">{issue}</p>}
+			{issue && <p className="mt-1 text-sm leading-3 font-bold text-red-500">{issue}</p>}
 		</div>
 	);
 };

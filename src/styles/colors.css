@@ -9,7 +9,8 @@
 	--highlight-color: #6F9BFC; */
 	/* --highlight-color: #4e81f4; */
 	--highlight-color: #6e97f5;
-	--lowlight-color: #4c7df0;
+	--medlight-color: #5e88e9;
+	--lowlight-color: #4d7be7;
 	--pending-green-color: #44d7b6;
 	--alert-red-color: #d82f32;
 
@@ -30,7 +31,7 @@
 	--bg-foreground-color: #2f3038;
 	--border-input-color: #25262c;
 	--text-base-color: #eeeeee;
-	--text-secondary-color: #c2c6d4;
+	--text-secondary-color: #cdced3;
 	--text-muted-color: #818388;
 	--bg-line-divider-color: #0e1118;
 }

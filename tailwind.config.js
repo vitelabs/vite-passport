@@ -8,9 +8,10 @@ module.exports = {
 			},
 			colors: {
 				skin: {
-					'pending-green': 'var(--pending-green-color)',
-					'alert-red': 'var(--alert-red-color)',
+					// 'pending-green': 'var(--pending-green-color)',
+					// 'alert-red': 'var(--alert-red-color)',
 					highlight: 'var(--highlight-color)',
+					medlight: 'var(--medlight-color)',
 					lowlight: 'var(--lowlight-color)',
 				},
 			},
@@ -29,7 +30,6 @@ module.exports = {
 					foreground: 'var(--bg-foreground-color)',
 					// // highlight: 'var(--highlight-color)',
 					'line-divider': 'var(--bg-line-divider-color)',
-					'alert-red': 'var(--alert-red-color)',
 				},
 			},
 			borderColor: {

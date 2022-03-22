@@ -23,20 +23,47 @@
 		outline: 1px solid red;
 	}
 
-	.blue-rect {
-		@apply bg-skin-highlight xy rounded-sm h-9 w-full text-sm font-extrabold text-white;
-	}
-
 	.round-solid-button,
 	.round-outline-button {
 		@apply xy rounded-full shadow-md font-bold p-1.5 text-lg w-full;
 	}
 
 	.round-solid-button {
-		@apply bg-gradient-to-r from-skin-lowlight to-skin-highlight text-white;
+		@apply relative overflow-hidden transition-shadow duration-300 z-10
+		bg-gradient-to-r from-skin-medlight to-skin-highlight
+		text-white;
+		&:hover:before {
+			@apply opacity-100;
+		}
+		&:active {
+			@apply shadow;
+			&::after {
+				@apply opacity-100;
+			}
+		}
+		&::before {
+			content: '';
+			@apply inset-0 opacity-0 transition duration-300 absolute -z-10 bg-gradient-to-t from-skin-medlight to-skin-highlight;
+		}
+		&::after {
+			content: '';
+			@apply inset-0 opacity-0 transition duration-300 absolute -z-10 bg-gradient-to-r from-skin-lowlight to-skin-medlight;
+		}
 	}
 
 	.round-outline-button {
-		@apply bg-skin-middleground border-skin-highlight dark:border-skin-lowlight border-2 text-skin-lowlight dark:text-skin-highlight;
+		@apply transition duration-300
+		bg-skin-middleground border-2
+		border-skin-highlight dark:border-skin-lowlight
+		text-skin-lowlight dark:text-skin-highlight;
+
+		&:hover {
+			/* using hover: did not work for me */
+			@apply border-skin-medlight text-skin-medlight;
+		}
+
+		&:active {
+			@apply shadow border-skin-lowlight text-skin-lowlight;
+		}
 	}
 }

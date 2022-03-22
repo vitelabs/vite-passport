@@ -5,6 +5,7 @@ import { testWallet } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
 import { prefersDarkTheme } from '../utils/misc';
+import PageContainer from '../components/PageContainer';
 // import { wallet } from '@vite/vitejs';
 
 type Props = State;
@@ -19,72 +20,63 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 	}, []);
 
 	return (
-		<div className="h-full pt-10 flex flex-col">
-			<div className="fx fixed w-full top-0 bg-skin-base justify-between h-10 px-1">
-				<A to="/" className="p-1">
-					<XIcon className="w-7 text-skin-secondary" />
-				</A>
-				<p className="text-xl font-bold">Create Wallet</p>
-				<div className="w-9" />
-			</div>
-			<div className="flex-1 p-3 pt-0 fy">
-				<div className="w-full justify-between fx">
-					<div className="w-8"></div>
-					<div className="flex bg-skin-middleground shadow rounded overflow-hidden">
-						<button
-							className={`transition px-2 py-0.5 text-sm ${mnemonics.length === 12 ? 'bg-skin-foreground' : ''}`}
-							onClick={() => {
-								mnemonicsSet(testWallet.mnemonics.split(' ').slice(0, 12));
-							}}
-						>
-							12 words
-						</button>
-						<button
-							className={`transition px-2 py-0.5 text-sm ${mnemonics.length === 24 ? 'bg-skin-foreground' : ''}`}
-							onClick={() => {
-								mnemonicsSet(testWallet.mnemonics.split(' '));
-							}}
-						>
-							24 words
-						</button>
-					</div>
-					<button className="px-1" onClick={() => copyWithToast(mnemonics.join(' '))}>
-						<DuplicateIcon className="w-6 text-skin-secondary" />
+		<PageContainer title="Create Wallet">
+			<div className="w-full justify-between fx">
+				<div className="w-8"></div>
+				<div className="flex bg-skin-middleground shadow rounded overflow-hidden">
+					<button
+						className={`transition px-2 py-0.5 text-sm ${mnemonics.length === 12 ? 'bg-skin-foreground' : ''}`}
+						onClick={() => {
+							mnemonicsSet(testWallet.mnemonics.split(' ').slice(0, 12));
+						}}
+					>
+						12 words
+					</button>
+					<button
+						className={`transition px-2 py-0.5 text-sm ${mnemonics.length === 24 ? 'bg-skin-foreground' : ''}`}
+						onClick={() => {
+							mnemonicsSet(testWallet.mnemonics.split(' '));
+						}}
+					>
+						24 words
 					</button>
 				</div>
-				<div
-					className={`mt-2 relative overflow-hidden grid grid-flow-col w-full grid-rows-[repeat(12,minmax(0,1fr))] bg-skin-middleground rounded shadow p-2`}
-				>
-					{mnemonics.map((word, i) => (
-						<p key={i}>
-							{i + 1}. {word}
-						</p>
-					))}
-					{!mnemonicsVisible && (
-						<div
-							// dark: variant doesn't work with bg-opacity
-							// https://github.com/tailwindlabs/tailwindcss/issues/2966
-							className={`absolute xy p-4 flex-col inset-0 ${
-								prefersDarkTheme() ? 'bg-black' : 'bg-white'
-							} bg-opacity-10 backdrop-blur`}
-						>
-							<p className="mx-3 drop-shadow">
-								You are about to view your mnemonic phrase. Anyone who sees it can steal your wallet, so make sure no
-								one else is looking.
-							</p>
-							<button className="mt-3 round-outline-button p-0 px-4 w-fit" onClick={() => mnemonicsVisibleSet(true)}>
-								View
-							</button>
-						</div>
-					)}
-				</div>
-				<p className="mt-1 text-skin-secondary text-sm">Store these words somewhere safe</p>
-				<div className="flex-1"></div>
-				<A to="/create2" className="round-solid-button">
-					{i18n.next}
-				</A>
+				<button className="px-1" onClick={() => copyWithToast(mnemonics.join(' '))}>
+					<DuplicateIcon className="w-6 text-skin-secondary" />
+				</button>
 			</div>
-		</div>
+			<div
+				className={`mt-2 relative overflow-hidden grid grid-flow-col w-full grid-rows-[repeat(12,minmax(0,1fr))] bg-skin-middleground rounded shadow p-2`}
+			>
+				{mnemonics.map((word, i) => (
+					<p key={i}>
+						{i + 1}. {word}
+					</p>
+				))}
+				{!mnemonicsVisible && (
+					<div
+						// dark: variant doesn't work with bg-opacity
+						// https://github.com/tailwindlabs/tailwindcss/issues/2966
+						className={`absolute xy p-4 flex-col inset-0 ${
+							prefersDarkTheme() ? 'bg-black' : 'bg-white'
+						} bg-opacity-10 backdrop-blur`}
+					>
+						<p className="mx-3 drop-shadow">
+							You are about to view your mnemonic phrase. Anyone who sees it can steal your wallet, so make sure no one
+							else is looking.
+						</p>
+						<button className="mt-3 round-outline-button p-0 px-4 w-fit" onClick={() => mnemonicsVisibleSet(true)}>
+							View
+						</button>
+					</div>
+				)}
+			</div>
+			<p className="mt-1 text-skin-secondary text-sm">Store these words somewhere safe</p>
+			<div className="flex-1"></div>
+			<A to="/create2" className="round-solid-button">
+				{i18n.next}
+			</A>
+		</PageContainer>
 	);
 };
 
