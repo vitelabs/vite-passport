@@ -17,8 +17,9 @@ body,
 	scrollbar-width: none;
 }
 
-* {
-	@apply text-skin-base text-base font-semibold;
+p,
+button {
+	@apply text-skin-primary text-base font-semibold;
 }
 
 button,

@@ -1,7 +1,8 @@
-export const shortenAddress = (address: string, startCount = 8, endCount = 10) =>
-	address.substring(0, startCount) + '...' + address.substring(address.length - endCount);
-export const shortenHash = (hash: string, startCount = 5, endCount = 5) =>
-	hash.substring(0, startCount) + '...' + hash.substring(hash.length - endCount);
+export const shortenString = (str: string, startCount = 8, endCount = 5) =>
+	str.slice(0, startCount) + '...' + str.slice(-endCount);
+export const shortenAddress = (address: string) => shortenString(address, 8, 5);
+export const shortenHash = (hash: string) => shortenString(hash, 5, 5);
+export const shortenTti = (hash: string) => shortenString(hash, 7, 5);
 
 // https://www.30secondsofcode.org/js/s/copy-to-clipboard-async?from=autocomplete
 export const copyToClipboardAsync = (str = '') => {

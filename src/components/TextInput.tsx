@@ -77,7 +77,7 @@ const TextInput = ({
 				disabled={disabled}
 				autoComplete="off"
 				className={`px-2 pt-5 w-full text-lg block bg-skin-middleground transition duration-200 border-2 ${
-					focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-input')
+					focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-alt')
 				} rounded resize-none ${inputClassName}`}
 				{...(numeric
 					? {

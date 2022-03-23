@@ -1,5 +1,5 @@
 import A from '../components/A';
-import { DuplicateIcon, XIcon } from '@heroicons/react/outline';
+import { DuplicateIcon } from '@heroicons/react/outline';
 import { useEffect, useState } from 'react';
 import { testWallet } from '../utils/constants';
 import { connect } from '../utils/global-context';

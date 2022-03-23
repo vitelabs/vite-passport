@@ -15,7 +15,7 @@ const PageContainer = ({ title, children, className }: Props) => {
 		<div className="h-full pt-10 flex flex-col">
 			<div className="fx fixed w-full top-0 bg-skin-base justify-between h-10 px-1">
 				<button className="p-1" onClick={() => navigate(-1)}>
-					<ChevronLeftIcon className="w-7 text-skin-secondary" />
+					<ChevronLeftIcon className="w-7 text-gray-500" />
 				</button>
 				<p className="text-xl font-bold">{title}</p>
 				<div className="w-9" />

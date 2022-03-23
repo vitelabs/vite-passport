@@ -18,8 +18,8 @@
 	--bg-base-color: #ebecf0;
 	--bg-middleground-color: #f4f5f8;
 	--bg-foreground-color: #ffffff;
-	--border-input-color: rgb(217, 217, 228);
-	--text-base-color: #1d2024;
+	--alt-color: #d9d9e4;
+	--text-primary-color: #1d2024;
 	--text-secondary-color: #51555c;
 	--text-muted-color: #737478;
 	--bg-line-divider-color: #dbe4f0;
@@ -29,8 +29,8 @@
 	--bg-base-color: #131418;
 	--bg-middleground-color: #212227;
 	--bg-foreground-color: #2f3038;
-	--border-input-color: #25262c;
-	--text-base-color: #eeeeee;
+	--alt-color: rgb(67, 71, 83);
+	--text-primary-color: #eeeeee;
 	--text-secondary-color: #cdced3;
 	--text-muted-color: #818388;
 	--bg-line-divider-color: #0e1118;

@@ -21,7 +21,7 @@ type IconRowProps = {
 const IconRow = ({ big, className, icon, label, onClick }: IconRowProps) => (
 	<div className={`px-4 flex items-center gap-2 ${big ? 'py-2' : 'py-1'} ${className}`} onClick={onClick}>
 		{big && <img src={icon} alt={label} className="h-8" />}
-		<p className={`text-sm ${big ? '' : 'text-skin-secondary font-normal dark:text-skin-base'}`}>{label}</p>
+		<p className={`text-sm ${big ? '' : 'text-skin-secondary font-normal dark:text-skin-primary'}`}>{label}</p>
 	</div>
 );
 
@@ -39,7 +39,7 @@ const Picker = ({ big, selectedIndex, options, onPick }: Props) => {
 		<div
 			ref={ref}
 			className={`relative cursor-pointer ${
-				big ? 'h-12 bg-skin-input border border-skin-muted dark:border-none rounded-sm' : ''
+				big ? 'h-12 bg-skin-alt border border-skin-muted dark:border-none rounded-sm' : ''
 			}`}
 			onClick={() => openSet(!open)}
 			tabIndex={0}
@@ -54,7 +54,9 @@ const Picker = ({ big, selectedIndex, options, onPick }: Props) => {
 						className={open ? 'opacity-50' : ''}
 					/>
 				) : (
-					<p className="text-sm text-skin-secondary font-normal dark:text-skin-base">{options[selectedIndex].label}</p>
+					<p className="text-sm text-skin-secondary font-normal dark:text-skin-primary">
+						{options[selectedIndex].label}
+					</p>
 				)}
 				<div
 					className={`h-4 w-4 rounded-full border-skin-highlight border xy transition ${big ? 'mr-4' : ''} ${

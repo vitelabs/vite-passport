@@ -13,11 +13,13 @@ module.exports = {
 					highlight: 'var(--highlight-color)',
 					medlight: 'var(--medlight-color)',
 					lowlight: 'var(--lowlight-color)',
+					'bg-base': 'var(--bg-base-color)',
+					alt: 'var(--alt-color)',
 				},
 			},
 			textColor: {
 				skin: {
-					base: 'var(--text-base-color)',
+					primary: 'var(--text-primary-color)',
 					secondary: 'var(--text-secondary-color)',
 					muted: 'var(--text-muted-color)',
 					// highlight: 'var(--highlight-color)',
@@ -35,7 +37,6 @@ module.exports = {
 			borderColor: {
 				skin: {
 					foreground: 'var(--bg-foreground-color)',
-					input: 'var(--border-input-color)',
 					// // highlight: 'var(--highlight-color)',
 					lowlight: 'var(--lowlight-color)',
 				},

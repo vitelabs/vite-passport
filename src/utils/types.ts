@@ -7,7 +7,8 @@ export type ToastTypes = 'success' | 'warning' | 'error' | 'info';
 export type State = {
 	setState: setStateType;
 	networkType: NetworkTypes;
-	copyWithToast: (text: string, type?: ToastTypes) => void;
+	copyWithToast: (text: string) => void;
+	toastError: (text: string) => void;
 	currentAddress: string;
 	language: string;
 	i18n: { [key: string]: string };
