@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { testWallet } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
-import { prefersDarkTheme } from '../utils/misc';
+import { isDarkMode } from '../utils/misc';
 import PageContainer from '../components/PageContainer';
 // import { wallet } from '@vite/vitejs';
 
@@ -22,10 +22,12 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 	return (
 		<PageContainer title="Create Wallet">
 			<div className="w-full justify-between fx">
-				<div className="w-8"></div>
+				<div className="w-6"></div>
 				<div className="flex bg-skin-middleground shadow rounded overflow-hidden">
 					<button
-						className={`transition px-2 py-0.5 text-sm ${mnemonics.length === 12 ? 'bg-skin-foreground' : ''}`}
+						className={`brightness-button px-2 py-0.5 text-sm ${
+							mnemonics.length === 12 ? 'bg-skin-foreground' : 'bg-skin-middleground'
+						}`}
 						onClick={() => {
 							mnemonicsSet(testWallet.mnemonics.split(' ').slice(0, 12));
 						}}
@@ -33,7 +35,9 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 						12 words
 					</button>
 					<button
-						className={`transition px-2 py-0.5 text-sm ${mnemonics.length === 24 ? 'bg-skin-foreground' : ''}`}
+						className={`brightness-button px-2 py-0.5 text-sm ${
+							mnemonics.length === 24 ? 'bg-skin-foreground' : 'bg-skin-middleground'
+						}`}
 						onClick={() => {
 							mnemonicsSet(testWallet.mnemonics.split(' '));
 						}}
@@ -41,7 +45,7 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 						24 words
 					</button>
 				</div>
-				<button className="px-1" onClick={() => copyWithToast(mnemonics.join(' '))}>
+				<button className="brightness-button -m-1 p-1" onClick={() => copyWithToast(mnemonics.join(' '))}>
 					<DuplicateIcon className="w-6 text-skin-secondary" />
 				</button>
 			</div>
@@ -58,7 +62,7 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 						// dark: variant doesn't work with bg-opacity
 						// https://github.com/tailwindlabs/tailwindcss/issues/2966
 						className={`absolute xy p-4 flex-col inset-0 ${
-							prefersDarkTheme() ? 'bg-black' : 'bg-white'
+							isDarkMode() ? 'bg-black' : 'bg-white'
 						} bg-opacity-10 backdrop-blur`}
 					>
 						<p className="mx-3 drop-shadow">

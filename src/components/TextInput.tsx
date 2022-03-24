@@ -58,7 +58,7 @@ const TextInput = ({
 	const Tag = useMemo(() => (textarea ? 'textarea' : 'input'), [textarea]);
 
 	return (
-		<div className={`w-full relative ${containerClassName}`}>
+		<div className={`relative ${containerClassName}`}>
 			<label
 				htmlFor={id}
 				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}

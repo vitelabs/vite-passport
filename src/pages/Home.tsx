@@ -1,7 +1,10 @@
 import { CreditCardIcon, DuplicateIcon } from '@heroicons/react/outline';
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { CheckCircleIcon, PlusIcon } from '@heroicons/react/solid';
+import { useEffect, useState } from 'react';
+import Modal from '../components/Modal';
 import TabContainer from '../components/TabContainer';
+import TextInput from '../components/TextInput';
+import { providerWsURLs } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { shortenAddress, shortenTti } from '../utils/strings';
 import { State } from '../utils/types';
@@ -9,8 +12,13 @@ import { State } from '../utils/types';
 
 type Props = State;
 
-const Home = ({ i18n, setState, copyWithToast, toastError }: Props) => {
-	const navigate = useNavigate();
+const Home = ({ i18n, setState, copyWithToast, network, toastError }: Props) => {
+	const [networkPickerOpen, networkPickerOpenSet] = useState(false);
+	const [walletInfoOpen, walletInfoOpenSet] = useState(false);
+	const [addNetworkModalOpen, addNetworkModalOpenSet] = useState(false);
+	const [networkName, networkNameSet] = useState('');
+	const [rpcUrl, rpcUrlSet] = useState('');
+	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
 	const balances = {
 		tti_5649544520544f4b454e6e40: 10,
 	};
@@ -48,23 +56,24 @@ const Home = ({ i18n, setState, copyWithToast, toastError }: Props) => {
 			<div className="bg-skin-middleground shadow p-2">
 				<div className="fx justify-between">
 					<button
-						className="border-2 px-2 rounded-full border-skin-alt text-sm text-skin-secondary transition duration-200 hover:shadow-md active:shadow active:bg-skin-base"
-						onClick={() => {}}
+						className="border-2 px-2 rounded-full border-skin-alt text-sm bg-skin-middleground text-skin-secondary hover:shadow-md active:shadow brightness-button"
+						onClick={() => networkPickerOpenSet(true)}
 					>
-						Mainnet
+						{network}
 					</button>
-					<button className="" onClick={() => {}}>
-						<CreditCardIcon className="w-6 text-skin-secondary" />
+					<button
+						className="p-1 -mt-1 -mr-1 text-skin-secondary darker-brightness-button"
+						onClick={() => walletInfoOpenSet(true)}
+					>
+						<CreditCardIcon className="w-6 text-inherit" />
 					</button>
 				</div>
 				<div className="fy">
 					{/* <input className="text-xl b text-center px-2 w-full" value="Account 0" /> */}
 					<p className="text-xl">Account 0</p>
-					<button className="fx" onClick={() => copyWithToast('address')}>
-						<p className="text-skin-secondary">
-							{shortenAddress('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f')}
-						</p>
-						<DuplicateIcon className="ml-1 w-5 text-skin-secondary" />
+					<button className="fx text-skin-secondary darker-brightness-button" onClick={() => copyWithToast('address')}>
+						<p className="text-inherit">{shortenAddress('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f')}</p>
+						<DuplicateIcon className="ml-1 w-5 text-inherit" />
 					</button>
 				</div>
 			</div>
@@ -83,7 +92,10 @@ const Home = ({ i18n, setState, copyWithToast, toastError }: Props) => {
 									<p className="text-lg">{'0'}</p>
 								</div>
 								<div className="fx justify-between">
-									<button className="text-xs text-skin-muted" onClick={() => copyWithToast(tti)}>
+									<button
+										className="text-xs text-skin-muted darker-brightness-button"
+										onClick={() => copyWithToast(tti)}
+									>
 										{shortenTti(tti)}
 									</button>
 									<p className="text-xs text-skin-secondary">$0</p>
@@ -92,7 +104,92 @@ const Home = ({ i18n, setState, copyWithToast, toastError }: Props) => {
 						</div>
 					);
 				})}
+				<div className="fy">
+					<button className="text-skin-secondary brightness-button">Add token</button>
+				</div>
 			</div>
+			{networkPickerOpen && (
+				<Modal onClose={() => networkPickerOpenSet(false)}>
+					<div className="w-64">
+						<p className="text-xl text-center p-2 border-b-2 border-skin-alt">Networks</p>
+						{Object.entries(providerWsURLs).map(([label, uri]) => {
+							const active = network === label;
+							return (
+								<button
+									key={uri}
+									className="px-1 py-2 fx w-full bg-skin-middleground brightness-button"
+									onClick={() => {
+										setState({ network: label });
+										networkPickerOpenSet(false);
+									}}
+								>
+									<div className="w-8 xy">
+										{active ? (
+											<CheckCircleIcon className="w-6 text-skin-highlight" />
+										) : (
+											<div className="w-5 h-5 border-2 border-skin-alt rounded-full" />
+										)}
+									</div>
+									<div>
+										<p className="leading-4 text-left">{label}</p>
+										<p className="leading-4 text-sm text-skin-secondary">{uri}</p>
+									</div>
+								</button>
+							);
+						})}
+						<button
+							className="px-1 py-2 fx w-full bg-skin-middleground brightness-button"
+							onClick={() => {
+								networkPickerOpenSet(false);
+								addNetworkModalOpenSet(true);
+							}}
+						>
+							<div className="w-8 xy">
+								<PlusIcon className="w-6 text-skin-secondary" />
+							</div>
+							<p className="text-left text-skin-secondary">Add network</p>
+						</button>
+					</div>
+				</Modal>
+			)}
+			{addNetworkModalOpen && (
+				<Modal
+					onClose={() => {
+						networkPickerOpenSet(true);
+						addNetworkModalOpenSet(false);
+						networkNameSet('');
+						rpcUrlSet('');
+						blockExplorerUrlSet('');
+					}}
+				>
+					<div className="w-64">
+						<p className="text-xl text-center p-2 border-b-2 border-skin-alt">Add Network</p>
+						<div className="space-y-3 p-3">
+							<TextInput label="Network Name" value={networkName} onUserInput={(v) => networkNameSet(v)} />
+							<TextInput label="RPC URL" value={rpcUrl} onUserInput={(v) => rpcUrlSet(v)} />
+							<TextInput
+								optional
+								label="Block Explorer URL"
+								value={blockExplorerUrl}
+								onUserInput={(v) => blockExplorerUrlSet(v)}
+							/>
+							<button
+								className="round-solid-button"
+								onClick={() => {
+									// TODO: store
+								}}
+							>
+								Add
+							</button>
+						</div>
+					</div>
+				</Modal>
+			)}
+			{walletInfoOpen && (
+				<Modal onClose={() => walletInfoOpenSet(false)}>
+					<p className="text-xl">Accounts</p>
+				</Modal>
+			)}
 		</TabContainer>
 	);
 };

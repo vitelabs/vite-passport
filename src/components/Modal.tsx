@@ -6,18 +6,18 @@ type Props = {
 	onClose: () => void;
 	children: ReactNode;
 	className?: string;
-	header: string;
-	noX?: boolean;
 };
 
-const Modal = ({ header, noX, onClose = () => {}, children, className }: Props) => {
+const Modal = ({ onClose = () => {}, children, className }: Props) => {
 	const mouseDraggingModal = useRef(false);
 	const [index, indexSet] = useState<number>();
 	const modalParent: HTMLElement | null = useMemo(() => document.getElementById('modal'), []);
 
 	useEffect(() => {
-		indexSet(modalParent?.children.length);
-	}, []); // eslint-disable-line
+		// setTimeout is for modals that mount exactly when another unmounts.
+		// The setTimeout waits until after rendering before counting DOM nodes.
+		setTimeout(() => indexSet(modalParent?.children.length), 0);
+	}, []);
 
 	useKeyPress('Escape', () => {
 		if (modalParent?.children.length === index) {
@@ -37,7 +37,7 @@ const Modal = ({ header, noX, onClose = () => {}, children, className }: Props) 
 	return modalParent
 		? ReactDOM.createPortal(
 				<div
-					className="z-10 fixed inset-0 bg-black bg-opacity-30 overflow-scroll flex flex-col"
+					className="z-10 h-[30rem] fixed inset-0 bg-black bg-opacity-10 overflow-scroll flex flex-col"
 					onClick={() => {
 						!mouseDraggingModal.current && onClose();
 						mouseDraggingModal.current = false;
@@ -46,15 +46,11 @@ const Modal = ({ header, noX, onClose = () => {}, children, className }: Props) 
 					<div className="flex-1 min-h-[5rem]" />
 					<div className="px-4 flex justify-center">
 						<div
-							className={`bg-skin-middleground rounded-bl-sm rounded-br-sm shadow-md ${className}`}
+							className={`bg-skin-middleground overflow-hidden rounded shadow-md ${className}`}
 							onClick={(e) => e.stopPropagation()}
 							onMouseDown={() => (mouseDraggingModal.current = true)}
 							onMouseUp={() => (mouseDraggingModal.current = false)}
 						>
-							<div className="bg-skin-modal-header text-sm px-7 h-12 xy justify-between">
-								<p className="text-white font-semibold">{header}</p>
-								<button className={noX ? 'invisible' : 'x'} onClick={onClose} />
-							</div>
 							{children}
 						</div>
 					</div>

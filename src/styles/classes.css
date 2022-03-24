@@ -23,6 +23,26 @@
 		outline: 1px solid red;
 	}
 
+	.brightness-button,
+	.darker-brightness-button {
+		@apply transition duration-200;
+	}
+
+	.brightness-button {
+		@apply hover:brightness-95 active:brightness-90;
+	}
+
+	.darker-brightness-button {
+		@apply hover:brightness-75 active:brightness-50;
+	}
+
+	.dark {
+		.brightness-button,
+		.darker-brightness-button {
+			@apply hover:brightness-90 active:brightness-75;
+		}
+	}
+
 	.round-solid-button,
 	.round-outline-button {
 		@apply xy rounded-full shadow-md font-bold p-1.5 text-lg w-full;

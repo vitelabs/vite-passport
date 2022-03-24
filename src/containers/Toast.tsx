@@ -1,3 +1,4 @@
+import { XIcon } from '@heroicons/react/outline';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -31,7 +32,6 @@ const toastParent = document.getElementById('toast');
 const Toast = ({ setState, toast }: Props) => {
 	const [animationStage, animationStageSet] = useState(0);
 	const colorKey = toast?.[1] || 'success';
-	// toast = 'test';
 
 	useEffect(() => {
 		clearTimeout(closeTimer);
@@ -48,6 +48,7 @@ const Toast = ({ setState, toast }: Props) => {
 			}, minShowTime + 300); // +300 cuz duration-300
 		}
 	}, [setState, toast]);
+
 	return !toast
 		? null
 		: ReactDOM.createPortal(
@@ -61,15 +62,19 @@ const Toast = ({ setState, toast }: Props) => {
 								clearTimeout(unmountTimer);
 								enterDate = Date.now();
 							}}
-							onMouseLeave={() => {
-								closeTimer = setTimeout(() => {
-									exiting = true;
-									animationStageSet(2);
-									closeTimer = setTimeout(() => {
-										setState({ toast: undefined });
-										animationStageSet(0);
-									}, 300);
-								}, Math.max(0, minShowTime - (Date.now() - enterDate)));
+							onMouseLeave={(e) => {
+								const aboveToast = e.clientY < e.currentTarget.getBoundingClientRect().top;
+								closeTimer = setTimeout(
+									() => {
+										exiting = true;
+										animationStageSet(2);
+										closeTimer = setTimeout(() => {
+											setState({ toast: undefined });
+											animationStageSet(0);
+										}, 300);
+									},
+									aboveToast ? 0 : Math.max(0, minShowTime - (Date.now() - enterDate))
+								);
 							}}
 							className={`shadow-md w-full fx pointer-events-auto backdrop-blur bg-skin-foreground dark:bg-skin-base relative pl-2 pr-3 py-2 rounded overflow-hidden transition-all duration-300 ${
 								animationStage === 0

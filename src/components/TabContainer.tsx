@@ -21,7 +21,7 @@ const TabContainer = ({ scrollable = true, children }: Props) => {
 	const { pathname } = useLocation();
 
 	return (
-		<div className="h-screen flex flex-col">
+		<div className="h-full flex flex-col">
 			{scrollable ? <div className="flex-1 overflow-scroll">{children}</div> : children}
 			<div className="h-8 bg-skin-middleground flex">
 				{[
@@ -32,8 +32,13 @@ const TabContainer = ({ scrollable = true, children }: Props) => {
 					const active = pathname === to;
 					const Icon = active ? SolidIcon : OutlineIcon;
 					return (
-						<button className="flex-1 xy" onClick={() => navigate(to as string)}>
-							<Icon className={`h-6 w-6 ${active ? 'text-skin-primary' : 'text-skin-secondary'}`} />
+						<button
+							key={to as string}
+							disabled={active}
+							className={`flex-1 xy darker-brightness-button ${active ? 'text-skin-primary' : 'text-skin-secondary'}`}
+							onClick={() => navigate(to as string, { replace: true })}
+						>
+							<Icon className="h-6 w-6 text-inherit" />
 						</button>
 					);
 				})}

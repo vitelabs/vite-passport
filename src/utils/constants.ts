@@ -1,7 +1,7 @@
 export const providerWsURLs = {
-	localnet: 'ws://localhost:23457',
-	testnet: 'wss://buidl.vite.net/gvite/ws',
-	mainnet: 'wss://node.vite.net/gvite/ws',
+	Mainnet: 'wss://node.vite.net/gvite/ws',
+	Testnet: 'wss://buidl.vite.net/gvite/ws',
+	Localnet: 'ws://localhost:23457',
 };
 
 export const testWallet = {

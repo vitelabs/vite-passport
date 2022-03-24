@@ -13,8 +13,9 @@ module.exports = {
 					highlight: 'var(--highlight-color)',
 					medlight: 'var(--medlight-color)',
 					lowlight: 'var(--lowlight-color)',
-					'bg-base': 'var(--bg-base-color)',
 					alt: 'var(--alt-color)',
+					'bg-base': 'var(--bg-base-color)',
+					// 'text-secondary': 'var(--text-secondary-color)',
 				},
 			},
 			textColor: {

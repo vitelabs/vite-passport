@@ -17,6 +17,7 @@ const App = () => {
 			i18n: {},
 			// vcInstance: getValidVCSession() ? initVC() : null,
 			balances: {},
+			network: 'Mainnet',
 		};
 		initialStateSet(state);
 	}, []);
