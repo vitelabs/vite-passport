@@ -1,3 +1,4 @@
+import { CheckIcon } from '@heroicons/react/solid';
 import { ReactNode } from 'react';
 
 type Props = {
@@ -6,12 +7,17 @@ type Props = {
 	children?: ReactNode;
 };
 
-const Checkbox = ({ checked, children, onUserInput }: Props) => {
+const Checkbox = ({ checked, onUserInput }: Props) => {
 	return (
-		<div className="xy justify-start">
-			<input type="checkbox" checked={checked} onChange={(e) => onUserInput(e.target.checked)} />
-			<p className="text-sm ml-2">{children}</p>
-		</div>
+		<button className="brightness-button h-8 w-8 p-1.5 -m-1.5" onClick={(e) => onUserInput(checked)}>
+			<div
+				className={`h-5 w-5 xy border-2 rounded shadow ${
+					checked ? 'bg-skin-highlight border-skin-lowlight' : 'bg-skin-foreground border-skin-alt'
+				}`}
+			>
+				{checked && <CheckIcon className="h-4 w-4" />}
+			</div>
+		</button>
 	);
 };
 

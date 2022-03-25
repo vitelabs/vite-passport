@@ -9,7 +9,10 @@ export type State = {
 	networkType: NetworkTypes;
 	network: string;
 	copyWithToast: (text: string) => void;
+	toastSuccess: (text: string) => void;
+	toastWarning: (text: string) => void;
 	toastError: (text: string) => void;
+	toastInfo: (text: string) => void;
 	currentAddress: string;
 	language: string;
 	i18n: { [key: string]: string };
@@ -17,12 +20,6 @@ export type State = {
 	balances: {
 		[tokenId: string]: TokenInfo;
 	};
-};
-
-export type TextInputRefObject = {
-	tag: HTMLElement | null;
-	issueSet: React.Dispatch<React.SetStateAction<string>>;
-	readonly isValid: boolean;
 };
 
 export type TokenInfo = {

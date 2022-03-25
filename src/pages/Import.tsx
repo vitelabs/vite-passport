@@ -2,10 +2,10 @@ import { XIcon } from '@heroicons/react/outline';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
-import TextInput from '../components/TextInput';
+import TextInput, { TextInputRefObject } from '../components/TextInput';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
-import { State, TextInputRefObject } from '../utils/types';
+import { State } from '../utils/types';
 
 type Props = State;
 

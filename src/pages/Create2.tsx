@@ -3,10 +3,10 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import A from '../components/A';
 import PageContainer from '../components/PageContainer';
-import TextInput from '../components/TextInput';
+import TextInput, { TextInputRefObject } from '../components/TextInput';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
-import { State, TextInputRefObject } from '../utils/types';
+import { State } from '../utils/types';
 
 type Props = State;
 
@@ -22,13 +22,14 @@ const Create2 = ({ i18n }: Props) => {
 		<PageContainer title="Create Wallet">
 			<TextInput
 				optional
+				password
 				_ref={passphraseRef}
 				value={passphrase}
 				onUserInput={(v) => passphraseSet(v)}
 				label="BIP-39 Passphrase"
 				containerClassName="my-2"
 			/>
-			<TextInput _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
+			<TextInput password _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
 			<p className="mt-2 text-skin-secondary">What's the difference?</p>
 			<p className="text-skin-secondary">
 				Your <span className="font-bold">BIP-39 passphrase</span> is like an additional word to your mnemonic phrase for

@@ -74,18 +74,22 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 	useEffect(() => {
 		setState({
 			copyWithToast: (text = '') => {
-				copyToClipboardAsync(text);
-				setState({ toast: [i18n.successfullyCopied, 'success'] });
+				if (copyToClipboardAsync(text)) {
+					setState({ toast: [i18n.successfullyCopied, 'success'] });
+				} else {
+					setState({ toast: ['clipboard API not supported', 'error'] });
+				}
 			},
-			toastError: (text = '') => {
-				setState({ toast: [i18n.successfullyCopied, 'alert'] });
-			},
+			toastSuccess: (text = '') => setState({ toast: [text, 'success'] }),
+			toastWarning: (text = '') => setState({ toast: [text, 'warning'] }),
+			toastError: (text = '') => setState({ toast: [text, 'error'] }),
+			toastInfo: (text = '') => setState({ toast: [text, 'info'] }),
 		});
 	}, [i18n]);
 
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
-		// <MemoryRouter initialEntries={['/create']}>
+		// <MemoryRouter initialEntries={['/create2']}>
 		<MemoryRouter initialEntries={['/home']}>
 			<Routes>
 				<Route path="/" element={<Start />} />

@@ -1,5 +1,11 @@
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import React, { useRef, useMemo, useState, HTMLProps } from 'react';
-import { TextInputRefObject } from '../utils/types';
+
+export type TextInputRefObject = {
+	tag: HTMLElement | null;
+	issueSet: React.Dispatch<React.SetStateAction<string>>;
+	readonly isValid: boolean;
+};
 
 type Props = HTMLProps<HTMLInputElement> & {
 	label: string;
@@ -9,6 +15,7 @@ type Props = HTMLProps<HTMLInputElement> & {
 	inputClassName?: string;
 	textarea?: boolean;
 	numeric?: boolean;
+	password?: boolean;
 	maxDecimals?: number;
 	disabled?: boolean;
 	onMetaEnter?: () => void;
@@ -39,6 +46,7 @@ const TextInput = ({
 	inputClassName,
 	textarea,
 	numeric,
+	password,
 	maxDecimals,
 	disabled,
 	label,
@@ -47,13 +55,13 @@ const TextInput = ({
 	onUserInput,
 	optional,
 	maxLength,
-	type = 'text',
 	getIssue = () => '',
 	_ref,
 }: Props) => {
-	const input = useRef<HTMLElement | null>();
+	const input = useRef<HTMLInputElement | HTMLTextAreaElement | null>();
 	const [issue, issueSet] = useState('');
 	const [focused, focusedSet] = useState(false);
+	const [visible, visibleSet] = useState(false);
 	const id = useMemo(() => label.toLowerCase().replace(/\s+/g, '-'), [label]);
 	const Tag = useMemo(() => (textarea ? 'textarea' : 'input'), [textarea]);
 
@@ -70,6 +78,23 @@ const TextInput = ({
 				{/* {optional && ' - optional'} */}
 				{optional && ' (?)'}
 			</label>
+			{password && (
+				<button
+					className={`absolute right-3 top-4 h-8 w-8 p-1.5 -m-1.5 transition duration-200 ${
+						focused ? 'text-skin-highlight' : 'text-skin-muted'
+					}`}
+					onMouseDown={(e) => e.preventDefault()}
+					onClick={() => {
+						visibleSet(!visible);
+						setTimeout(() => {
+							// move cursor to end
+							input.current!.setSelectionRange(value.length, value.length);
+						}, 0);
+					}}
+				>
+					{visible ? <EyeOffIcon className="text-inherit" /> : <EyeIcon className="text-inherit" />}
+				</button>
+			)}
 			<Tag
 				id={id}
 				placeholder={placeholder}
@@ -77,6 +102,8 @@ const TextInput = ({
 				disabled={disabled}
 				autoComplete="off"
 				className={`px-2 pt-5 w-full text-lg block bg-skin-middleground transition duration-200 border-2 ${
+					password ? 'pr-10' : ''
+				} ${password && !visible ? 'leading-3 text-2xl' : ''} ${
 					focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-alt')
 				} rounded resize-none ${inputClassName}`}
 				{...(numeric
@@ -85,7 +112,7 @@ const TextInput = ({
 							pattern: 'd*',
 							inputMode: 'decimal',
 					  }
-					: { type })}
+					: { type: password && !visible ? 'password' : 'text' })}
 				onFocus={() => {
 					focusedSet(true);
 					issueSet('');
@@ -111,7 +138,7 @@ const TextInput = ({
 					}
 					onUserInput(maxLength ? value.slice(0, maxLength) : value);
 				}}
-				ref={(tag: HTMLElement | null) => {
+				ref={(tag: HTMLInputElement | HTMLTextAreaElement | null) => {
 					input.current = tag;
 					if (_ref) {
 						const refObject = {
