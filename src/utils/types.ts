@@ -20,6 +20,13 @@ export type State = {
 	balances: {
 		[tokenId: string]: TokenInfo;
 	};
+	transactionHistory: {
+		[address: string]: Transaction[];
+	};
+};
+
+export type Transaction = {
+	hash: string;
 };
 
 export type TokenInfo = {

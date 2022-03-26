@@ -30,12 +30,12 @@ const Create2 = ({ i18n }: Props) => {
 				containerClassName="my-2"
 			/>
 			<TextInput password _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
-			<p className="mt-2 text-skin-secondary">What's the difference?</p>
-			<p className="text-skin-secondary">
+			<p className="mt-2 ">What's the difference?</p>
+			<p className="">
 				Your <span className="font-bold">BIP-39 passphrase</span> is like an additional word to your mnemonic phrase for
 				extra security.
 			</p>
-			<p className="text-skin-secondary">
+			<p className="">
 				Your <span className="font-bold">password</span> is used for encrypting your mnemonic phrase and BIP-39
 				passphrase on your computer.
 			</p>

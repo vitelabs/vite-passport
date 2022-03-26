@@ -73,7 +73,7 @@
 
 	.round-outline-button {
 		@apply transition duration-300
-		bg-skin-middleground border-2
+		bg-skin-foreground border-2
 		border-skin-highlight dark:border-skin-lowlight
 		text-skin-lowlight dark:text-skin-highlight;
 

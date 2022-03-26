@@ -22,7 +22,7 @@ label,
 body input,
 body button {
 	/* ^ body needed to increase specificity. Idk what styles would override just the button selector. */
-	@apply text-skin-primary text-base font-semibold;
+	@apply text-skin-primary font-semibold;
 }
 
 button,

@@ -45,7 +45,7 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 						24 words
 					</button>
 				</div>
-				<button className="brightness-button -m-1 p-1" onClick={() => copyWithToast(mnemonics.join(' '))}>
+				<button className="darker-brightness-button -m-1 p-1" onClick={() => copyWithToast(mnemonics.join(' '))}>
 					<DuplicateIcon className="w-6 text-skin-secondary" />
 				</button>
 			</div>
@@ -75,7 +75,7 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 					</div>
 				)}
 			</div>
-			<p className="mt-1 text-skin-secondary text-sm">Store these words somewhere safe</p>
+			<p className="mt-1 text-skin-secondary text-center text-sm">Store these words somewhere safe</p>
 			<div className="flex-1"></div>
 			<A to="/create2" className="round-solid-button">
 				{i18n.next}

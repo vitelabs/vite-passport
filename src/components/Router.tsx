@@ -89,7 +89,7 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
-		// <MemoryRouter initialEntries={['/create2']}>
+		// <MemoryRouter initialEntries={['/', '/create', '/create2']}>
 		<MemoryRouter initialEntries={['/home']}>
 			<Routes>
 				<Route path="/" element={<Start />} />

@@ -4,7 +4,7 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				sans: ['PingFangSC', 'arial', 'sans-serif'],
+				// sans: ['arial', 'sans-serif'],
 			},
 			colors: {
 				skin: {
