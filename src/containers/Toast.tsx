@@ -62,7 +62,7 @@ const Toast = ({ setState, toast }: Props) => {
 	return !toast
 		? null
 		: ReactDOM.createPortal(
-				<div className="fixed z-50 top-0 w-full pointer-events-none xy p-3">
+				<div className="fixed z-50 top-0 w-[18rem] pointer-events-none xy p-3">
 					{toast && (
 						<div
 							onMouseEnter={() => {

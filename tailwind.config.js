@@ -15,7 +15,7 @@ module.exports = {
 					lowlight: 'var(--lowlight-color)',
 					alt: 'var(--alt-color)',
 					'bg-base': 'var(--bg-base-color)',
-					// 'text-secondary': 'var(--text-secondary-color)',
+					'text-muted': 'var(--text-muted-color)',
 				},
 			},
 			textColor: {

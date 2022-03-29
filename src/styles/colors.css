@@ -21,14 +21,15 @@
 	--alt-color: #d9d9e4;
 	--text-primary-color: #1d2024;
 	--text-secondary-color: #6e737c;
-	--text-muted-color: #737478;
+	--text-muted-color: #90939c;
 	--bg-line-divider-color: #dbe4f0;
 }
 
 .dark {
 	--bg-base-color: #131418;
 	--bg-middleground-color: #212227;
-	--bg-foreground-color: #2f3038;
+	/* --bg-foreground-color: #2f3038; */
+	--bg-foreground-color: #212227;
 	--alt-color: rgb(67, 71, 83);
 	--text-primary-color: #eeeeee;
 	--text-secondary-color: #a6a9b6;

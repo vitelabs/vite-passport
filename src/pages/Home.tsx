@@ -1,14 +1,14 @@
 import { CreditCardIcon, DuplicateIcon, PencilIcon, XIcon } from '@heroicons/react/outline';
-import { CheckCircleIcon, PlusIcon } from '@heroicons/react/solid';
+import { CheckCircleIcon, ExternalLinkIcon, MinusSmIcon, PlusIcon, PlusSmIcon } from '@heroicons/react/solid';
 import { useEffect, useState } from 'react';
 import Checkbox from '../components/Checkbox';
 import Modal from '../components/Modal';
 import QR from '../components/QR';
 import TabContainer from '../components/TabContainer';
 import TextInput from '../components/TextInput';
-import { providerWsURLs } from '../utils/constants';
+import { providerWsURLs, testTransactions } from '../utils/constants';
 import { connect } from '../utils/global-context';
-import { shortenAddress, shortenTti } from '../utils/strings';
+import { formatDate, shortenAddress, shortenHash, shortenTti, toBiggestUnit } from '../utils/strings';
 import { State } from '../utils/types';
 // import { getBalanceInfo } from '../utils/vitescripts';
 
@@ -31,6 +31,7 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 	const [displayedTokenDraft, displayedTokenDraftSet] = useState<{ [key: string]: boolean }>({});
 	const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
 	const [tokenInfoModalTti, tokenInfoModalTtiSet] = useState('');
+	const [txInfoModalTx, txInfoModalTxSet] = useState<typeof testTransactions[9]>();
 
 	const balances = {
 		tti_5649544520544f4b454e6e40: 10,
@@ -304,110 +305,204 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 						}}
 					>
 						<PlusIcon className="w-6 ml-1 mr-2 text-skin-secondary" />
-						<p className="text-left text-skin-secondary">Derive address</p>
+						<p className="text-skin-secondary">Derive address</p>
 					</button>
 				</div>
 			</Modal>
-			<Modal fullscreen visible={editingTokenList} onClose={() => editingTokenListSet(false)}>
-				<div className="flex flex-col w-[18rem] h-[30rem] bg-skin-middleground rounded-t">
-					<div className="fx w-full px-1">
-						<button className="brightness-button" onClick={() => editingTokenListSet(false)}>
-							<XIcon className="w-8 text-skin-secondary" />
-						</button>
-						<p className="text-xl flex-1 text-center p-2 mr-8">Edit Token List</p>
-					</div>
-					<input
-						placeholder="Search tokens by symbol or tti"
-						value={tokenQuery}
-						className="p-2 shadow z-10"
-						onChange={(e) => tokenQuerySet(e.target.value)}
-					/>
-					<div className="flex-1 overflow-scroll">
-						{assets.map(({ tti, symbol }) => {
-							return (
-								<div
-									key={tti}
-									className="fx rounded py-1 px-2 shadow bg-skin-middleground"
-									onMouseDown={() => {
-										// TODO: drag to sort
-									}}
-								>
-									<img
-										src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${symbol.toLowerCase()}/${tti}.png?raw=true`}
-										alt={symbol}
-										className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-									/>
-									<div className="flex-1 fx">
-										<div className="flex flex-col flex-1 items-start">
-											<p className="text-lg">{symbol}</p>
-											<button
-												className="text-xs text-skin-muted darker-brightness-button"
-												onClick={() => copyWithToast(tti)}
-											>
-												{tti}
-											</button>
-										</div>
-										<Checkbox
-											checked={displayedTokenDraft[tti]}
-											onUserInput={(c) => {
-												displayedTokenDraft[tti] = !displayedTokenDraft[tti];
-												displayedTokenDraftSet({ ...displayedTokenDraft });
-											}}
-										/>
+			<Modal fullscreen visible={editingTokenList} onClose={() => editingTokenListSet(false)} className="flex flex-col">
+				<div className="z-50 fx w-full px-1 shadow">
+					<button className="brightness-button" onClick={() => editingTokenListSet(false)}>
+						<XIcon className="w-8 text-skin-secondary" />
+					</button>
+					<p className="text-xl flex-1 text-center p-2 mr-8">Edit Token List</p>
+				</div>
+				<input
+					placeholder="Search tokens by symbol or tti"
+					value={tokenQuery}
+					className="p-2 shadow z-10 w-full"
+					onChange={(e) => tokenQuerySet(e.target.value)}
+				/>
+				<div className="flex-1 overflow-scroll">
+					{assets.map(({ tti, symbol }) => {
+						return (
+							<div
+								key={tti}
+								className="fx rounded py-1 px-2 bg-skin-middleground"
+								onMouseDown={() => {
+									// TODO: drag to sort
+								}}
+							>
+								<img
+									src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${symbol.toLowerCase()}/${tti}.png?raw=true`}
+									alt={symbol}
+									className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+								/>
+								<div className="flex-1 fx">
+									<div className="flex flex-col flex-1 items-start">
+										<p className="text-lg">{symbol}</p>
+										<button className="group fx darker-brightness-button" onClick={() => copyWithToast(tti)}>
+											<p className="text-xs text-skin-secondary">{shortenTti(tti)}</p>
+											<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+										</button>
 									</div>
+									<Checkbox
+										checked={displayedTokenDraft[tti]}
+										onUserInput={(c) => {
+											displayedTokenDraft[tti] = !displayedTokenDraft[tti];
+											displayedTokenDraftSet({ ...displayedTokenDraft });
+										}}
+									/>
 								</div>
-							);
-						})}
-					</div>
-					<div className="flex gap-2 p-2 shadow z-50">
-						<button
-							className="p-0 round-outline-button"
-							onClick={() => {
-								//
-							}}
-						>
-							Cancel
-						</button>
-						<button
-							className="p-0 round-solid-button"
-							onClick={() => {
-								// TODO: replace token list with token list draft
-							}}
-						>
-							Confirm
-						</button>
-					</div>
+							</div>
+						);
+					})}
+				</div>
+				<div className="flex gap-2 p-2 shadow z-50">
+					<button
+						className="p-0 round-outline-button"
+						onClick={() => {
+							//
+						}}
+					>
+						Cancel
+					</button>
+					<button
+						className="p-0 round-solid-button"
+						onClick={() => {
+							// TODO: replace token list with token list draft
+						}}
+					>
+						Confirm
+					</button>
 				</div>
 			</Modal>
-			<Modal fullscreen visible={!!tokenInfoModalTti} onClose={() => tokenInfoModalTtiSet('')}>
-				<div className="flex flex-col w-[18rem] h-[30rem] bg-skin-middleground rounded-t">
-					{/* <img
+			<Modal
+				fullscreen
+				visible={!!tokenInfoModalTti}
+				onClose={() => tokenInfoModalTtiSet('')}
+				className="flex flex-col"
+			>
+				{/* <img
 						src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${symbol.toLowerCase()}/${tti}.png?raw=true`}
 						alt={symbol}
 						className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
 					/> */}
-					<div className="flex-1 flex">
-						<div className="flex flex-col flex-1 items-start">
-							{/* <p className="text-lg">{symbol}</p> */}
-							{/* <button
+
+				<div className="z-50 fx w-full px-1 shadow ">
+					<button className="brightness-button w-10" onClick={() => tokenInfoModalTtiSet('')}>
+						<XIcon className="w-8 text-skin-secondary" />
+					</button>
+					{/* <p className="text-xl flex-1 text-center p-2 mr-8">BTC-000</p> */}
+					<div className="flex-1 fy">
+						<p className="text-xl leading-4 mt-1">BTC-000</p>
+						<button className="group fx darker-brightness-button" onClick={() => copyWithToast(testAddress)}>
+							<p className="ml-5 leading-3 text-xs text-skin-secondary">{shortenTti(tokenInfoModalTti)}</p>
+							<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+						</button>
+					</div>
+					<div className="w-10 p-1">
+						<img
+							src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${'btc'.toLowerCase()}/${tokenInfoModalTti}.png?raw=true`}
+							alt={'btc'}
+							className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+						/>
+					</div>
+				</div>
+				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
+					{/* {tokens[tokenInfoModalTti].symbol} */}
+					{/* <QR data={testAddress} className="h-40 w-40 mx-auto" /> */}
+					{/* <p className="text-lg">{symbol}</p> */}
+					{/* <button
 										className="text-xs text-skin-muted darker-brightness-button"
 										onClick={() => copyWithToast(tti)}
 									>
 										{shortenTti(tti)}
 									</button> */}
-							{/* <p className="text-xs text-skin-muted">{shortenTti(tti)}</p> */}
-						</div>
-						<div className="flex flex-col items-end mr-1.5">
-							<p className="text-lg">{'0'}</p>
-							<p className="text-xs text-skin-secondary">$0</p>
-						</div>
-					</div>
-					<div className="fx mt-2 gap-2 w-full">
-						<button className="round-outline-button p-0">Receive</button>
-						<button className="round-outline-button p-0">Send</button>
-					</div>
-					<QR data={testAddress} className="h-40 w-40" />
+					{/* <TextInput label="Amount" value={''} onUserInput={() => {}} />
+					<TextInput label="Comment" value={''} onUserInput={() => {}} /> */}
+					{testTransactions.map((tx) => {
+						// console.log('tx:', tx);
+						return (
+							<button
+								key={tx.hash}
+								className="fx text-sm rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
+								onClick={() => txInfoModalTxSet(tx)}
+							>
+								{/* {tx.blockType === 2 ? (
+									<div className="relative xy rounded-full border-2 border-skin-text-muted h-4 w-4">
+										<MinusSmIcon className="absolute h-4 w-4 text-skin-text-muted" />
+									</div>
+								) : tx.blockType === 4 ? (
+									<div className="relative xy rounded-full border-2 border-skin-highlight h-4 w-4">
+										<PlusSmIcon className="absolute h-4 w-4 text-skin-highlight" />
+									</div>
+								) : null} */}
+								<div className="ml-2 flex-1 flex justify-between">
+									<div className="flex flex-col items-start">
+										<p className="">
+											{
+												{
+													1: 'Contract creation', // request(create contract)
+													2: 'Sent', // request(transfer)
+													3: 'Reissue token', // request(re-issue token)
+													4: 'Received', // response
+													5: 'Failed response', // response(failed)
+													6: 'Contract refund', // request(refund by contract)
+													7: 'Genesis', // response(genesis)
+												}[tx.blockType]
+											}
+										</p>
+										<p className="">{toBiggestUnit(tx.amount, tx.tokenInfo.decimals)} BTC</p>
+									</div>
+									<div className="flex flex-col items-end">
+										<p className="">{shortenAddress(tx.address)}</p>
+										<p className="text-skin-secondary">{formatDate(tx.timestamp)}</p>
+									</div>
+								</div>
+							</button>
+						);
+					})}
 				</div>
+				<div className="fx m-2 gap-2">
+					<button className="round-outline-button p-0">Receive</button>
+					<button className="round-outline-button p-0">Send</button>
+				</div>
+			</Modal>
+			<Modal visible={!!txInfoModalTx} onClose={() => txInfoModalTxSet(undefined)}>
+				{!!txInfoModalTx && (
+					<div className="w-64">
+						<p className="text-xl text-center p-2 border-b-2 border-skin-alt">Transaction</p>
+						{[
+							['Hash', txInfoModalTx.hash, shortenHash(txInfoModalTx.hash)],
+							['To', txInfoModalTx.toAddress, shortenAddress(txInfoModalTx.toAddress)],
+							['From', txInfoModalTx.fromAddress, shortenAddress(txInfoModalTx.fromAddress)],
+							['Height', txInfoModalTx.height],
+							['Block type', txInfoModalTx.blockType],
+							['Timestamp', txInfoModalTx.timestamp],
+						].map(([label, value, displayedValue], i) => {
+							return (
+								<button
+									key={label}
+									className="group fx px-2 py-0.5 darker-brightness-button"
+									onClick={() => copyWithToast(value + '')}
+								>
+									<p className="whitespace-nowrap mr-1">{label}:</p>
+									<p className="text-skin-secondary">{displayedValue ? displayedValue : value}</p>
+									<DuplicateIcon className="ml-1 w-5 mr-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+								</button>
+							);
+						})}
+						<button
+							className="px-1 py-2 fx w-full bg-skin-middleground brightness-button"
+							onClick={() => {
+								// TODO: derive address
+							}}
+						>
+							<ExternalLinkIcon className="w-6 ml-1 mr-2 text-skin-secondary" />
+							<p className="text-left text-skin-secondary">View on ViteScan</p>
+						</button>
+					</div>
+				)}
 			</Modal>
 		</TabContainer>
 	);

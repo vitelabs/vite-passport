@@ -15,7 +15,7 @@ const Checkbox = ({ checked, onUserInput }: Props) => {
 					checked ? 'bg-skin-highlight border-skin-lowlight' : 'bg-skin-foreground border-skin-alt'
 				}`}
 			>
-				{checked && <CheckIcon className="h-4 w-4" />}
+				{checked && <CheckIcon className="h-4 w-4 text-white" />}
 			</div>
 		</button>
 	);

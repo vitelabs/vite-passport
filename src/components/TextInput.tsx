@@ -71,7 +71,7 @@ const TextInput = ({
 				htmlFor={id}
 				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}
 				className={`absolute transition-all duration-200 ${
-					focused || value ? 'top-1 left-2 font-bold text-sm' : 'top-3 left-4 text-lg'
+					focused || value ? 'top-1 left-2 font-bold text-xs' : 'top-2.5 left-3.5'
 				} ${focused ? 'text-skin-highlight' : 'text-skin-muted'}`}
 			>
 				{label}
@@ -101,9 +101,9 @@ const TextInput = ({
 				value={value}
 				disabled={disabled}
 				autoComplete="off"
-				className={`px-2 pt-5 w-full text-lg block bg-skin-middleground transition duration-200 border-2 ${
+				className={`px-2 pt-4 w-full text-lg block bg-skin-middleground transition duration-200 border-2 ${
 					password ? 'pr-10' : ''
-				} ${password && !visible ? 'leading-3 text-2xl' : ''} ${
+				} ${password && !visible ? 'leading-3 text-2xl' : 'leading-6'} ${
 					focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-alt')
 				} rounded resize-none ${inputClassName}`}
 				{...(numeric
