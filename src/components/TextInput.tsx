@@ -16,6 +16,7 @@ type Props = HTMLProps<HTMLInputElement> & {
 	textarea?: boolean;
 	numeric?: boolean;
 	password?: boolean;
+	resizable?: boolean;
 	maxDecimals?: number;
 	disabled?: boolean;
 	onMetaEnter?: () => void;
@@ -47,6 +48,7 @@ const TextInput = ({
 	textarea,
 	numeric,
 	password,
+	resizable,
 	maxDecimals,
 	disabled,
 	label,
@@ -70,8 +72,8 @@ const TextInput = ({
 			<label
 				htmlFor={id}
 				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}
-				className={`absolute transition-all duration-200 ${
-					focused || value ? 'top-1 left-2 font-bold text-xs' : 'top-2.5 left-3.5'
+				className={`absolute transition-all pt-0.5 w-[calc(100%-1.2rem)] duration-200 ${
+					focused || value ? 'bg-skin-middleground top-0.5 left-2 font-bold text-xs' : 'top-2 left-3.5'
 				} ${focused ? 'text-skin-highlight' : 'text-skin-muted'}`}
 			>
 				{label}
@@ -101,11 +103,11 @@ const TextInput = ({
 				value={value}
 				disabled={disabled}
 				autoComplete="off"
-				className={`px-2 pt-4 w-full text-lg block bg-skin-middleground transition duration-200 border-2 ${
+				className={`px-2 pt-4 w-full text-lg block bg-skin-middleground transition duration-200 border-2 rounded ${
 					password ? 'pr-10' : ''
 				} ${password && !visible ? 'leading-3 text-2xl' : 'leading-6'} ${
 					focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-alt')
-				} rounded resize-none ${inputClassName}`}
+				} ${resizable ? 'resize-y' : 'resize-none'} ${inputClassName}`}
 				{...(numeric
 					? {
 							type: 'number',

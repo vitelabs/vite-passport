@@ -1,7 +1,49 @@
+import { BalanceInfo } from './types';
+
 export const providerWsURLs = {
 	Mainnet: 'wss://node.vite.net/gvite/ws',
 	Testnet: 'wss://buidl.vite.net/gvite/ws',
 	Localnet: 'ws://localhost:23457',
+};
+
+export const ExplorerURLs = {
+	vitescan: {
+		mainnet: {
+			home: 'https://vitescan.io/',
+			address: 'https://vitescan.io/address/',
+			hash: 'https://vitescan.io/tx/',
+			token: 'https://vitescan.io/token/',
+		},
+		testnet: {
+			home: 'https://test.vitescan.io/',
+			address: 'https://test.vitescan.io/address/',
+			hash: 'https://test.vitescan.io/tx/',
+			token: 'https://test.vitescan.io/token/',
+		},
+	},
+	// mainnet: 'https://mainnet.viteview.xyz',
+	// vitetxs: {
+	// 	home: 'https://vitetxs.de/#/',
+	// 	address: '',
+	// 	hash: '',
+	// 	token: '',
+	// },
+	VITCScan: {
+		mainnet: {
+			home: 'https://vitcscan.com/',
+			address: 'https://vitcscan.com/address/',
+			hash: 'https://vitcscan.com/tx/',
+			token: 'https://vitcscan.com/token/',
+		},
+	},
+	vitexplorer: {
+		mainnet: {
+			home: 'https://vitexplorer.fr/dashboard',
+			address: 'https://vitexplorer.fr/address/',
+			hash: 'https://vitexplorer.fr/transaction/',
+			token: 'https://vitexplorer.fr/token/',
+		},
+	},
 };
 
 export const testWallet = {
@@ -17,7 +59,7 @@ export const testWallet = {
 	addressList: {},
 };
 
-export const testBalanceInfo = {
+export const testBalanceInfo: BalanceInfo = {
 	balance: {
 		address: 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f',
 		blockCount: '26',
@@ -110,6 +152,87 @@ export const testBalanceInfo = {
 					decimals: 4,
 					owner: 'vite_25ba15cad9121a93b1d37bb1200e61c8694316216bba14ec0e',
 					tokenId: 'tti_e1e29fe12d91a7f63ce273de',
+					maxSupply: '1000000000000',
+					ownerBurnOnly: true,
+					isReIssuable: true,
+					index: 0,
+					isOwnerBurnOnly: true,
+				},
+				balance: '1000',
+			},
+
+			tti_564954455820434f494e69b5: {
+				tokenInfo: {
+					tokenName: 'VX',
+					tokenSymbol: 'VX',
+					totalSupply: '100000000000',
+					decimals: 4,
+					owner: 'vite_25ba15cad9121a93b1d37bb1200e61c8694316216bba14ec0e',
+					tokenId: 'tti_564954455820434f494e69b5',
+					maxSupply: '1000000000000',
+					ownerBurnOnly: true,
+					isReIssuable: true,
+					index: 0,
+					isOwnerBurnOnly: true,
+				},
+				balance: '1000',
+			},
+			tti_a23c2f75791efafe5fada99e: {
+				tokenInfo: {
+					tokenName: 'VIVA',
+					tokenSymbol: 'VIVA',
+					totalSupply: '100000000000',
+					decimals: 4,
+					owner: 'vite_25ba15cad9121a93b1d37bb1200e61c8694316216bba14ec0e',
+					tokenId: 'tti_a23c2f75791efafe5fada99e',
+					maxSupply: '1000000000000',
+					ownerBurnOnly: true,
+					isReIssuable: true,
+					index: 0,
+					isOwnerBurnOnly: true,
+				},
+				balance: '1000',
+			},
+			tti_b90c9baffffc9dae58d1f33f: {
+				tokenInfo: {
+					tokenName: 'BTC',
+					tokenSymbol: 'BTC',
+					totalSupply: '100000000000',
+					decimals: 4,
+					owner: 'vite_25ba15cad9121a93b1d37bb1200e61c8694316216bba14ec0e',
+					tokenId: 'tti_b90c9baffffc9dae58d1f33f',
+					maxSupply: '1000000000000',
+					ownerBurnOnly: true,
+					isReIssuable: true,
+					index: 0,
+					isOwnerBurnOnly: true,
+				},
+				balance: '1000',
+			},
+			tti_687d8a93915393b219212c73: {
+				tokenInfo: {
+					tokenName: 'ETH',
+					tokenSymbol: 'ETH',
+					totalSupply: '100000000000',
+					decimals: 4,
+					owner: 'vite_25ba15cad9121a93b1d37bb1200e61c8694316216bba14ec0e',
+					tokenId: 'tti_687d8a93915393b219212c73',
+					maxSupply: '1000000000000',
+					ownerBurnOnly: true,
+					isReIssuable: true,
+					index: 0,
+					isOwnerBurnOnly: true,
+				},
+				balance: '1000',
+			},
+			tti_80f3751485e4e83456059473: {
+				tokenInfo: {
+					tokenName: 'USDT',
+					tokenSymbol: 'USDT',
+					totalSupply: '100000000000',
+					decimals: 4,
+					owner: 'vite_25ba15cad9121a93b1d37bb1200e61c8694316216bba14ec0e',
+					tokenId: 'tti_80f3751485e4e83456059473',
 					maxSupply: '1000000000000',
 					ownerBurnOnly: true,
 					isReIssuable: true,

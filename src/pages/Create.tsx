@@ -7,6 +7,7 @@ import { State } from '../utils/types';
 import { isDarkMode } from '../utils/misc';
 import PageContainer from '../components/PageContainer';
 // import { wallet } from '@vite/vitejs';
+// console.log('wallet:', wallet);
 
 type Props = State;
 
@@ -16,6 +17,7 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 	const [mnemonicsVisible, mnemonicsVisibleSet] = useState(false);
 	useEffect(() => {
 		// const thing = wallet.createWallet(256);
+		// console.log('thing:', thing);
 		mnemonicsSet(testWallet.mnemonics.split(' '));
 	}, []);
 

@@ -26,7 +26,7 @@ const TabContainer = ({ scrollable = true, children }: Props) => {
 			<div className="h-8 bg-skin-middleground flex">
 				{[
 					['/home', OutlineCreditCardIcon, SolidCreditCardIcon],
-					['/history', OutlineBookOpenIcon, SolidBookOpenIcon],
+					['/my-transactions', OutlineBookOpenIcon, SolidBookOpenIcon],
 					['/settings', OutlineCogIcon, SolidCogIcon],
 				].map(([to, OutlineIcon, SolidIcon]) => {
 					const active = pathname === to;

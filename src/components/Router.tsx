@@ -10,7 +10,7 @@ import Create from '../pages/Create';
 import Create2 from '../pages/Create2';
 import Import from '../pages/Import';
 import Home from '../pages/Home';
-import History from '../pages/History';
+import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 
 type Props = State;
@@ -90,14 +90,15 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
 		// <MemoryRouter initialEntries={['/', '/create', '/create2']}>
-		<MemoryRouter initialEntries={['/home']}>
+		// <MemoryRouter initialEntries={['/home']}>
+		<MemoryRouter initialEntries={['/']}>
 			<Routes>
 				<Route path="/" element={<Start />} />
 				<Route path="/create" element={<Create />} />
 				<Route path="/create2" element={<Create2 />} />
 				<Route path="/import" element={<Import />} />
 				<Route path="/home" element={<Home />} />
-				<Route path="/history" element={<History />} />
+				<Route path="/my-transactions" element={<MyTransactions />} />
 				<Route path="/settings" element={<Settings />} />
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
