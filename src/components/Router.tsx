@@ -17,9 +17,8 @@ type Props = State;
 
 const Router = ({ setState, i18n, language, currentAddress, networkType }: Props) => {
 	useEffect(() => {
-		// TODO: Does this need to be JSON files?
-		import(`../i18n/${language}.json`).then((translation) => {
-			setState({ i18n: translation });
+		import(`../i18n/${language}.ts`).then((translation) => {
+			setState({ i18n: translation.default });
 		});
 	}, [language]);
 
@@ -39,7 +38,7 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 	//             balanceUpdates[tti] = toBiggestUnit(balance, ...tokenInfo);
 	//           }
 	//         );
-	//         setState({ balances: balanceUpdates }, { deepMerge: true });
+	//         setState({ balances: balanceUpdates });
 	//       }
 	//     })
 	//     .catch((e) => {
@@ -90,8 +89,8 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
 		// <MemoryRouter initialEntries={['/', '/create', '/create2']}>
-		// <MemoryRouter initialEntries={['/home']}>
-		<MemoryRouter initialEntries={['/']}>
+		// <MemoryRouter initialEntries={['/']}>
+		<MemoryRouter initialEntries={['/home']}>
 			<Routes>
 				<Route path="/" element={<Start />} />
 				<Route path="/create" element={<Create />} />

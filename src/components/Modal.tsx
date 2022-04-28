@@ -1,3 +1,4 @@
+import { XIcon } from '@heroicons/react/outline';
 import { useRef, ReactNode, useMemo, useEffect, useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useKeyPress } from '../utils/hooks';
@@ -8,6 +9,9 @@ type Props = {
 	fullscreen?: boolean;
 	fromRight?: boolean;
 	fromLeft?: boolean;
+	heading?: string;
+	subheading?: string;
+	headerComponent?: ReactNode;
 	onClose?: () => void;
 	onStartClose?: () => void;
 	children: ReactNode;
@@ -19,6 +23,9 @@ const Modal = ({
 	fullscreen,
 	fromRight,
 	fromLeft,
+	heading,
+	subheading,
+	headerComponent,
 	onClose = () => {},
 	onStartClose = () => {},
 	children,
@@ -85,11 +92,18 @@ const Modal = ({
 								animationStage === 1 ? '' : 'translate-y-10 opacity-0'
 							} ${className}`}
 						>
+							<div className="z-50 fx w-full px-1 shadow">
+								<button className="brightness-button" onClick={close}>
+									<XIcon className="w-8 text-skin-secondary" />
+								</button>
+								{heading && <p className="text-xl flex-1 text-center p-2 mr-8">{heading}</p>}
+								{headerComponent}
+							</div>
 							{children}
 						</div>
 					) : (
 						<>
-							<div className="flex-1 min-h-[5rem]" />
+							<div className="flex-1 min-h-[3rem]" />
 							<div
 								className={`flex justify-center transition duration-500 ${
 									animationStage === 1
@@ -98,15 +112,21 @@ const Modal = ({
 								}`}
 							>
 								<div
-									className={`bg-skin-middleground overflow-hidden rounded shadow-md ${className}`}
+									className={`bg-skin-middleground w-full max-w-full mx-3 overflow-hidden rounded shadow-md ${className}`}
 									onClick={(e) => e.stopPropagation()}
 									onMouseDown={() => (mouseDraggingModal.current = true)}
 									onMouseUp={() => (mouseDraggingModal.current = false)}
 								>
+									<div className="min-h-[2.5rem] xy fy border-b-2 border-skin-alt">
+										<p className="text-xl text-center leading-4">{heading}</p>
+										{subheading && (
+											<p className="mt-1 text-center leading-3 text-xs text-skin-secondary">{subheading}</p>
+										)}
+									</div>
 									{children}
 								</div>
 							</div>
-							<div className="flex-1 min-h-[5rem]"></div>
+							<div className="flex-1 min-h-[2rem]"></div>
 						</>
 					)}
 				</div>,

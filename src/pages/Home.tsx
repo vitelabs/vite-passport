@@ -1,28 +1,41 @@
-import { CreditCardIcon, DuplicateIcon, PencilIcon, XIcon } from '@heroicons/react/outline';
-import { CheckCircleIcon, ExternalLinkIcon, MinusSmIcon, PlusIcon, PlusSmIcon } from '@heroicons/react/solid';
-import { useEffect, useMemo, useState } from 'react';
-import A from '../components/A';
+import { CreditCardIcon, DuplicateIcon, PencilIcon } from '@heroicons/react/outline';
+import { wallet } from '@vite/vitejs';
+import { useMemo, useRef, useState } from 'react';
 import Checkbox from '../components/Checkbox';
 import Modal from '../components/Modal';
 import QR from '../components/QR';
+import ModalListItem from '../components/ModalListItem';
 import TabContainer from '../components/TabContainer';
-import TextInput from '../components/TextInput';
+import TextInput, { TextInputRefObject } from '../components/TextInput';
 import TransactionList from '../containers/TransactionList';
 import { providerWsURLs, testBalanceInfo, testTransactions } from '../utils/constants';
 import { connect } from '../utils/global-context';
-import { formatDate, shortenAddress, shortenHash, shortenTti, toBiggestUnit } from '../utils/strings';
-import { BalanceInfo, State } from '../utils/types';
-// import { getBalanceInfo } from '../utils/vitescripts';
+import { validateInputs } from '../utils/misc';
+import { shortenAddress, shortenTti, toSmallestUnit } from '../utils/strings';
+import { BalanceInfo, NetworkTypes, State } from '../utils/types';
+import ModalListBottomButton from '../components/ModalListBottomButton';
 
 type Props = State;
 
 const testAddress = 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f';
 const testAccountName = 'Main wallet';
 
-const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toastSuccess, toastError }: Props) => {
+const Home = ({
+	i18n,
+	balances,
+	setState,
+	copyWithToast,
+	networkType,
+	transactionHistory,
+	toastSuccess,
+	toastError,
+}: Props) => {
+	const toAddressRef = useRef<TextInputRefObject>();
+	const amountRef = useRef<TextInputRefObject>();
+	const commentRef = useRef<TextInputRefObject>();
 	const [pickingNetwork, pickingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
-	const [accountsModalOpen, accountsModalOpenSet] = useState(false);
+	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
 	const [editingAccountName, editingAccountNameSet] = useState(false);
 	const [accountName, accountNameSet] = useState(testAccountName);
 	const [networkName, networkNameSet] = useState('');
@@ -35,17 +48,19 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 	const [selectedTti, selectedTtiSet] = useState('');
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
+	const [toAddress, toAddressSet] = useState('');
 	const [amount, amountSet] = useState('');
 	const [comment, commentSet] = useState('');
+	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
 
 	const selectedToken = useMemo(
 		() => (testBalanceInfo as BalanceInfo).balance.balanceInfoMap[selectedTti],
 		[selectedTti]
 	);
 
-	const balances = {
-		tti_5649544520544f4b454e6e40: 10,
-	};
+	// const balances = {
+	// 	tti_5649544520544f4b454e6e40: 10,
+	// };
 	const activeAccountIndex = 0;
 	const accounts = [
 		testAddress,
@@ -58,25 +73,6 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 	];
 	const accountNames = [testAccountName];
 
-	useEffect(() => {
-		// getBalanceInfo(testAddress)
-		// 	// @ts-ignore
-		// 	.then((res: { balance: { balanceInfoMap: object } }) => {
-		// 		console.log('res:', res);
-		// 		if (res.balance.balanceInfoMap) {
-		// 			const balanceUpdates = { vite: { [networkType]: {} } };
-		// 			const tokenUpdates: { [key: string]: TokenInfo } = {};
-		// 			Object.entries(res.balance.balanceInfoMap).forEach(([tti, { balance, tokenInfo }]) => {
-		// 				// @ts-ignore
-		// 				balanceUpdates.vite[networkType][tti] = toBiggestUnit(balance, tokenInfo.decimals);
-		// 				tokenUpdates[tti] = tokenInfo;
-		// 			});
-		// 			setState({ balances: balanceUpdates }, { deepMerge: true });
-		// 		}
-		// 	})
-		// 	.catch((e: string) => toastError(e));
-	}, []);
-
 	const assets = [
 		{ symbol: 'VITE', tti: 'tti_5649544520544f4b454e6e40' },
 		{ symbol: 'VX', tti: 'tti_564954455820434f494e69b5' },
@@ -86,24 +82,25 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 		{ symbol: 'USDT', tti: 'tti_80f3751485e4e83456059473' },
 	];
 
+	console.log('networkType:', networkType);
 	return (
-		<TabContainer scrollable={false}>
+		<TabContainer>
 			<div className="bg-skin-middleground shadow-md z-10 p-2">
 				<div className="fx justify-between">
 					<button
 						className="border-2 px-2 rounded-full border-skin-alt text-sm bg-skin-middleground text-skin-secondary hover:shadow-md active:shadow brightness-button"
 						onClick={() => pickingNetworkSet(true)}
 					>
-						{network}
+						{networkType}
 					</button>
 					<button
 						className="p-1 -mt-1 -mr-1 text-skin-secondary darker-brightness-button"
-						onClick={() => accountsModalOpenSet(true)}
+						onClick={() => changingActiveAccountSet(true)}
 					>
 						<CreditCardIcon className="w-6 text-inherit" />
 					</button>
 				</div>
-				<div className="fy">
+				<div className="fy xy">
 					{editingAccountName ? (
 						<form
 							className="w-full"
@@ -132,16 +129,17 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 							/>
 						</form>
 					) : (
-						<button className="group fx darker-brightness-button" onClick={() => editingAccountNameSet(true)}>
-							<p className="text-xl ml-10">{testAccountName}</p>
-							<div className="w-10 p">
-								<PencilIcon className="ml-1.5 w-5 mr-3.5 opacity-0 duration-200 group-hover:opacity-100" />
-							</div>
+						<button
+							className="group ml-[1.625rem] fx darker-brightness-button"
+							onClick={() => editingAccountNameSet(true)}
+						>
+							<p className="text-xl">{testAccountName}</p>
+							<PencilIcon className="ml-1.5 w-5 opacity-0 duration-200 group-hover:opacity-100" />
 						</button>
 					)}
-					<button className="group fx darker-brightness-button" onClick={() => copyWithToast(testAddress)}>
-						<p className="text-skin-secondary ml-10">{shortenAddress(testAddress)}</p>
-						<DuplicateIcon className="ml-1 w-5 mr-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+					<button className="ml-6 group fx darker-brightness-button" onClick={() => copyWithToast(testAddress)}>
+						<p className="text-skin-secondary">{shortenAddress(testAddress)}</p>
+						<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 					</button>
 				</div>
 			</div>
@@ -196,52 +194,43 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 					Edit token list
 				</button>
 			</div>
-			<Modal visible={pickingNetwork} fromLeft={addingNetwork} onClose={() => pickingNetworkSet(false)}>
-				<div className="w-64">
-					<p className="text-xl text-center p-2 border-b-2 border-skin-alt">Networks</p>
-					{Object.entries(providerWsURLs).map(([label, uri]) => {
-						const active = network === label;
-						return (
-							<button
-								key={uri}
-								className={`pr-1 py-2 fx w-full bg-skin-middleground brightness-button`}
-								onClick={() => {
-									if (!active) {
-										toastSuccess('Network changed');
-										setState({ network: label });
-									}
-									pickingNetworkSet(false);
-								}}
-							>
-								<div className="w-10 xy">
-									{active ? (
-										<CheckCircleIcon className="w-6 text-skin-highlight" />
-									) : (
-										<div className="w-5 h-5 border-2 border-skin-alt rounded-full" />
-									)}
-								</div>
-								<div className="text-left">
-									<p className="leading-5">{label}</p>
-									<p className="leading-5 text-sm text-skin-secondary">{uri}</p>
-								</div>
-							</button>
-						);
-					})}
-					<button
-						className="px-1 py-2 fx w-full bg-skin-middleground brightness-button"
-						onClick={() => {
-							pickingNetworkSet(false);
-							addingNetworkSet(true);
-						}}
-					>
-						<PlusIcon className="w-6 ml-1 mr-2 text-skin-secondary" />
-						<p className="text-left text-skin-secondary">Add network</p>
-					</button>
-				</div>
+			<Modal
+				visible={pickingNetwork}
+				fromLeft={addingNetwork}
+				onClose={() => pickingNetworkSet(false)}
+				heading={i18n.networks}
+			>
+				{Object.entries(providerWsURLs).map(([label, uri]) => {
+					const active = networkType === label;
+					return (
+						<ModalListItem
+							radio
+							key={uri}
+							active={active}
+							label={label}
+							sublabel={uri}
+							onClick={() => {
+								if (!active) {
+									toastSuccess(i18n.networkChanged);
+									setState({ networkType: label as NetworkTypes });
+								}
+								pickingNetworkSet(false);
+							}}
+						/>
+					);
+				})}
+				<ModalListBottomButton
+					label={i18n.addNetwork}
+					onClick={() => {
+						pickingNetworkSet(false);
+						addingNetworkSet(true);
+					}}
+				/>
 			</Modal>
 			<Modal
-				visible={addingNetwork}
 				fromRight
+				heading={i18n.addNetwork}
+				visible={addingNetwork}
 				onStartClose={() => {
 					pickingNetworkSet(true);
 					setTimeout(() => addingNetworkSet(false), 0);
@@ -250,86 +239,69 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 					blockExplorerUrlSet('');
 				}}
 			>
-				<div className="w-64">
-					<p className="text-xl text-center p-2 border-b-2 border-skin-alt">Add Network</p>
-					<div className="space-y-3 p-3">
-						<TextInput label="Network Name" value={networkName} onUserInput={(v) => networkNameSet(v)} />
-						<TextInput label="RPC URL" value={rpcUrl} onUserInput={(v) => rpcUrlSet(v)} />
-						<TextInput
-							optional
-							label="Block Explorer URL"
-							value={blockExplorerUrl}
-							onUserInput={(v) => blockExplorerUrlSet(v)}
-						/>
-						<button
-							className="round-solid-button p-1"
-							onClick={() => {
-								// TODO: store
-							}}
-						>
-							Add
-						</button>
-					</div>
-				</div>
-			</Modal>
-			<Modal visible={accountsModalOpen} className="w-64" onClose={() => accountsModalOpenSet(false)}>
-				<div className="w-64">
-					<p className="text-xl text-center p-2 border-b-2 border-skin-alt">Accounts</p>
-					{accounts.map((address, i) => {
-						const active = i === activeAccountIndex;
-						return (
-							<button
-								key={address}
-								className={`pr-1 py-2 fx w-full bg-skin-middleground brightness-button`}
-								onClick={() => {
-									if (!active) {
-										toastSuccess('Account changed');
-										// setState({ network: label });
-									}
-									accountsModalOpenSet(false);
-								}}
-							>
-								<div className="w-10 xy">
-									{active ? (
-										<CheckCircleIcon className="w-6 text-skin-highlight" />
-									) : (
-										<div className="w-5 h-5 border-2 border-skin-alt rounded-full" />
-									)}
-								</div>
-								<div className="text-left flex-1">
-									<p className="leading-5 text-lg">{accountNames[i] || 'Account ' + i}</p>
-									<p className="leading-5 text-skin-secondary">{shortenAddress(address)}</p>
-								</div>
-								{!transactionHistory[address]?.length && (
-									<div className="self-start border-2 border-skin-alt px-1 text-skin-muted rounded-full text-xs">
-										New
-									</div>
-								)}
-							</button>
-						);
-					})}
+				<div className="space-y-3 p-3">
+					<TextInput label="Network Name" value={networkName} onUserInput={(v) => networkNameSet(v)} />
+					<TextInput label="RPC URL" value={rpcUrl} onUserInput={(v) => rpcUrlSet(v)} />
+					<TextInput
+						optional
+						label="Block Explorer URL"
+						value={blockExplorerUrl}
+						onUserInput={(v) => blockExplorerUrlSet(v)}
+					/>
 					<button
-						className="px-1 py-2 fx w-full bg-skin-middleground brightness-button"
+						className="round-solid-button p-1"
 						onClick={() => {
-							// TODO: derive address
+							// TODO: store
 						}}
 					>
-						<PlusIcon className="w-6 ml-1 mr-2 text-skin-secondary" />
-						<p className="text-skin-secondary">Derive address</p>
+						Add
 					</button>
 				</div>
 			</Modal>
-			<Modal fullscreen visible={editingTokenList} onClose={() => editingTokenListSet(false)} className="flex flex-col">
-				<div className="z-50 fx w-full px-1 shadow">
-					<button className="brightness-button" onClick={() => editingTokenListSet(false)}>
-						<XIcon className="w-8 text-skin-secondary" />
-					</button>
-					<p className="text-xl flex-1 text-center p-2 mr-8">Edit Token List</p>
-				</div>
+			<Modal heading={i18n.accounts} visible={changingActiveAccount} onClose={() => changingActiveAccountSet(false)}>
+				{accounts.map((address, i) => {
+					const active = i === activeAccountIndex;
+					return (
+						<ModalListItem
+							radio
+							key={address}
+							active={active}
+							label={accountNames[i] || 'Account ' + i}
+							sublabel={shortenAddress(address)}
+							rightJSX={
+								!transactionHistory[address]?.length && (
+									<div className="self-start border-2 border-skin-alt px-1 text-skin-muted rounded-full text-xs">
+										{i18n.new}
+									</div>
+								)
+							}
+							onClick={() => {
+								if (!active) {
+									toastSuccess(i18n.accountChanged);
+								}
+								changingActiveAccountSet(false);
+							}}
+						/>
+					);
+				})}
+				<ModalListBottomButton
+					label={i18n.deriveAddress}
+					onClick={() => {
+						// TODO: derive address
+					}}
+				/>
+			</Modal>
+			<Modal
+				fullscreen
+				heading={i18n.editTokenList}
+				visible={editingTokenList}
+				onClose={() => editingTokenListSet(false)}
+				className="flex flex-col"
+			>
 				<input
 					placeholder="Search tokens by symbol or tti"
 					value={tokenQuery}
-					className="p-2 shadow z-10 w-full"
+					className="p-2 shadow z-10 w-full bg-skin-middleground"
 					onChange={(e) => tokenQuerySet(e.target.value)}
 				/>
 				<div className="flex-1 overflow-scroll">
@@ -371,10 +343,10 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 					<button
 						className="p-0 round-outline-button"
 						onClick={() => {
-							//
+							editingTokenListSet(false);
 						}}
 					>
-						Cancel
+						{i18n.cancel}
 					</button>
 					<button
 						className="p-0 round-solid-button"
@@ -382,30 +354,34 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 							// TODO: replace token list with token list draft
 						}}
 					>
-						Confirm
+						{i18n.confirm}
 					</button>
 				</div>
 			</Modal>
-			<Modal fullscreen visible={!!selectedTti} onClose={() => selectedTtiSet('')} className="flex flex-col">
-				<div className="z-50 fx w-full px-1 shadow ">
-					<button className="brightness-button w-10" onClick={() => selectedTtiSet('')}>
-						<XIcon className="w-8 text-skin-secondary" />
-					</button>
-					<div className="flex-1 fy">
-						<p className="text-xl leading-4 mt-1">BTC-000</p>
-						<button className="group fx darker-brightness-button" onClick={() => copyWithToast(testAddress)}>
-							<p className="ml-5 leading-3 text-xs text-skin-secondary">{shortenTti(selectedTti)}</p>
-							<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-						</button>
-					</div>
-					<div className="w-10 p-1">
-						<img
-							src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${selectedToken?.tokenInfo.tokenSymbol.toLowerCase()}/${selectedTti}.png?raw=true`}
-							alt={selectedToken?.tokenInfo.tokenSymbol}
-							className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-						/>
-					</div>
-				</div>
+			<Modal
+				fullscreen
+				visible={!!selectedTti}
+				onClose={() => selectedTtiSet('')}
+				className="flex flex-col"
+				headerComponent={
+					<>
+						<div className="flex-1 fy">
+							<p className="text-xl leading-4 mt-1">BTC-000</p>
+							<button className="group fx darker-brightness-button" onClick={() => copyWithToast(testAddress)}>
+								<p className="ml-5 leading-3 text-xs text-skin-secondary">{shortenTti(selectedTti)}</p>
+								<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+							</button>
+						</div>
+						<div className="w-10 p-1">
+							<img
+								src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${selectedToken?.tokenInfo.tokenSymbol.toLowerCase()}/${selectedTti}.png?raw=true`}
+								alt={selectedToken?.tokenInfo.tokenSymbol}
+								className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+							/>
+						</div>
+					</>
+				}
+			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
 					<TransactionList transactions={testTransactions} />
 				</div>
@@ -418,32 +394,130 @@ const Home = ({ i18n, setState, copyWithToast, network, transactionHistory, toas
 					</button>
 				</div>
 			</Modal>
-			<Modal fullscreen visible={receivingFunds} onClose={() => receivingFundsSet(false)} className="flex flex-col">
-				<div className="z-50 fx w-full px-1 shadow ">
-					<button className="brightness-button w-10" onClick={() => receivingFundsSet(false)}>
-						<XIcon className="w-8 text-skin-secondary" />
-					</button>
-					<div className="flex-1 fy">
-						<p className="text-xl leading-4 mt-1">BTC-000</p>
-						<button className="group fx darker-brightness-button" onClick={() => copyWithToast(testAddress)}>
-							<p className="ml-5 leading-3 text-xs text-skin-secondary">{shortenTti(selectedTti)}</p>
-							<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-						</button>
-					</div>
-					<div className="w-10 p-1">
-						<img
-							src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${selectedToken?.tokenInfo.tokenSymbol.toLowerCase()}/${selectedTti}.png?raw=true`}
-							alt={selectedToken?.tokenInfo.tokenSymbol}
-							className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-						/>
-					</div>
-				</div>
+			<Modal
+				visible={receivingFunds}
+				onClose={() => receivingFundsSet(false)}
+				className="flex flex-col"
+				heading={`${i18n.receive} ${'BTC-000'}`}
+				subheading={selectedTti}
+			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
 					{/* {tokens[selectedTti].symbol} */}
 					{/* https://docs.vite.org/vite-docs/vep/vep-6.html */}
 					<QR data={testAddress} className="h-40 w-40 mx-auto" />
-					<TextInput numeric label="Amount" value={amount} onUserInput={(v) => amountSet(v)} />
-					<TextInput textarea label="Comment" value={comment} onUserInput={(v) => commentSet(v)} />
+					<TextInput optional numeric label="Amount" value={amount} onUserInput={(v) => amountSet(v)} />
+					<TextInput optional textarea label="Comment" value={comment} onUserInput={(v) => commentSet(v)} />
+				</div>
+			</Modal>
+			<Modal
+				visible={sendingFunds}
+				onClose={() => {
+					sendingFundsSet(false);
+					if (!confirmingTransaction) {
+						toAddressSet('');
+						amountSet('');
+						commentSet('');
+					}
+				}}
+				fromLeft={confirmingTransaction}
+				className="flex flex-col"
+				heading={`${i18n.send} ${'BTC-000'}`}
+				subheading={selectedTti}
+			>
+				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
+					<div className="">
+						<p className="leading-5 text-skin-secondary">{i18n.from}</p>
+						<p className="break-words text-sm">{testAddress}</p>
+					</div>
+					<div className="">
+						<p className="leading-5 text-skin-secondary">{i18n.balance}</p>
+						<p className="">{toSmallestUnit('100000')}</p>
+					</div>
+					{/* <div className="">
+						<p className="leading-5 text-skin-secondary">
+							{i18n.quotaAvailable} / {i18n.quotaLimit}
+						</p>
+						<p className="">
+							{10} / {10} Quota
+						</p>
+					</div> */}
+					<TextInput
+						_ref={toAddressRef}
+						label="To Address"
+						value={toAddress}
+						onUserInput={(v) => toAddressSet(v)}
+						getIssue={(v) => {
+							if (!wallet.isValidAddress(v)) {
+								return i18n.invalidAddress;
+							}
+						}}
+					/>
+					<TextInput
+						numeric
+						_ref={amountRef}
+						label="Amount"
+						value={amount}
+						onUserInput={(v) => amountSet(v)}
+						getIssue={(v) => {
+							// if (+toBiggestUnit(v, balances[selectedTti].decimals) > +balances[selectedTti].balance) {
+							// 	return i18n.insufficientFunds;
+							// }
+						}}
+					/>
+					<TextInput
+						optional
+						textarea
+						_ref={commentRef}
+						label="Comment"
+						value={comment}
+						onUserInput={(v) => commentSet(v)}
+					/>
+					<button
+						className="round-solid-button"
+						onClick={() => {
+							const valid = validateInputs([toAddressRef, amountRef, commentRef]);
+							if (valid) {
+								confirmingTransactionSet(true);
+								setTimeout(() => sendingFundsSet(false), 0);
+							}
+						}}
+					>
+						{i18n.next}
+					</button>
+				</div>
+			</Modal>
+			<Modal
+				fromRight={sendingFunds}
+				visible={confirmingTransaction}
+				onStartClose={() => {
+					sendingFundsSet(true);
+					setTimeout(() => confirmingTransactionSet(false), 0);
+				}}
+				heading={i18n.confirmTransaction}
+			>
+				<div className="p-2 space-y-2">
+					<div className="">
+						<p className="leading-5 text-skin-secondary">{i18n.toAddress}</p>
+						<p className="break-words text-sm">{toAddress}</p>
+					</div>
+					<div className="">
+						<p className="leading-5 text-skin-secondary">{i18n.amount}</p>
+						<p className="">{amount}</p>
+					</div>
+					{comment && (
+						<div className="">
+							<p className="leading-5 text-skin-secondary">{i18n.comment}</p>
+							<p className="">{comment}</p>
+						</div>
+					)}
+					<button
+						className="round-solid-button"
+						onClick={() => {
+							// TODO
+						}}
+					>
+						{i18n.confirm}
+					</button>
 				</div>
 			</Modal>
 		</TabContainer>

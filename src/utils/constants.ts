@@ -46,6 +46,23 @@ export const ExplorerURLs = {
 	},
 };
 
+export const currencyConversions = [
+	['USD', 'United States Dollar'],
+	['AUD', 'Australian Dollar'],
+	['BTC', 'Bitcoin'],
+	['CAD', 'Canadian Dollar'],
+	['EUR', 'Euro'],
+	['HKD', 'Hong Kong Dollar'],
+	['INR', 'Indian Rupee'],
+	['IDR', 'Indonesian Rupiah'],
+	['XMR', 'Monero'],
+	['NZD', 'New Zealand Dollar'],
+	['PHP', 'Philippine Peso'],
+	['RUB', 'Russian Ruble'],
+	['SGD', 'Singapore Dollar'],
+];
+export const languages = [['en', 'English']];
+
 export const testWallet = {
 	rootPath: "m/44'/666666'",
 	mnemonics:

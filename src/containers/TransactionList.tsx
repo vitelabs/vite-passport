@@ -12,7 +12,7 @@ type Props = State & {
 	transactions: Transaction[];
 };
 
-const TransactionList = ({ transactions, copyWithToast }: Props) => {
+const TransactionList = ({ i18n, transactions, copyWithToast }: Props) => {
 	const [txInfoModalTx, txInfoModalTxSet] = useState<typeof testTransactions[9]>();
 	return (
 		<>
@@ -30,13 +30,13 @@ const TransactionList = ({ transactions, copyWithToast }: Props) => {
 								<p className="">
 									{
 										{
-											1: 'Contract creation', // request(create contract)
-											2: 'Sent', // request(transfer)
-											3: 'Reissue token', // request(re-issue token)
-											4: 'Received', // response
-											5: 'Failed response', // response(failed)
-											6: 'Contract refund', // request(refund by contract)
-											7: 'Genesis', // response(genesis)
+											1: i18n.contractCreation, // request(create contract)
+											2: i18n.sent, // request(transfer)
+											3: i18n.reissueToken, // request(re-issue token)
+											4: i18n.received, // response
+											5: i18n.failedResponse, // response(failed)
+											6: i18n.contractRefund, // request(refund by contract)
+											7: i18n.genesis, // response(genesis)
 										}[tx.blockType]
 									}
 								</p>
@@ -52,10 +52,9 @@ const TransactionList = ({ transactions, copyWithToast }: Props) => {
 					</button>
 				);
 			})}
-			<Modal visible={!!txInfoModalTx} onClose={() => txInfoModalTxSet(undefined)}>
+			<Modal heading={i18n.transaction} visible={!!txInfoModalTx} onClose={() => txInfoModalTxSet(undefined)}>
 				{!!txInfoModalTx && (
-					<div className="w-64">
-						<p className="text-xl text-center p-2 border-b-2 border-skin-alt">Transaction</p>
+					<div className="">
 						{[
 							['Hash', txInfoModalTx.hash, shortenHash(txInfoModalTx.hash)],
 							['To', txInfoModalTx.toAddress, shortenAddress(txInfoModalTx.toAddress)],
@@ -70,8 +69,8 @@ const TransactionList = ({ transactions, copyWithToast }: Props) => {
 									className="group fx w-full px-2 py-1 bg-skin-middleground brightness-button"
 									onClick={() => copyWithToast(value + '')}
 								>
-									<p className="whitespace-nowrap mr-1">{label}:</p>
-									<p className="text-skin-secondary">{displayedValue ? displayedValue : value}</p>
+									<p className="text-skin-secondary mr-1">{label}:</p>
+									<p className="">{displayedValue ? displayedValue : value}</p>
 									<DuplicateIcon className="ml-1 w-5 mr-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 								</button>
 							);

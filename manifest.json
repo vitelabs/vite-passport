@@ -1,6 +1,12 @@
 {
-  "manifest_version": 3,
-  "name": "Vite Passport",
-  "version": "1.0.0",
-  "action": { "default_popup": "index.html" }
+	"manifest_version": 3,
+	"name": "Vite Passport",
+	"version": "1.0.0",
+	"action": { "default_popup": "index.html" },
+	"content_scripts": [
+		{
+			"js": ["src/contentScript.tsx"],
+			"matches": ["<all_urls>", "http://localhost:3000/"]
+		}
+	]
 }

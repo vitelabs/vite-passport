@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useKeyPress } from '../utils/hooks';
-import ChevronDown from '../assets/ChevronDown';
+// import ChevronDown from '../assets/ChevronDown';
 
 export type PickerOption = { value?: string; label: string; icon?: string };
 
@@ -63,7 +63,7 @@ const Picker = ({ big, selectedIndex, options, onPick }: Props) => {
 						open ? 'rotate-180' : ''
 					}`}
 				>
-					<ChevronDown className="mt-0.5 text-skin-highlight w-10" />
+					{/* <ChevronDown className="mt-0.5 text-skin-highlight w-10" /> */}
 				</div>
 			</div>
 			{open && (

@@ -17,7 +17,7 @@ const Start = ({ i18n }: Props) => {
 			<A to="/create" className="round-solid-button">
 				{i18n.createANewWallet}
 			</A>
-			<A to="/import" className="round-outline-button mt-2">
+			<A to="/import" className="round-outline-button mt-3">
 				{i18n.importAnExistingWallet}
 			</A>
 		</div>

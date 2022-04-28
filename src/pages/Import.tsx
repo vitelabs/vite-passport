@@ -26,7 +26,7 @@ const Import = ({ i18n, setState }: Props) => {
 				_ref={mnemonicRef}
 				value={mnemonics}
 				onUserInput={(v) => mnemonicsSet(v)}
-				label="Mnemonic Phrase"
+				label={i18n.mnemonicPhrase}
 				inputClassName="h-44"
 				getIssue={(v) => {
 					console.log('v:', v);
@@ -42,7 +42,7 @@ const Import = ({ i18n, setState }: Props) => {
 				_ref={passphraseRef}
 				value={passphrase}
 				onUserInput={(v) => passphraseSet(v)}
-				label="BIP-39 Passphrase"
+				label={i18n.bip39Passphrase}
 			/>
 			<TextInput _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
 			<div className="flex-1"></div>

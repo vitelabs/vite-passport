@@ -26,12 +26,15 @@ const Create2 = ({ i18n }: Props) => {
 				_ref={passphraseRef}
 				value={passphrase}
 				onUserInput={(v) => passphraseSet(v)}
-				label="BIP-39 Passphrase"
+				label={i18n.bip39Passphrase}
 				containerClassName="my-2"
 			/>
 			<TextInput password _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
 			<p className="mt-2 ">What's the difference?</p>
-			<p className="">
+			<p
+				className=""
+				// TODO: i18n for these sentences
+			>
 				Your <span className="font-bold">BIP-39 passphrase</span> is like an additional word to your mnemonic phrase for
 				extra security.
 			</p>

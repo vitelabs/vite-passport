@@ -13,17 +13,22 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 type Props = {
 	children: ReactNode;
-	scrollable?: boolean;
+	heading?: string;
 };
 
-const TabContainer = ({ scrollable = true, children }: Props) => {
+const TabContainer = ({ heading, children }: Props) => {
 	const navigate = useNavigate();
 	const { pathname } = useLocation();
 
 	return (
 		<div className="h-full flex flex-col">
-			{scrollable ? <div className="flex-1 overflow-scroll">{children}</div> : children}
-			<div className="h-8 bg-skin-middleground flex">
+			{heading && (
+				<div className="w-full top-10 shadow bg-skin-middleground">
+					<p className="text-xl flex-1 text-center p-2">{heading}</p>
+				</div>
+			)}
+			<div className="top-0 flex-1 overflow-scroll">{children}</div>
+			<div className="top-10 h-8 bg-skin-middleground flex">
 				{[
 					['/home', OutlineCreditCardIcon, SolidCreditCardIcon],
 					['/my-transactions', OutlineBookOpenIcon, SolidBookOpenIcon],

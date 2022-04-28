@@ -24,7 +24,7 @@ type Props = HTMLProps<HTMLInputElement> & {
 	optional?: boolean;
 	maxLength?: number;
 	type?: string;
-	getIssue?: (text: string) => string;
+	getIssue?: (text: string) => string | void;
 	_ref?: Function | React.MutableRefObject<TextInputRefObject | undefined>;
 };
 
@@ -73,7 +73,7 @@ const TextInput = ({
 				htmlFor={id}
 				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}
 				className={`absolute transition-all pt-0.5 w-[calc(100%-1.2rem)] duration-200 ${
-					focused || value ? 'bg-skin-middleground top-0.5 left-2 font-bold text-xs' : 'top-2 left-3.5'
+					focused || value ? 'bg-skin-middleground top-0.5 left-2 font-bold text-xs' : 'text-md top-2.5 left-2.5'
 				} ${focused ? 'text-skin-highlight' : 'text-skin-muted'}`}
 			>
 				{label}
@@ -99,15 +99,15 @@ const TextInput = ({
 			)}
 			<Tag
 				id={id}
-				placeholder={placeholder}
+				placeholder={focused || !!value ? placeholder : ''}
 				value={value}
 				disabled={disabled}
 				autoComplete="off"
 				className={`px-2 pt-4 w-full text-lg block bg-skin-middleground transition duration-200 border-2 rounded ${
 					password ? 'pr-10' : ''
-				} ${password && !visible ? 'leading-3 text-2xl' : 'leading-6'} ${
-					focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-alt')
-				} ${resizable ? 'resize-y' : 'resize-none'} ${inputClassName}`}
+				} ${focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-alt')} ${
+					resizable ? 'resize-y' : 'resize-none'
+				} ${inputClassName}`}
 				{...(numeric
 					? {
 							type: 'number',
@@ -157,7 +157,7 @@ const TextInput = ({
 									// 	newIssue.then((newIssue) => issueSet(newIssue));
 									// 	return newIssue;
 									// }
-									issueSet(newIssue);
+									issueSet(newIssue || '');
 									return !newIssue;
 								}
 								return true;

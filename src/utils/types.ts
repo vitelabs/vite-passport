@@ -1,13 +1,27 @@
 import { setStateType } from './global-context';
 
-export type Networks = 'vite' | 'bsc';
-export type NetworkTypes = 'testnet' | 'mainnet';
+export type NetworkTypes = 'Testnet' | 'Mainnet' | 'Localnet';
 export type ToastTypes = 'success' | 'warning' | 'error' | 'info';
+export type CurrencyConversions =
+	| 'AUD'
+	| 'BTC'
+	| 'CAD'
+	| 'EUR'
+	| 'HKD'
+	| 'INR'
+	| 'IDR'
+	| 'LTC'
+	| 'XMR'
+	| 'NZD'
+	| 'PHP'
+	| 'RUB'
+	| 'SGD'
+	| 'USD';
 
 export type State = {
 	setState: setStateType;
-	networkType: NetworkTypes;
-	network: string;
+	networkType: NetworkTypes; // suffixed with "Type" as "network" alone maybe imply the name of the network (e.g. Rinkeby which is a type of testnet)
+	currencyConversion: CurrencyConversions;
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
 	toastWarning: (text: string) => void;

@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import ChevronDown from '../assets/ChevronDown';
+// import ChevronDown from '../assets/ChevronDown';
 
 type Props = {
 	value: string;
@@ -18,7 +18,7 @@ const Select = ({ value, options, onUserInput }: Props) => {
 
 	return (
 		<div className="xy relative">
-			<ChevronDown size={20} className="text-skin-muted absolute right-0" />
+			{/* <ChevronDown size={20} className="text-skin-muted absolute right-0" /> */}
 			<select
 				ref={select}
 				className="text-sm cursor-pointer text-skin-muted z-10 pr-5"
