@@ -19,7 +19,7 @@ const Create2 = ({ i18n }: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
-		<PageContainer title="Create Wallet">
+		<PageContainer heading="Create Wallet">
 			<TextInput
 				optional
 				password

@@ -12,14 +12,13 @@ import Import from '../pages/Import';
 import Home from '../pages/Home';
 import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
+import en from '../i18n/en';
 
 type Props = State;
 
 const Router = ({ setState, i18n, language, currentAddress, networkType }: Props) => {
 	useEffect(() => {
-		import(`../i18n/${language}.ts`).then((translation) => {
-			setState({ i18n: translation.default });
-		});
+		setState({ i18n: { en }[language] });
 	}, [language]);
 
 	// const updateBalances = useCallback(() => {
@@ -89,8 +88,7 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
 		// <MemoryRouter initialEntries={['/', '/create', '/create2']}>
-		// <MemoryRouter initialEntries={['/']}>
-		<MemoryRouter initialEntries={['/home']}>
+		<MemoryRouter initialEntries={['/']}>
 			<Routes>
 				<Route path="/" element={<Start />} />
 				<Route path="/create" element={<Create />} />

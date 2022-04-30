@@ -2,6 +2,7 @@ import Router from './Router';
 import { Provider } from '../utils/global-context';
 import { useEffect, useState } from 'react';
 import { State } from '../utils/types';
+import en from '../i18n/en';
 // import { wallet } from '@vite/vitejs';
 
 const App = () => {
@@ -12,7 +13,7 @@ const App = () => {
 		// console.log('thing:', thing);
 		const state: Partial<State> = {
 			language: 'en',
-			i18n: {},
+			i18n: en,
 			// vcInstance: getValidVCSession() ? initVC() : null,
 			balances: {},
 			networkType: 'Mainnet',

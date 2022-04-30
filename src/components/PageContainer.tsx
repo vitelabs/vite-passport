@@ -4,20 +4,20 @@ import A from './A';
 import { useNavigate } from 'react-router-dom';
 
 type Props = {
-	title?: string;
+	heading?: string;
 	children: ReactNode;
 	className?: string;
 };
 
-const PageContainer = ({ title, children, className }: Props) => {
+const PageContainer = ({ heading, children, className }: Props) => {
 	const navigate = useNavigate();
 	return (
-		<div className="h-full pt-10 flex flex-col">
-			<div className="fx fixed w-full px-1 top-0 bg-skin-base">
-				<button className="darker-brightness-button" onClick={() => navigate(-1)}>
-					<ChevronLeftIcon className="w-8 text-skin-secondary" />
+		<div className="h-full flex flex-col ">
+			<div className="fx w-full p-1 top-0 bg-skin-base">
+				<button className="w-8 darker-brightness-button" onClick={() => navigate(-1)}>
+					<ChevronLeftIcon className="text-skin-secondary" />
 				</button>
-				<p className="text-xl flex-1 text-center p-2 mr-8">{title}</p>
+				<p className="text-xl flex-1 text-center mr-8">{heading}</p>
 			</div>
 			<div className={`flex-1 p-3 pt-0 flex flex-col z-10 ${className}`}>{children}</div>
 		</div>

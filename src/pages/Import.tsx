@@ -20,7 +20,7 @@ const Import = ({ i18n, setState }: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
-		<PageContainer title="Import Wallet" className="gap-3">
+		<PageContainer heading="Import Wallet" className="gap-3">
 			<TextInput
 				textarea
 				_ref={mnemonicRef}

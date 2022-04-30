@@ -2,11 +2,27 @@
 	"manifest_version": 3,
 	"name": "Vite Passport",
 	"version": "1.0.0",
-	"action": { "default_popup": "index.html" },
+	"action": {
+		"default_title": "Vite Passport",
+		"default_popup": "src/popup.html"
+	},
+	"permissions": ["storage"],
+	"background": {
+		"service_worker": "src/background.ts",
+		"type": "module"
+	},
 	"content_scripts": [
 		{
-			"js": ["src/contentScript.tsx"],
-			"matches": ["<all_urls>", "http://localhost:3000/"]
+			"js": ["src/contentScript.ts"],
+			"matches": ["<all_urls>"],
+			"run_at": "document_start",
+			"all_frames": true
+		}
+	],
+	"web_accessible_resources": [
+		{
+			"resources": ["src/popup.html", "src/injectedScript.ts"],
+			"matches": ["<all_urls>"]
 		}
 	]
 }

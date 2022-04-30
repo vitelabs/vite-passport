@@ -1,3 +1,4 @@
+import en from '../i18n/en';
 import { setStateType } from './global-context';
 
 export type NetworkTypes = 'Testnet' | 'Mainnet' | 'Localnet';
@@ -29,7 +30,7 @@ export type State = {
 	toastInfo: (text: string) => void;
 	currentAddress: string;
 	language: string;
-	i18n: { [key: string]: string };
+	i18n: typeof en;
 	toast: [string, ToastTypes];
 	balances: {
 		[tokenId: string]: TokenInfo;

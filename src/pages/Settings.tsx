@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Modal from '../components/Modal';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 import ModalListItem from '../components/ModalListItem';
+import Secrets from '../containers/Secrets';
 import TabContainer from '../components/TabContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
-import { currencyConversions, languages } from '../utils/constants';
+import { currencyConversions, languages, testWallet } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
@@ -29,6 +30,8 @@ const Settings = ({ currencyConversion, i18n, language, toastSuccess }: Props) =
 	const [oldPassword, oldPasswordSet] = useState('');
 	const [newPassword, newPasswordSet] = useState('');
 	const [showingSecrets, showingSecretsSet] = useState(false);
+	const mnemonics = useMemo(() => testWallet.mnemonics.split(' '), []);
+	const bip39Passphrase = useMemo(() => 'testasdf dfpassword', []);
 
 	return (
 		<TabContainer heading={i18n.settings}>
@@ -160,10 +163,7 @@ const Settings = ({ currencyConversion, i18n, language, toastSuccess }: Props) =
 				}}
 				heading={i18n.secrets}
 			>
-				<div className="p-2 space-y-2">
-					<TextInput password textarea value={'Mnemonic Phrase'} onUserInput={() => {}} label={i18n.mnemonicPhrase} />
-					<TextInput password value={'BIP 39 Passphrase'} onUserInput={() => {}} label={i18n.bip39Passphrase} />
-				</div>
+				<Secrets mnemonics={mnemonics} bip39Passphrase={bip39Passphrase} />
 			</Modal>
 		</TabContainer>
 	);

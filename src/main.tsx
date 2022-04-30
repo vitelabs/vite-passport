@@ -1,27 +1,15 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import App from './components/App';
 import './styles/reset.css';
 import './styles/colors.css';
 import './styles/classes.css';
 import './styles/theme.ts';
 
-ReactDOM.render(
+import { createRoot } from 'react-dom/client';
+const container = document.getElementById('root');
+const root = createRoot(container!);
+root.render(
 	<React.StrictMode>
 		<App />
-	</React.StrictMode>,
-	document.getElementById('root')
+	</React.StrictMode>
 );
-// import React from 'react';
-// import ReactDOM from 'react-dom';
-
-// const root = document.createElement('div');
-// root.id = 'crx-root';
-// document.body.append(root);
-// console.log('test');
-// ReactDOM.render(
-// 	<React.StrictMode>
-// 		<h1>test</h1>
-// 	</React.StrictMode>,
-// 	root
-// );
