@@ -1,21 +1,29 @@
 import { XIcon } from '@heroicons/react/outline';
+import { keystore } from '@vite/vitejs';
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import A from '../components/A';
 import PageContainer from '../components/PageContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
+import { encrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
+import { setValue } from '../utils/storage';
 import { State } from '../utils/types';
 
 type Props = State;
 
-// eslint-disable-next-line
 const Create2 = ({ i18n }: Props) => {
 	const navigate = useNavigate();
-	const [passphrase, passphraseSet] = useState<string>('');
-	const [password, passwordSet] = useState<string>('');
-	const passphraseRef = useRef<TextInputRefObject>();
+	const {
+		state: { mnemonics },
+	} = useLocation() as {
+		state: { mnemonics: string[] };
+	};
+
+	const [bip39Passphrase, bip39PassphraseSet] = useState('');
+	const [password, passwordSet] = useState('');
+	const bip39PassphraseRef = useRef<TextInputRefObject>();
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
@@ -23,14 +31,14 @@ const Create2 = ({ i18n }: Props) => {
 			<TextInput
 				optional
 				password
-				_ref={passphraseRef}
-				value={passphrase}
-				onUserInput={(v) => passphraseSet(v)}
+				_ref={bip39PassphraseRef}
+				value={bip39Passphrase}
+				onUserInput={(v) => bip39PassphraseSet(v)}
 				label={i18n.bip39Passphrase}
 				containerClassName="my-2"
 			/>
 			<TextInput password _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
-			<p className="mt-2 ">What's the difference?</p>
+			<p className="mt-2">What's the difference?</p>
 			<p
 				className=""
 				// TODO: i18n for these sentences
@@ -45,9 +53,18 @@ const Create2 = ({ i18n }: Props) => {
 			<div className="flex-1"></div>
 			<button
 				className="round-solid-button"
-				onClick={() => {
-					const valid = validateInputs([passwordRef, passphraseRef]);
+				onClick={async () => {
+					const valid = validateInputs([passwordRef, bip39PassphraseRef]);
 					if (valid) {
+						setValue({
+							secrets: await encrypt(
+								JSON.stringify({
+									mnemonics,
+									bip39Passphrase,
+								}),
+								password
+							),
+						});
 						navigate('/home');
 					}
 				}}

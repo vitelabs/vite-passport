@@ -1,8 +1,8 @@
 import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
-import { useCallback, useEffect } from 'react';
-import { NewAccountBlock, State, ToastTypes, TokenInfo } from '../utils/types';
+import { useCallback, useEffect, useState } from 'react';
+import { NewAccountBlock, PortMessage, State, ToastTypes, TokenInfo } from '../utils/types';
 import { getBalanceInfo, subscribe } from '../utils/vitescripts';
 import { copyToClipboardAsync, toBiggestUnit } from '../utils/strings';
 import Toast from '../containers/Toast';
@@ -13,10 +13,42 @@ import Home from '../pages/Home';
 import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 import en from '../i18n/en';
+import { getValue } from '../utils/storage';
+import Lock from '../pages/Lock';
+import { decrypt } from '../utils/encryption';
 
 type Props = State;
 
-const Router = ({ setState, i18n, language, currentAddress, networkType }: Props) => {
+const Router = ({ chromePort, setState, i18n, language, currentAddress, networkType }: Props) => {
+	const [initialEntries, initialEntriesSet] = useState<string[]>();
+	useEffect(() => {
+		// This is just here to enable the onDisconnect listener in background.ts
+		const listen = (message: PortMessage) => {
+			console.log('message:', message);
+
+			if (message.type === 'opening') {
+				getValue(['secrets']).then((value) => {
+					console.log('value:', value);
+					if (value.secrets) {
+						if (message.password) {
+							decrypt(value.secrets as string, message.password).then((secrets) => {
+								setState({ secrets: JSON.parse(secrets) });
+								initialEntriesSet(['/home']);
+							});
+						} else {
+							initialEntriesSet(['/lock']);
+						}
+					} else {
+						initialEntriesSet(['/']);
+					}
+				});
+
+				chromePort.onMessage.removeListener(listen);
+			}
+		};
+		chromePort.onMessage.addListener(listen);
+	}, []);
+
 	useEffect(() => {
 		setState({ i18n: { en }[language] });
 	}, [language]);
@@ -85,10 +117,9 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 		});
 	}, [i18n]);
 
-	return (
+	return !initialEntries ? null : (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
-		// <MemoryRouter initialEntries={['/', '/create', '/create2']}>
-		<MemoryRouter initialEntries={['/']}>
+		<MemoryRouter initialEntries={initialEntries}>
 			<Routes>
 				<Route path="/" element={<Start />} />
 				<Route path="/create" element={<Create />} />
@@ -97,6 +128,7 @@ const Router = ({ setState, i18n, language, currentAddress, networkType }: Props
 				<Route path="/home" element={<Home />} />
 				<Route path="/my-transactions" element={<MyTransactions />} />
 				<Route path="/settings" element={<Settings />} />
+				<Route path="/lock" element={<Lock />} />
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
 			<Toast />

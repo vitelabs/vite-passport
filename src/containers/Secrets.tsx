@@ -4,7 +4,7 @@ import { isDarkMode } from '../utils/misc';
 import { State } from '../utils/types';
 
 type Props = State & {
-	mnemonics: string[];
+	mnemonics: string;
 	bip39Passphrase?: string;
 	className?: string;
 };
@@ -15,7 +15,7 @@ const Secrets = ({ i18n, mnemonics, bip39Passphrase, className }: Props) => {
 		<div className={`relative overflow-hidden w-full bg-skin-middleground rounded shadow p-2 ${className}`}>
 			<p className="text-skin-secondary">{i18n.mnemonicPhrase}</p>
 			<div className="grid grid-flow-col grid-rows-[repeat(12,minmax(0,1fr))]">
-				{mnemonics.map((word, i) => (
+				{mnemonics.split(' ').map((word, i) => (
 					<p key={i}>
 						{i + 1}. {word}
 					</p>

@@ -4,7 +4,7 @@
 	"version": "1.0.0",
 	"action": {
 		"default_title": "Vite Passport",
-		"default_popup": "src/popup.html"
+		"default_popup": "popup.html"
 	},
 	"permissions": ["storage"],
 	"background": {
@@ -21,7 +21,7 @@
 	],
 	"web_accessible_resources": [
 		{
-			"resources": ["src/popup.html", "src/injectedScript.ts"],
+			"resources": ["src/confirmation.html", "src/injectedScript.ts"],
 			"matches": ["<all_urls>"]
 		}
 	]

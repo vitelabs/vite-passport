@@ -147,12 +147,11 @@ const TextInput = ({
 							tag,
 							issueSet,
 							get isValid() {
-								const trimmedValue = value.trim();
-								if (!optional && !trimmedValue) {
+								if (!optional && !value.trim()) {
 									issueSet(`This field cannot be blank`);
 									return false;
-								} else if (trimmedValue && getIssue) {
-									const newIssue = getIssue(trimmedValue);
+								} else if (value && getIssue) {
+									const newIssue = getIssue(value);
 									// if (typeof newIssue === 'object') {
 									// 	newIssue.then((newIssue) => issueSet(newIssue));
 									// 	return newIssue;

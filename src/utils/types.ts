@@ -19,7 +19,18 @@ export type CurrencyConversions =
 	| 'SGD'
 	| 'USD';
 
-export type State = {
+export type Storage = {
+	lockAfter: number;
+	secrets:
+		| string
+		| {
+				mnemonics: string;
+				bip39Passphrase?: string;
+		  };
+};
+
+export type State = Storage & {
+	chromePort: chrome.runtime.Port;
 	setState: setStateType;
 	networkType: NetworkTypes; // suffixed with "Type" as "network" alone maybe imply the name of the network (e.g. Rinkeby which is a type of testnet)
 	currencyConversion: CurrencyConversions;
@@ -38,6 +49,11 @@ export type State = {
 	transactionHistory: {
 		[address: string]: Transaction[];
 	};
+};
+
+export type PortMessage = {
+	type: 'opening' | 'updatePassword' | 'signBlock' | 'approveContract';
+	password: string;
 };
 
 // TODO: replace null types

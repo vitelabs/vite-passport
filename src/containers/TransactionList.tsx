@@ -5,7 +5,8 @@ import A from '../components/A';
 import Modal from '../components/Modal';
 import { testTransactions } from '../utils/constants';
 import { connect } from '../utils/global-context';
-import { formatDate, shortenAddress, shortenHash, toBiggestUnit } from '../utils/strings';
+import { shortenAddress, shortenHash, toBiggestUnit } from '../utils/strings';
+import { formatDate } from '../utils/time';
 import { State, Transaction } from '../utils/types';
 
 type Props = State & {

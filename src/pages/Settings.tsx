@@ -9,6 +9,8 @@ import { currencyConversions, languages, testWallet } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
+import { useNavigate } from 'react-router-dom';
+import { setValue } from '../utils/storage';
 
 type Props = State;
 
@@ -19,7 +21,8 @@ const ListItem = ({ label, value, onClick }: { label: string; value?: string; on
 	</button>
 );
 
-const Settings = ({ currencyConversion, i18n, language, toastSuccess }: Props) => {
+const Settings = ({ currencyConversion, secrets, i18n, language, toastSuccess }: Props) => {
+	const navigate = useNavigate();
 	const oldPasswordRef = useRef<TextInputRefObject>();
 	const newPasswordRef = useRef<TextInputRefObject>();
 	const [changingNetwork, changingNetworkSet] = useState(false);
@@ -30,8 +33,6 @@ const Settings = ({ currencyConversion, i18n, language, toastSuccess }: Props) =
 	const [oldPassword, oldPasswordSet] = useState('');
 	const [newPassword, newPasswordSet] = useState('');
 	const [showingSecrets, showingSecretsSet] = useState(false);
-	const mnemonics = useMemo(() => testWallet.mnemonics.split(' '), []);
-	const bip39Passphrase = useMemo(() => 'testasdf dfpassword', []);
 
 	return (
 		<TabContainer heading={i18n.settings}>
@@ -53,7 +54,8 @@ const Settings = ({ currencyConversion, i18n, language, toastSuccess }: Props) =
 				/>
 				<ListItem
 					onClick={() => {
-						// TODO
+						setValue({ lockAfter: Date.now() });
+						navigate('/lock', { replace: true });
 					}}
 					label={i18n.lockWallet}
 				/>
@@ -163,7 +165,7 @@ const Settings = ({ currencyConversion, i18n, language, toastSuccess }: Props) =
 				}}
 				heading={i18n.secrets}
 			>
-				<Secrets mnemonics={mnemonics} bip39Passphrase={bip39Passphrase} />
+				<Secrets {...secrets} />
 			</Modal>
 		</TabContainer>
 	);

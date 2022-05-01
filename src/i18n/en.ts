@@ -84,6 +84,7 @@ const en = {
 	languageChanged: 'Language Changed',
 	mnemonicPhrase: 'Mnemonic Phrase',
 	bip39Passphrase: 'BIP-39 Passphrase',
+	unlock: 'Unlock',
 	test: 'test',
 	'': '',
 };

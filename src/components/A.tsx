@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 
 type Props = React.HTMLProps<HTMLAnchorElement> & {
 	to?: string;
+	state?: object;
 };
 
-const A = ({ to, href, children, className }: Props) => {
+const A = ({ to, href, children, state, className }: Props) => {
 	const navigate = useNavigate();
 	return to ? (
-		<button onClick={() => navigate(to)} className={className}>
+		<button onClick={() => navigate(to, state ? { state } : undefined)} className={className}>
 			{children}
 		</button>
 	) : (

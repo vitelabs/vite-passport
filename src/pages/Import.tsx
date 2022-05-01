@@ -1,22 +1,24 @@
 import { XIcon } from '@heroicons/react/outline';
+import { validateMnemonics } from '@vite/vitejs/distSrc/wallet/hdKey';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
+import { encrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
+import { setValue } from '../utils/storage';
 import { State } from '../utils/types';
 
 type Props = State;
 
-// eslint-disable-next-line
 const Import = ({ i18n, setState }: Props) => {
 	const navigate = useNavigate();
-	const [mnemonics, mnemonicsSet] = useState<string>('');
-	const [passphrase, passphraseSet] = useState<string>('');
-	const [password, passwordSet] = useState<string>('');
+	const [mnemonics, mnemonicsSet] = useState('');
+	const [bip39Passphrase, bip39PassphraseSet] = useState('');
+	const [password, passwordSet] = useState('');
 	const mnemonicRef = useRef<TextInputRefObject>();
-	const passphraseRef = useRef<TextInputRefObject>();
+	const bip39PassphraseRef = useRef<TextInputRefObject>();
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
@@ -29,19 +31,16 @@ const Import = ({ i18n, setState }: Props) => {
 				label={i18n.mnemonicPhrase}
 				inputClassName="h-44"
 				getIssue={(v) => {
-					console.log('v:', v);
-					if (false) {
-						// TODO: Verify mnemonic with ViteJS
+					if (!validateMnemonics(v)) {
 						return 'Invalid mnemonic phrase';
 					}
-					return '';
 				}}
 			/>
 			<TextInput
 				optional
-				_ref={passphraseRef}
-				value={passphrase}
-				onUserInput={(v) => passphraseSet(v)}
+				_ref={bip39PassphraseRef}
+				value={bip39Passphrase}
+				onUserInput={(v) => bip39PassphraseSet(v)}
 				label={i18n.bip39Passphrase}
 			/>
 			<TextInput _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
@@ -49,8 +48,16 @@ const Import = ({ i18n, setState }: Props) => {
 			<button
 				className="mt-4 round-solid-button"
 				onClick={() => {
-					const valid = validateInputs([mnemonicRef, passphraseRef, passwordRef]);
+					const valid = validateInputs([mnemonicRef, bip39PassphraseRef, passwordRef]);
 					if (valid) {
+						const secrets = {
+							bip39Passphrase,
+							mnemonics: mnemonics.trim(),
+						};
+						setState({ secrets });
+						setValue({
+							secrets: encrypt(JSON.stringify(secrets), password),
+						});
 						navigate('/home');
 					} else {
 						// setState({ toast: ['Fix the input errors', 'error'] });

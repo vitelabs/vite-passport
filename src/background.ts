@@ -1,4 +1,7 @@
 import { wallet } from '@vite/vitejs';
+import { getValue, setValue } from './utils/storage';
+import { MINUTE } from './utils/time';
+import { PortMessage } from './utils/types';
 
 console.log('background');
 
@@ -27,7 +30,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, reply) => {
 	// signBlock();
 	// const tx = params;
 	// const tabId = await getActiveTabId();
-	const host = chrome.runtime.getURL('src/test.html');
+	const host = chrome.runtime.getURL('src/confirmation.html');
 	console.log('host:', host);
 	const search = '';
 	const hash = '';
@@ -49,3 +52,34 @@ async function openPopup(url: string) {
 		left: lastFocused.left! + (lastFocused.width! - 18 * 16),
 	});
 }
+
+let password = '';
+let passwordRemover: NodeJS.Timeout;
+
+// https://stackoverflow.com/a/39732154/13442719
+chrome.runtime.onConnect.addListener((externalPort) => {
+	console.log('onConnect!!!');
+	clearTimeout(passwordRemover);
+	externalPort.postMessage({ password, type: 'opening' } as PortMessage);
+	// chrome.runtime.sendMessage({ password });
+	chrome.runtime.onMessage.addListener((message: PortMessage) => {
+		console.log('message:', message);
+		if (message.type === 'updatePassword' && message.password) {
+			password = message.password;
+		}
+	});
+	externalPort.onDisconnect.addListener(() => {
+		console.log('onDisconnect:');
+		passwordRemover = setTimeout(() => {
+			console.log('password removed');
+			password = '';
+		}, 3000);
+		// getValue('lockAfter').then((value) => {
+		// 	const now = Date.now();
+		// 	if (!value.lockAfter || now > value.lockAfter) {
+		// 		// TODO: make this time adjustable
+		// 		setValue({ lockAfter: now + 1 * MINUTE });
+		// 	}
+		// });
+	});
+});
