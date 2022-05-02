@@ -54,32 +54,47 @@ async function openPopup(url: string) {
 }
 
 let password = '';
-let passwordRemover: NodeJS.Timeout;
+let passwordRemovers: NodeJS.Timeout[] = [];
 
 // https://stackoverflow.com/a/39732154/13442719
-chrome.runtime.onConnect.addListener((externalPort) => {
-	console.log('onConnect!!!');
-	clearTimeout(passwordRemover);
-	externalPort.postMessage({ password, type: 'opening' } as PortMessage);
+chrome.runtime.onConnect.addListener((chromePort) => {
+	// console.log('onConnect!!!');
+	chromePort.postMessage({ password, type: 'opening' } as PortMessage);
+	// setTimeout(() => {
+	// 	chromePort.postMessage({ password, type: 'opening' } as PortMessage);
+	// }, 1000);
 	// chrome.runtime.sendMessage({ password });
-	chrome.runtime.onMessage.addListener((message: PortMessage) => {
+	chromePort.onMessage.addListener((message: PortMessage) => {
 		console.log('message:', message);
-		if (message.type === 'updatePassword' && message.password) {
-			password = message.password;
+		switch (message.type) {
+			case 'updatePassword':
+				if (message.password) {
+					password = message.password;
+				}
+				break;
+			case 'lock':
+				password = '';
+				break;
+			case 'unlock':
+				passwordRemovers.forEach((passwordRemover) => {
+					clearTimeout(passwordRemover);
+				});
+				passwordRemovers = [];
+				break;
+			default:
+				break;
 		}
 	});
-	externalPort.onDisconnect.addListener(() => {
-		console.log('onDisconnect:');
-		passwordRemover = setTimeout(() => {
-			console.log('password removed');
-			password = '';
-		}, 3000);
-		// getValue('lockAfter').then((value) => {
-		// 	const now = Date.now();
-		// 	if (!value.lockAfter || now > value.lockAfter) {
-		// 		// TODO: make this time adjustable
-		// 		setValue({ lockAfter: now + 1 * MINUTE });
-		// 	}
-		// });
+	chromePort.onDisconnect.addListener(() => {
+		// console.log('onDisconnect:');
+		if (password) {
+			passwordRemovers.push(
+				setTimeout(() => {
+					console.log('password removed');
+					password = '';
+				}, 3000) // TODO: make this time adjustable
+			);
+			console.log('passwordRemovers:', passwordRemovers);
+		}
 	});
 });

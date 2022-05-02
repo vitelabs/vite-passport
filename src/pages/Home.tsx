@@ -20,16 +20,7 @@ type Props = State;
 const testAddress = 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f';
 const testAccountName = 'Main wallet';
 
-const Home = ({
-	i18n,
-	balances,
-	setState,
-	copyWithToast,
-	networkType,
-	transactionHistory,
-	toastSuccess,
-	toastError,
-}: Props) => {
+const Home = ({ i18n, setState, copyWithToast, networkType, transactionHistory, toastSuccess }: Props) => {
 	const toAddressRef = useRef<TextInputRefObject>();
 	const amountRef = useRef<TextInputRefObject>();
 	const commentRef = useRef<TextInputRefObject>();
@@ -82,7 +73,6 @@ const Home = ({
 		{ symbol: 'USDT', tti: 'tti_80f3751485e4e83456059473' },
 	];
 
-	console.log('networkType:', networkType);
 	return (
 		<TabContainer>
 			<div className="bg-skin-middleground shadow-md z-10 p-2">

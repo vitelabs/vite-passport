@@ -12,7 +12,7 @@ import { State } from '../utils/types';
 
 type Props = State;
 
-const Import = ({ i18n, setState }: Props) => {
+const Import = ({ i18n, postPortMessage, setState }: Props) => {
 	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState('');
 	const [bip39Passphrase, bip39PassphraseSet] = useState('');
@@ -43,11 +43,11 @@ const Import = ({ i18n, setState }: Props) => {
 				onUserInput={(v) => bip39PassphraseSet(v)}
 				label={i18n.bip39Passphrase}
 			/>
-			<TextInput _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
+			<TextInput password _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
 			<div className="flex-1"></div>
 			<button
 				className="mt-4 round-solid-button"
-				onClick={() => {
+				onClick={async () => {
 					const valid = validateInputs([mnemonicRef, bip39PassphraseRef, passwordRef]);
 					if (valid) {
 						const secrets = {
@@ -55,12 +55,10 @@ const Import = ({ i18n, setState }: Props) => {
 							mnemonics: mnemonics.trim(),
 						};
 						setState({ secrets });
-						setValue({
-							secrets: encrypt(JSON.stringify(secrets), password),
-						});
+						postPortMessage({ password, type: 'updatePassword' });
+						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
+						setValue({ encryptedSecrets });
 						navigate('/home');
-					} else {
-						// setState({ toast: ['Fix the input errors', 'error'] });
 					}
 				}}
 			>

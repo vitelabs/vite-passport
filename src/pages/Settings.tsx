@@ -21,7 +21,7 @@ const ListItem = ({ label, value, onClick }: { label: string; value?: string; on
 	</button>
 );
 
-const Settings = ({ currencyConversion, secrets, i18n, language, toastSuccess }: Props) => {
+const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language, toastSuccess }: Props) => {
 	const navigate = useNavigate();
 	const oldPasswordRef = useRef<TextInputRefObject>();
 	const newPasswordRef = useRef<TextInputRefObject>();
@@ -54,7 +54,7 @@ const Settings = ({ currencyConversion, secrets, i18n, language, toastSuccess }:
 				/>
 				<ListItem
 					onClick={() => {
-						setValue({ lockAfter: Date.now() });
+						postPortMessage({ type: 'lock' });
 						navigate('/lock', { replace: true });
 					}}
 					label={i18n.lockWallet}

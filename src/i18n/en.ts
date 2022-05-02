@@ -85,6 +85,8 @@ const en = {
 	mnemonicPhrase: 'Mnemonic Phrase',
 	bip39Passphrase: 'BIP-39 Passphrase',
 	unlock: 'Unlock',
+	incorrectPassport: 'Incorrect Password',
+	invalidAddress: 'Invalid Address',
 	test: 'test',
 	'': '',
 };

@@ -13,12 +13,12 @@ import { State } from '../utils/types';
 
 type Props = State;
 
-const Create2 = ({ i18n }: Props) => {
+const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 	const navigate = useNavigate();
 	const {
 		state: { mnemonics },
 	} = useLocation() as {
-		state: { mnemonics: string[] };
+		state: { mnemonics: string };
 	};
 
 	const [bip39Passphrase, bip39PassphraseSet] = useState('');
@@ -56,15 +56,11 @@ const Create2 = ({ i18n }: Props) => {
 				onClick={async () => {
 					const valid = validateInputs([passwordRef, bip39PassphraseRef]);
 					if (valid) {
-						setValue({
-							secrets: await encrypt(
-								JSON.stringify({
-									mnemonics,
-									bip39Passphrase,
-								}),
-								password
-							),
-						});
+						const secrets = { mnemonics, bip39Passphrase };
+						setState({ secrets });
+						postPortMessage({ password, type: 'updatePassword' });
+						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
+						setValue({ encryptedSecrets });
 						navigate('/home');
 					}
 				}}

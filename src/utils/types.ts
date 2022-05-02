@@ -20,18 +20,17 @@ export type CurrencyConversions =
 	| 'USD';
 
 export type Storage = {
-	lockAfter: number;
-	secrets:
-		| string
-		| {
-				mnemonics: string;
-				bip39Passphrase?: string;
-		  };
+	encryptedSecrets: string;
 };
 
 export type State = Storage & {
 	chromePort: chrome.runtime.Port;
+	postPortMessage: (message: PortMessage) => void;
 	setState: setStateType;
+	secrets: {
+		mnemonics: string;
+		bip39Passphrase?: string;
+	};
 	networkType: NetworkTypes; // suffixed with "Type" as "network" alone maybe imply the name of the network (e.g. Rinkeby which is a type of testnet)
 	currencyConversion: CurrencyConversions;
 	copyWithToast: (text: string) => void;
@@ -52,8 +51,8 @@ export type State = Storage & {
 };
 
 export type PortMessage = {
-	type: 'opening' | 'updatePassword' | 'signBlock' | 'approveContract';
-	password: string;
+	type: 'opening' | 'updatePassword' | 'signBlock' | 'approveContract' | 'unlock' | 'lock';
+	password?: string;
 };
 
 // TODO: replace null types

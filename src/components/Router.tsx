@@ -19,29 +19,31 @@ import { decrypt } from '../utils/encryption';
 
 type Props = State;
 
-const Router = ({ chromePort, setState, i18n, language, currentAddress, networkType }: Props) => {
+const Router = ({ setState, i18n, language, chromePort, postPortMessage, currentAddress, networkType }: Props) => {
 	const [initialEntries, initialEntriesSet] = useState<string[]>();
 	useEffect(() => {
 		// This is just here to enable the onDisconnect listener in background.ts
 		const listen = (message: PortMessage) => {
-			console.log('message:', message);
-
 			if (message.type === 'opening') {
-				getValue(['secrets']).then((value) => {
-					console.log('value:', value);
-					if (value.secrets) {
-						if (message.password) {
-							decrypt(value.secrets as string, message.password).then((secrets) => {
-								setState({ secrets: JSON.parse(secrets) });
-								initialEntriesSet(['/home']);
-							});
+				getValue(['encryptedSecrets'])
+					.then((value) => {
+						if (value.encryptedSecrets) {
+							if (message.password) {
+								decrypt(value.encryptedSecrets, message.password).then((secrets) => {
+									setState({ secrets: JSON.parse(secrets) });
+									initialEntriesSet(['/home']);
+								});
+								postPortMessage({ type: 'unlock' });
+							} else {
+								initialEntriesSet(['/lock']);
+							}
 						} else {
-							initialEntriesSet(['/lock']);
+							initialEntriesSet(['/']);
 						}
-					} else {
-						initialEntriesSet(['/']);
-					}
-				});
+					})
+					.catch((e) => {
+						console.log('e:', e);
+					});
 
 				chromePort.onMessage.removeListener(listen);
 			}
