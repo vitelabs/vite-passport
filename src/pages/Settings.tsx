@@ -33,6 +33,7 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 	const [oldPassword, oldPasswordSet] = useState('');
 	const [newPassword, newPasswordSet] = useState('');
 	const [showingSecrets, showingSecretsSet] = useState(false);
+	const [confirmReset, confirmResetSet] = useState(false);
 
 	return (
 		<TabContainer heading={i18n.settings}>
@@ -42,16 +43,11 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 					label={i18n.currencyConversion}
 					value={currencyConversion}
 				/>
-				<ListItem onClick={() => changingLanguageSet(true)} label={i18n.language} value={language} />
+				<ListItem onClick={() => changingLanguageSet(true)} label={i18n.language} value={languages[language]} />
 				<ListItem onClick={() => changingContactsSet(true)} label={i18n.contacts} />
 				<ListItem onClick={() => changingPasswordSet(true)} label={i18n.changePassword} />
 				<ListItem onClick={() => showingSecretsSet(true)} label={i18n.showSecrets} />
-				<ListItem
-					onClick={() => {
-						// TODO
-					}}
-					label={i18n.resetWallet}
-				/>
+				<ListItem onClick={() => confirmResetSet(true)} label={i18n.resetWallet} />
 				<ListItem
 					onClick={() => {
 						postPortMessage({ type: 'lock' });
@@ -85,15 +81,14 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 				})}
 			</Modal>
 			<Modal heading={i18n.language} visible={changingLanguage} onClose={() => changingLanguageSet(false)}>
-				{languages.map(([shorthand, label], i) => {
+				{Object.entries(languages).map(([shorthand, label], i) => {
 					const active = currencyConversion === shorthand;
 					return (
 						<ModalListItem
 							radio
 							key={shorthand}
 							active={active}
-							label={shorthand}
-							sublabel={label}
+							label={label}
 							onClick={() => {
 								if (!active) {
 									toastSuccess(i18n.languageChanged);
@@ -131,7 +126,7 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 					oldPasswordSet('');
 					newPasswordSet('');
 				}}
-				heading={i18n.password}
+				heading={i18n.changePassword}
 			>
 				<div className="p-2 space-y-2">
 					<TextInput
@@ -166,6 +161,18 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 				heading={i18n.secrets}
 			>
 				<Secrets {...secrets} />
+			</Modal>
+			<Modal
+				visible={confirmReset}
+				onClose={() => {
+					confirmResetSet(false);
+				}}
+				heading={i18n.resetWallet}
+			>
+				<div className="p-2 space-y-2">
+					<p className="">{i18n.youAreAboutToErase}</p>
+					<button className="round-solid-button">{i18n.confirm}</button>
+				</div>
 			</Modal>
 		</TabContainer>
 	);

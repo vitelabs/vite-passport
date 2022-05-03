@@ -61,7 +61,11 @@ export const currencyConversions = [
 	['RUB', 'Russian Ruble'],
 	['SGD', 'Singapore Dollar'],
 ];
-export const languages = [['en', 'English']];
+export const languages = {
+	// stored as an object for easier lookups. The language is stored in the shorthand version cuz they're filename friendly, but displayed in longhand for readability
+	en: 'English',
+	// ['en', 'English'],
+};
 
 export const testWallet = {
 	rootPath: "m/44'/666666'",

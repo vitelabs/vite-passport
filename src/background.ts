@@ -5,8 +5,6 @@ import { PortMessage } from './utils/types';
 
 console.log('background');
 
-// export const extensionId = 'aojhfjhdaoajbbhnjbjpeicojffnkpai';
-
 // // export const port = chrome.runtime.connect(extensionId);
 // const port = chrome.runtime.connect(extensionId, { name: 'vitePassport' });
 // console.log('port:', port);
@@ -23,20 +21,29 @@ console.log('background');
 // }) as EventListener);
 
 chrome.runtime.onMessage.addListener(async (message, sender, reply) => {
+	switch (message.method) {
+		case 'getConnectedAccount':
+			reply('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f');
+			break;
+		case 'signBlock':
+			reply({ sig: 'signed block' });
+			break;
+
+		default:
+			break;
+	}
 	console.log('message:', message);
 	console.log('sender:', sender);
-	reply({ sig: 'signed block' });
 	// onMessage(message, sender).then(reply);
 	// signBlock();
 	// const tx = params;
 	// const tabId = await getActiveTabId();
 	const host = chrome.runtime.getURL('src/confirmation.html');
-	console.log('host:', host);
 	const search = '';
 	const hash = '';
-	openPopup(`${host}`).then((res) => {
-		console.log('res:', res);
-	});
+	// openPopup(`${host}`).then((res) => {
+	// 	console.log('res:', res);
+	// });
 
 	return true;
 });
@@ -58,12 +65,8 @@ let passwordRemovers: NodeJS.Timeout[] = [];
 
 // https://stackoverflow.com/a/39732154/13442719
 chrome.runtime.onConnect.addListener((chromePort) => {
-	// console.log('onConnect!!!');
+	console.log('onConnect!!!');
 	chromePort.postMessage({ password, type: 'opening' } as PortMessage);
-	// setTimeout(() => {
-	// 	chromePort.postMessage({ password, type: 'opening' } as PortMessage);
-	// }, 1000);
-	// chrome.runtime.sendMessage({ password });
 	chromePort.onMessage.addListener((message: PortMessage) => {
 		console.log('message:', message);
 		switch (message.type) {
@@ -85,16 +88,15 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 				break;
 		}
 	});
-	chromePort.onDisconnect.addListener(() => {
-		// console.log('onDisconnect:');
+	chromePort.onDisconnect.addListener(async () => {
 		if (password) {
 			passwordRemovers.push(
 				setTimeout(() => {
 					console.log('password removed');
 					password = '';
-				}, 3000) // TODO: make this time adjustable
+				}, 1000) // for testing
+				// }, 5 * MINUTE) // TODO: make this time adjustable
 			);
-			console.log('passwordRemovers:', passwordRemovers);
 		}
 	});
 });

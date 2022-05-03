@@ -19,8 +19,14 @@ export type CurrencyConversions =
 	| 'SGD'
 	| 'USD';
 
+export type Languages = 'en';
+
 export type Storage = {
 	encryptedSecrets: string;
+	language: Languages;
+	networkType: NetworkTypes; // suffixed with "Type" cuz "network" by itself could mean the name of the network (e.g. Rinkeby) which is not what's intended
+	currencyConversion: CurrencyConversions;
+	activeAccountIndex: number;
 };
 
 export type State = Storage & {
@@ -31,15 +37,12 @@ export type State = Storage & {
 		mnemonics: string;
 		bip39Passphrase?: string;
 	};
-	networkType: NetworkTypes; // suffixed with "Type" as "network" alone maybe imply the name of the network (e.g. Rinkeby which is a type of testnet)
-	currencyConversion: CurrencyConversions;
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
 	toastWarning: (text: string) => void;
 	toastError: (text: string) => void;
 	toastInfo: (text: string) => void;
 	currentAddress: string;
-	language: string;
 	i18n: typeof en;
 	toast: [string, ToastTypes];
 	balances: {
@@ -51,7 +54,7 @@ export type State = Storage & {
 };
 
 export type PortMessage = {
-	type: 'opening' | 'updatePassword' | 'signBlock' | 'approveContract' | 'unlock' | 'lock';
+	type: 'opening' | 'updatePassword' | 'approveContract' | 'unlock' | 'lock';
 	password?: string;
 };
 
