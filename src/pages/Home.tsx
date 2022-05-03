@@ -12,15 +12,25 @@ import { providerWsURLs, testBalanceInfo, testTransactions } from '../utils/cons
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { shortenAddress, shortenTti, toSmallestUnit } from '../utils/strings';
-import { BalanceInfo, NetworkTypes, State } from '../utils/types';
+import { ViteBalanceInfo, NetworkTypes, State } from '../utils/types';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 
 type Props = State;
 
-const testAddress = 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f';
 const testAccountName = 'Main wallet';
 
-const Home = ({ i18n, setState, copyWithToast, networkType, transactionHistory, toastSuccess }: Props) => {
+const Home = ({
+	i18n,
+	setState,
+	viteBalanceInfo,
+	addressList,
+	activeAccountIndex,
+	copyWithToast,
+	networkType,
+	transactionHistory,
+	toastSuccess,
+}: Props) => {
+	console.log('viteBalanceInfo:', viteBalanceInfo);
 	const toAddressRef = useRef<TextInputRefObject>();
 	const amountRef = useRef<TextInputRefObject>();
 	const commentRef = useRef<TextInputRefObject>();
@@ -44,24 +54,20 @@ const Home = ({ i18n, setState, copyWithToast, networkType, transactionHistory, 
 	const [comment, commentSet] = useState('');
 	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
 
-	const selectedToken = useMemo(
-		() => (testBalanceInfo as BalanceInfo).balance.balanceInfoMap[selectedTti],
-		[selectedTti]
-	);
+	const activeAddress = useMemo(() => {
+		if (addressList) {
+			return addressList[activeAccountIndex].address;
+		}
+		return '';
+	}, [addressList, activeAccountIndex]);
 
-	// const balances = {
-	// 	tti_5649544520544f4b454e6e40: 10,
-	// };
-	const activeAccountIndex = 0;
-	const accounts = [
-		testAddress,
-		testAddress.slice(0, 62) + '0',
-		testAddress.slice(0, 62) + '1',
-		testAddress.slice(0, 62) + '2',
-		// testAddress.slice(0, 62) + '3',
-		// testAddress.slice(0, 62) + '4',
-		// testAddress.slice(0, 62) + '5',
-	];
+	const selectedToken = useMemo(() => {
+		if (viteBalanceInfo && selectedTti) {
+			return viteBalanceInfo.balance.balanceInfoMap![selectedTti];
+		}
+	}, [viteBalanceInfo, selectedTti]);
+
+	const accounts = [activeAddress];
 	const accountNames = [testAccountName];
 
 	const assets = [
@@ -127,8 +133,8 @@ const Home = ({ i18n, setState, copyWithToast, networkType, transactionHistory, 
 							<PencilIcon className="ml-1.5 w-5 opacity-0 duration-200 group-hover:opacity-100" />
 						</button>
 					)}
-					<button className="ml-6 group fx darker-brightness-button" onClick={() => copyWithToast(testAddress)}>
-						<p className="text-skin-secondary">{shortenAddress(testAddress)}</p>
+					<button className="ml-6 group fx darker-brightness-button" onClick={() => copyWithToast(activeAddress)}>
+						<p className="text-skin-secondary">{shortenAddress(activeAddress)}</p>
 						<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 					</button>
 				</div>
@@ -357,7 +363,7 @@ const Home = ({ i18n, setState, copyWithToast, networkType, transactionHistory, 
 					<>
 						<div className="flex-1 fy">
 							<p className="text-xl leading-4 mt-1">BTC-000</p>
-							<button className="group fx darker-brightness-button" onClick={() => copyWithToast(testAddress)}>
+							<button className="group fx darker-brightness-button" onClick={() => copyWithToast(activeAddress)}>
 								<p className="ml-5 leading-3 text-xs text-skin-secondary">{shortenTti(selectedTti)}</p>
 								<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 							</button>
@@ -394,7 +400,7 @@ const Home = ({ i18n, setState, copyWithToast, networkType, transactionHistory, 
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
 					{/* {tokens[selectedTti].symbol} */}
 					{/* https://docs.vite.org/vite-docs/vep/vep-6.html */}
-					<QR data={testAddress} className="h-40 w-40 mx-auto" />
+					<QR data={activeAddress} className="h-40 w-40 mx-auto" />
 					<TextInput optional numeric label="Amount" value={amount} onUserInput={(v) => amountSet(v)} />
 					<TextInput optional textarea label="Comment" value={comment} onUserInput={(v) => commentSet(v)} />
 				</div>
@@ -417,7 +423,7 @@ const Home = ({ i18n, setState, copyWithToast, networkType, transactionHistory, 
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
 					<div className="">
 						<p className="leading-5 text-skin-secondary">{i18n.from}</p>
-						<p className="break-words text-sm">{testAddress}</p>
+						<p className="break-words text-sm">{activeAddress}</p>
 					</div>
 					<div className="">
 						<p className="leading-5 text-skin-secondary">{i18n.balance}</p>

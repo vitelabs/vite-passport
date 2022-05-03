@@ -1,9 +1,10 @@
 import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NewAccountBlock, PortMessage, State, ToastTypes, TokenInfo } from '../utils/types';
-import { getBalanceInfo, subscribe } from '../utils/vitescripts';
+// @ts-ignore
+import WS_RPC from '@vite/vitejs-ws';
 import { copyToClipboardAsync, toBiggestUnit } from '../utils/strings';
 import Toast from '../containers/Toast';
 import Create from '../pages/Create';
@@ -16,11 +17,45 @@ import en from '../i18n/en';
 import { getValue } from '../utils/storage';
 import Lock from '../pages/Lock';
 import { decrypt } from '../utils/encryption';
+import { wallet, ViteAPI } from '@vite/vitejs';
+
+const providerWsURLs = {
+	localnet: 'ws://localhost:23457',
+	testnet: 'wss://buidl.vite.net/gvite/ws',
+	mainnet: 'wss://node.vite.net/gvite/ws', // or 'wss://node-tokyo.vite.net/ws'
+};
+const providerTimeout = 60000;
+const providerOptions = { retryTimes: 10, retryInterval: 5000 };
 
 type Props = State;
 
-const Router = ({ setState, i18n, language, chromePort, postPortMessage, currentAddress, networkType }: Props) => {
+const Router = ({
+	setState,
+	i18n,
+	secrets,
+	language,
+	chromePort,
+	postPortMessage,
+	activeAccountIndex,
+	networkType,
+	addressList,
+}: Props) => {
 	const [initialEntries, initialEntriesSet] = useState<string[]>();
+
+	const activeAddress = useMemo(() => {
+		if (addressList) {
+			return addressList[activeAccountIndex].address;
+		}
+	}, [addressList, activeAccountIndex]);
+
+	useEffect(() => {
+		if (secrets) {
+			setState({
+				addressList: wallet.deriveAddressList({ mnemonics: secrets.mnemonics, startIndex: 0, endIndex: 10 }),
+			});
+		}
+	}, [secrets]);
+
 	useEffect(() => {
 		// This is just here to enable the onDisconnect listener in background.ts
 		const listen = (message: PortMessage) => {
@@ -33,7 +68,7 @@ const Router = ({ setState, i18n, language, chromePort, postPortMessage, current
 									setState({ secrets: JSON.parse(secrets) });
 									initialEntriesSet(['/home']);
 								});
-								postPortMessage({ type: 'unlock' });
+								postPortMessage({ type: 'reopen' });
 							} else {
 								initialEntriesSet(['/lock']);
 							}
@@ -55,53 +90,64 @@ const Router = ({ setState, i18n, language, chromePort, postPortMessage, current
 		setState({ i18n: { en }[language] });
 	}, [language]);
 
-	// const updateBalances = useCallback(() => {
-	//   getBalanceInfo(currentAddress)
-	//     // @ts-ignore
-	//     .then((res: { balance: { balanceInfoMap: object } }) => {
-	//       if (res.balance.balanceInfoMap) {
-	//         const balanceUpdates = {};
-	//         console.log(
-	//           "res.balance.balanceInfoMap:",
-	//           res.balance.balanceInfoMap
-	//         );
-	//         Object.entries(res.balance.balanceInfoMap).forEach(
-	//           ([tti, { balance, tokenInfo }]) => {
-	//             // @ts-ignore
-	//             balanceUpdates[tti] = toBiggestUnit(balance, ...tokenInfo);
-	//           }
-	//         );
-	//         setState({ balances: balanceUpdates });
-	//       }
-	//     })
-	//     .catch((e) => {
-	//       console.log(e);
-	//       // setState({ toast: e.toString(), currentAddress: null });
-	//       // localStorage.removeItem(VCSessionKey);
-	//       // Sometimes on page load, this will catch with
-	//       // Error: CONNECTION ERROR: Couldn't connect to node wss://buidl.vite.net/gvite/ws.
-	//     });
-	// }, [setState, currentAddress, networkType]);
+	const rpc = useMemo(
+		() =>
+			new WS_RPC(
+				networkType === 'Mainnet' ? providerWsURLs.mainnet : providerWsURLs.testnet,
+				providerTimeout,
+				providerOptions
+			),
+		[networkType]
+	);
 
-	// useEffect(() => {
-	//   updateBalances();
-	// }, [currentAddress]); // eslint-disable-line
+	const viteApi = useMemo(() => {
+		return new ViteAPI(rpc, () => {
+			console.log('client connected');
+		});
+	}, [rpc]);
 
-	// useEffect(() => {
-	//   if (currentAddress) {
-	//     // updateBalances();
-	//     subscribe("newAccountBlocksByAddr", currentAddress)
-	//       .then((event: any) => {
-	//         event.on((result: NewAccountBlock) => {
-	//           // NOTE: seems like a hack, I don't even need the block info
-	//           updateBalances();
-	//         });
-	//       })
-	//       .catch((err: any) => {
-	//         console.warn(err);
-	//       });
-	//   }
-	// }, [setState, currentAddress, updateBalances]);
+	useEffect(() => setState({ viteApi }), [viteApi]); // eslint-disable-line
+
+	const subscribe = useCallback(
+		(event: string, ...args: any) => {
+			return viteApi.subscribe(event, ...args);
+		},
+		[viteApi]
+	);
+
+	const updateViteBalanceInfo = useCallback(() => {
+		if (activeAddress) {
+			viteApi
+				.getBalanceInfo(activeAddress)
+				// @ts-ignore
+				.then((res: ViteBalanceInfo) => {
+					console.log('res:', res);
+					setState({ viteBalanceInfo: res });
+				})
+				.catch((e) => {
+					console.log(e);
+					setState({ toast: [JSON.stringify(e), 'error'] });
+					// Sometimes on page load, this will catch with
+					// Error: CONNECTION ERROR: Couldn't connect to node wss://buidl.vite.net/gvite/ws.
+				});
+		}
+	}, [setState, viteApi, activeAddress]);
+
+	useEffect(updateViteBalanceInfo, [activeAddress]); // eslint-disable-line
+
+	useEffect(() => {
+		if (activeAddress) {
+			subscribe('newAccountBlocksByAddr', activeAddress)
+				.then((event: any) => {
+					event.on((result: NewAccountBlock) => {
+						// NOTE: seems like a hack cuz I don't even need the block info
+						updateViteBalanceInfo();
+					});
+				})
+				.catch((err: any) => console.warn(err));
+		}
+		return () => viteApi.unsubscribeAll();
+	}, [setState, subscribe, activeAddress, viteApi, updateViteBalanceInfo]);
 
 	useEffect(() => {
 		setState({

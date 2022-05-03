@@ -20,46 +20,6 @@ console.log('background');
 // 	console.log('event:', event.detail);
 // }) as EventListener);
 
-chrome.runtime.onMessage.addListener(async (message, sender, reply) => {
-	switch (message.method) {
-		case 'getConnectedAccount':
-			reply('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f');
-			break;
-		case 'signBlock':
-			reply({ sig: 'signed block' });
-			break;
-
-		default:
-			break;
-	}
-	console.log('message:', message);
-	console.log('sender:', sender);
-	// onMessage(message, sender).then(reply);
-	// signBlock();
-	// const tx = params;
-	// const tabId = await getActiveTabId();
-	const host = chrome.runtime.getURL('src/confirmation.html');
-	const search = '';
-	const hash = '';
-	// openPopup(`${host}`).then((res) => {
-	// 	console.log('res:', res);
-	// });
-
-	return true;
-});
-
-async function openPopup(url: string) {
-	const lastFocused = await chrome.windows.getCurrent();
-	await chrome.windows.create({
-		url,
-		type: 'popup',
-		width: 18 * 16, // w-[18rem]
-		height: 30 * 16 + 22, // h-[30rem] + frame header height (22px on macOS?)
-		top: lastFocused.top,
-		left: lastFocused.left! + (lastFocused.width! - 18 * 16),
-	});
-}
-
 let password = '';
 let passwordRemovers: NodeJS.Timeout[] = [];
 
@@ -78,7 +38,7 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 			case 'lock':
 				password = '';
 				break;
-			case 'unlock':
+			case 'reopen':
 				passwordRemovers.forEach((passwordRemover) => {
 					clearTimeout(passwordRemover);
 				});
@@ -100,3 +60,42 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 		}
 	});
 });
+
+chrome.runtime.onMessage.addListener(async (message, sender, reply) => {
+	if (!password) {
+	}
+	switch (message.method) {
+		case 'getConnectedAccount':
+			reply('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f');
+			break;
+		case 'signBlock':
+			reply({ sig: 'signed block' });
+			break;
+		default:
+			break;
+	}
+	// onMessage(message, sender).then(reply);
+	// signBlock();
+	// const tx = params;
+	// const tabId = await getActiveTabId();
+	const host = chrome.runtime.getURL('src/confirmation.html');
+	const search = '';
+	const hash = '';
+	openPopup(`${host}`).then((res) => {
+		console.log('res:', res);
+	});
+
+	return true;
+});
+
+async function openPopup(url: string) {
+	const lastFocused = await chrome.windows.getCurrent();
+	await chrome.windows.create({
+		url,
+		type: 'popup',
+		width: 18 * 16, // w-[18rem]
+		height: 30 * 16 + 22, // h-[30rem] + frame header height (22px on macOS?)
+		top: lastFocused.top,
+		left: lastFocused.left! + (lastFocused.width! - 18 * 16),
+	});
+}

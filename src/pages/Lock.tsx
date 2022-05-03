@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ViteLogo from '../assets/ViteLogo';
 import A from '../components/A';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
@@ -17,6 +17,8 @@ const Lock = ({ i18n, setState, postPortMessage }: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
 	const [password, passwordSet] = useState('');
 	const navigate = useNavigate();
+	const location = useLocation();
+	// console.log('location:', location);
 
 	return (
 		<div className="p-4 h-full flex flex-col">
@@ -42,8 +44,10 @@ const Lock = ({ i18n, setState, postPortMessage }: Props) => {
 								decrypt(value.encryptedSecrets, password)
 									.then((secrets) => {
 										setState({ secrets: JSON.parse(secrets) });
-										navigate('/home', { replace: true });
 										postPortMessage({ password, type: 'updatePassword' });
+										if (true) {
+											navigate('/home', { replace: true });
+										}
 									})
 									.catch(() => {
 										passwordRef.current?.issueSet(i18n.incorrectPassport);

@@ -1,3 +1,4 @@
+import { AddressObj, ViteAPI } from '@vite/vitejs/distSrc/utils/type';
 import en from '../i18n/en';
 import { setStateType } from './global-context';
 
@@ -37,24 +38,23 @@ export type State = Storage & {
 		mnemonics: string;
 		bip39Passphrase?: string;
 	};
+	addressList: AddressObj[];
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
 	toastWarning: (text: string) => void;
 	toastError: (text: string) => void;
 	toastInfo: (text: string) => void;
-	currentAddress: string;
 	i18n: typeof en;
+	viteApi: ViteAPI;
 	toast: [string, ToastTypes];
-	balances: {
-		[tokenId: string]: TokenInfo;
-	};
+	viteBalanceInfo: ViteBalanceInfo;
 	transactionHistory: {
 		[address: string]: Transaction[];
 	};
 };
 
 export type PortMessage = {
-	type: 'opening' | 'updatePassword' | 'approveContract' | 'unlock' | 'lock';
+	type: 'opening' | 'updatePassword' | 'approveContract' | 'reopen' | 'lock';
 	password?: string;
 };
 
@@ -113,47 +113,13 @@ export type Transaction = {
 	transactionType: string;
 };
 
-export type TokenInfo = {
-	balance: string;
-	decimals: number;
-	index: number;
-	isOwnerBurnOnly: boolean;
-	isReIssuable: boolean;
-	maxSupply: string;
-	owner: string;
-	ownerBurnOnly: boolean;
-	tokenId: string;
-	tokenName: string;
-	tokenSymbol: string;
-	totalSupply: string;
-};
-
-export type NewAccountBlock = {
-	hash: string;
-	height: number;
-	heightStr: string;
-	removed: boolean;
-};
-
-export type BalanceInfo = {
+export type ViteBalanceInfo = {
 	balance: {
 		address: string;
 		blockCount: string;
-		balanceInfoMap: {
-			[tti: string]: {
-				tokenInfo: {
-					tokenName: string;
-					tokenSymbol: string;
-					totalSupply: string;
-					decimals: number;
-					owner: string;
-					tokenId: string;
-					maxSupply: string;
-					ownerBurnOnly: boolean;
-					isReIssuable: boolean;
-					index: number;
-					isOwnerBurnOnly: boolean;
-				};
+		balanceInfoMap?: {
+			[tokenId: string]: {
+				tokenInfo: TokenInfo;
 				balance: string;
 			};
 		};
@@ -162,4 +128,25 @@ export type BalanceInfo = {
 		address: string;
 		blockCount: string;
 	};
+};
+
+export type TokenInfo = {
+	tokenName: string;
+	tokenSymbol: string;
+	totalSupply: string;
+	decimals: number;
+	owner: string;
+	tokenId: string;
+	maxSupply: string;
+	ownerBurnOnly: false;
+	isReIssuable: false;
+	index: number;
+	isOwnerBurnOnly: false;
+};
+
+export type NewAccountBlock = {
+	hash: string;
+	height: number;
+	heightStr: string;
+	removed: boolean;
 };
