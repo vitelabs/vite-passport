@@ -1,8 +1,5 @@
-import { XIcon } from '@heroicons/react/outline';
-import { keystore } from '@vite/vitejs';
 import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import A from '../components/A';
 import PageContainer from '../components/PageContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
 import { encrypt } from '../utils/encryption';
@@ -38,7 +35,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 				containerClassName="my-2"
 			/>
 			<TextInput password _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
-			<p className="mt-2">What's the difference?</p>
+			<p className="mt-2">{i18n.whatsTheDifference}</p>
 			<p
 				className=""
 				// TODO: i18n for these sentences

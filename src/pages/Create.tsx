@@ -1,7 +1,6 @@
 import A from '../components/A';
 import { DuplicateIcon } from '@heroicons/react/outline';
-import { useCallback, useEffect, useState } from 'react';
-import { testWallet } from '../utils/constants';
+import { useCallback, useState } from 'react';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
 import PageContainer from '../components/PageContainer';
@@ -11,12 +10,9 @@ import { wallet } from '@vite/vitejs';
 type Props = State;
 
 const Create = ({ i18n, copyWithToast }: Props) => {
-	const [mnemonics, mnemonicsSet] = useState('');
+	const [mnemonics, mnemonicsSet] = useState(wallet.createMnemonics());
 	const createMnemonics = useCallback((twelveWords = false) => {
 		mnemonicsSet(wallet.createMnemonics(twelveWords ? 128 : 256));
-	}, []);
-	useEffect(() => {
-		createMnemonics();
 	}, []);
 
 	return (

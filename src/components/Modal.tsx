@@ -53,7 +53,7 @@ const Modal = ({
 		} else if (mounted) {
 			close();
 		}
-	}, [visible]);
+	}, [visible, mounted, close]);
 
 	useKeyPress('Escape', () => {
 		if (mounted) {
@@ -67,11 +67,11 @@ const Modal = ({
 	useEffect(() => {
 		document.body.style.overflow = 'hidden';
 		return () => {
-			if (!modalParent!.children.length) {
+			if (!modalParent?.children.length) {
 				document.body.style.overflow = 'visible';
 			}
 		};
-	}, [modalParent!.children.length]);
+	}, [modalParent]);
 
 	return mounted
 		? ReactDOM.createPortal(

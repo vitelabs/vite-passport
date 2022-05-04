@@ -3,7 +3,6 @@ import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { useState } from 'react';
 import A from '../components/A';
 import Modal from '../components/Modal';
-import { testTransactions } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { shortenAddress, shortenHash, toBiggestUnit } from '../utils/strings';
 import { formatDate } from '../utils/time';
@@ -14,7 +13,7 @@ type Props = State & {
 };
 
 const TransactionList = ({ i18n, transactions, copyWithToast }: Props) => {
-	const [txInfoModalTx, txInfoModalTxSet] = useState<typeof testTransactions[9]>();
+	const [txInfoModalTx, txInfoModalTxSet] = useState<Transaction>();
 	return (
 		<>
 			{transactions.map((tx) => {
@@ -63,7 +62,7 @@ const TransactionList = ({ i18n, transactions, copyWithToast }: Props) => {
 							['Height', txInfoModalTx.height],
 							['Block type', txInfoModalTx.blockType],
 							['Timestamp', txInfoModalTx.timestamp],
-						].map(([label, value, displayedValue], i) => {
+						].map(([label, value, displayedValue]) => {
 							return (
 								<button
 									key={label}

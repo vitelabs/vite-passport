@@ -7,13 +7,7 @@ export const prefersDarkTheme = () => window.matchMedia('(prefers-color-scheme: 
 export const validateInputs = (inputRefs: React.MutableRefObject<TextInputRefObject | undefined>[]) => {
 	let allRefsInputsAreValid = true;
 	for (const ref of inputRefs) {
-		let isValid = ref.current!.isValid;
-		// if (typeof isValid === 'object') {
-		//   const issue = await isValid;
-		//   if (issue) {
-		//     allRefsInputsAreValid = false;
-		//   }
-		// }
+		const isValid = ref.current!.isValid;
 		if (!isValid) {
 			allRefsInputsAreValid = false;
 		}

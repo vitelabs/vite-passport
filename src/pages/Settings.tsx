@@ -1,16 +1,18 @@
-import { useMemo, useRef, useState } from 'react';
+/* eslint-disable */
+
+import { useRef, useState } from 'react';
 import Modal from '../components/Modal';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 import ModalListItem from '../components/ModalListItem';
 import Secrets from '../containers/Secrets';
 import TabContainer from '../components/TabContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
-import { currencyConversions, languages, testWallet } from '../utils/constants';
+import { currencyConversions, languages } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
-import { removeKeys, setValue } from '../utils/storage';
+import { removeKeys } from '../utils/storage';
 
 type Props = State;
 
@@ -81,7 +83,7 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 				})}
 			</Modal>
 			<Modal heading={i18n.language} visible={changingLanguage} onClose={() => changingLanguageSet(false)}>
-				{Object.entries(languages).map(([shorthand, label], i) => {
+				{Object.entries(languages).map(([shorthand, label]) => {
 					const active = currencyConversion === shorthand;
 					return (
 						<ModalListItem
@@ -100,7 +102,7 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 				})}
 			</Modal>
 			<Modal heading={i18n.contacts} visible={changingContacts} onClose={() => changingContactsSet(false)}>
-				{[['account', 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f']].map(([label, address], i) => {
+				{[['account', 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f']].map(([label, address]) => {
 					return (
 						<ModalListItem
 							key={address}

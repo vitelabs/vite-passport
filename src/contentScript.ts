@@ -1,5 +1,3 @@
-import { getValue } from './utils/storage';
-
 console.log('content');
 
 // OPTIMIZE: chrome.scripting.executeScript https://developer.chrome.com/docs/extensions/reference/scripting/#method-executeScript

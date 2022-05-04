@@ -1,4 +1,4 @@
-import { AccountBlockType } from '@vite/vitejs/distSrc/accountBlock/type';
+// import { AccountBlockType } from '@vite/vitejs/distSrc/accountBlock/type';
 
 const vitePassport = {};
 
@@ -35,6 +35,7 @@ methods.forEach((method) => {
 		);
 
 		return new Promise((resolve, reject) => {
+			console.log('reject:', reject);
 			const listener = ({ data }: MessageEvent<any>) => {
 				console.log('data:', data);
 				if (_messageId === data._messageId) {

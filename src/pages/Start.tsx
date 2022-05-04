@@ -1,4 +1,4 @@
-import ViteLogo from '../assets/ViteLogo';
+// import ViteLogo from '../assets/ViteLogo';
 import A from '../components/A';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';

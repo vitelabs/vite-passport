@@ -1,5 +1,4 @@
-import React, { useCallback, useRef } from 'react';
-// import ChevronDown from '../assets/ChevronDown';
+import { useCallback, useRef } from 'react';
 
 type Props = {
 	value: string;
@@ -10,7 +9,7 @@ type Props = {
 const Select = ({ value, options, onUserInput }: Props) => {
 	const select = useRef<HTMLSelectElement>(null);
 	const handleInput = useCallback(
-		(event) => {
+		(event: React.ChangeEvent<HTMLSelectElement>) => {
 			onUserInput(event.target.value);
 		},
 		[onUserInput]

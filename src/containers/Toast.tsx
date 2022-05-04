@@ -1,9 +1,8 @@
-import { XIcon } from '@heroicons/react/outline';
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, XCircleIcon } from '@heroicons/react/solid';
 import { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from '../utils/global-context';
-import { State, ToastTypes } from '../utils/types';
+import { State } from '../utils/types';
 
 type Props = State;
 
@@ -24,7 +23,6 @@ let mountTimer: NodeJS.Timeout;
 let unmountTimer: NodeJS.Timeout;
 let enterDate = 0;
 let exiting = false;
-let showTimeStart = 0;
 const minShowTime = 2000;
 const toastParent = document.getElementById('toast');
 
@@ -36,7 +34,6 @@ const Toast = ({ setState, toast }: Props) => {
 		clearTimeout(mountTimer);
 		clearTimeout(unmountTimer);
 		if (toast) {
-			showTimeStart = Date.now();
 			exiting = false;
 			setTimeout(() => animationStageSet(1), 0);
 			mountTimer = setTimeout(() => animationStageSet(2), minShowTime);

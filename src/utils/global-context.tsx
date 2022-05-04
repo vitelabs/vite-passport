@@ -13,7 +13,7 @@ type RecursivePartial<T> = {
 export type setStateType = (state: RecursivePartial<State>, meta?: { deepMerge?: boolean }) => void;
 
 type HOCProps = {
-	state: object;
+	state: Partial<State>;
 	setState: setStateType;
 };
 
@@ -22,12 +22,12 @@ const GlobalContext = React.createContext<HOCProps>(undefined!);
 
 type ProviderProps = {
 	children: React.ReactNode;
-	initialState?: object;
+	initialState?: Partial<State>;
 	onSetState?: setStateType;
 };
 
-export const Provider = ({ children, initialState, onSetState }: ProviderProps) => {
-	const [state, setState] = useState({ ...(initialState || {}) });
+export const Provider = ({ children, initialState = {}, onSetState }: ProviderProps) => {
+	const [state, setState] = useState(initialState);
 
 	return (
 		<GlobalContext.Provider
@@ -67,11 +67,10 @@ export const deepMerge = (target: { [key: string]: any }, source: { [key: string
 
 // https://stackoverflow.com/a/56989122/13442719
 export const connect = <T,>(Component: React.ComponentType<T>) => {
+	// eslint-disable-next-line
 	return (props: any) => (
 		<GlobalContext.Consumer>
-			{(value: { state: object; setState: setStateType }) => (
-				<Component {...props} {...value.state} setState={value.setState} />
-			)}
+			{(value: HOCProps) => <Component {...props} {...value.state} setState={value.setState} />}
 		</GlobalContext.Consumer>
 	);
 };

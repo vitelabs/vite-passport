@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
 import { ChevronLeftIcon } from '@heroicons/react/outline';
-import A from './A';
 import { useNavigate } from 'react-router-dom';
 
 type Props = {

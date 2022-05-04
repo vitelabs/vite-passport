@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { wallet } from '@vite/vitejs';
 import { VitePassportMethodCall } from './injectedScript';
 import { decrypt } from './utils/encryption';

@@ -92,6 +92,7 @@ const en = {
 	invalidAddress: 'Invalid Address',
 	youAreAboutToErase:
 		"You are about to erase all settings and secrets from your wallet. If you don't have your mnemonic phrase and BIP-39 passphrase saved somewhere else, your funds will be lost forever.",
+	whatsTheDifference: `What's the difference?`,
 	test: 'test',
 	'': '',
 };

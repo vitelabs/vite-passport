@@ -9,7 +9,7 @@ type Props = {
 
 const Checkbox = ({ checked, onUserInput }: Props) => {
 	return (
-		<button className="brightness-button h-8 w-8 p-1.5 -m-1.5" onClick={(e) => onUserInput(checked)}>
+		<button className="brightness-button h-8 w-8 p-1.5 -m-1.5" onClick={() => onUserInput(checked)}>
 			<div
 				className={`h-5 w-5 xy border-2 rounded shadow ${
 					checked ? 'bg-skin-highlight border-skin-lowlight' : 'bg-skin-foreground border-skin-alt'

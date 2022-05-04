@@ -12,7 +12,7 @@ import { providerWsURLs } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { shortenAddress, shortenTti, toSmallestUnit } from '../utils/strings';
-import { ViteBalanceInfo, NetworkTypes, State } from '../utils/types';
+import { NetworkTypes, State } from '../utils/types';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 
 type Props = State;
@@ -46,6 +46,7 @@ const Home = ({
 	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
 	const [displayedTokenDraft, displayedTokenDraftSet] = useState<{ [key: string]: boolean }>({});
 	const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
+	console.log('tokenOrderDraft:', tokenOrderDraft);
 	const [selectedTti, selectedTtiSet] = useState('');
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
@@ -325,8 +326,8 @@ const Home = ({
 									</div>
 									<Checkbox
 										checked={displayedTokenDraft[tti]}
-										onUserInput={(c) => {
-											displayedTokenDraft[tti] = !displayedTokenDraft[tti];
+										onUserInput={(checked) => {
+											displayedTokenDraft[tti] = checked;
 											displayedTokenDraftSet({ ...displayedTokenDraft });
 										}}
 									/>
@@ -455,6 +456,7 @@ const Home = ({
 						value={amount}
 						onUserInput={(v) => amountSet(v)}
 						getIssue={(v) => {
+							console.log('v:', v);
 							// if (+toBiggestUnit(v, balances[selectedTti].decimals) > +balances[selectedTti].balance) {
 							// 	return i18n.insufficientFunds;
 							// }

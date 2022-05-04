@@ -1,12 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import ViteLogo from '../assets/ViteLogo';
-import A from '../components/A';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
 import { decrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
-import { getValue } from '../utils/storage';
 import { State } from '../utils/types';
 // import { accountBlock } from '@vite/vitejs'
 // console.log('accountBlock:', accountBlock)
@@ -17,7 +14,8 @@ const Lock = ({ i18n, setState, postPortMessage, encryptedSecrets }: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
 	const [password, passwordSet] = useState('');
 	const navigate = useNavigate();
-	// const location = useLocation();
+	const location = useLocation();
+	console.log('location:', location);
 	const attemptUnlock = useCallback(async () => {
 		const valid = validateInputs([passwordRef]);
 		if (valid) {
@@ -30,7 +28,7 @@ const Lock = ({ i18n, setState, postPortMessage, encryptedSecrets }: Props) => {
 				passwordRef.current?.issueSet(i18n.incorrectPassport);
 			}
 		}
-	}, [password]);
+	}, [password, encryptedSecrets, i18n.incorrectPassport, navigate, postPortMessage, setState]);
 	// console.log('location:', location);
 
 	return (

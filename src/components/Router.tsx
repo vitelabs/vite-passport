@@ -1,11 +1,11 @@
 import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { NewAccountBlock, PortMessage, State, ToastTypes, TokenInfo } from '../utils/types';
+import { useCallback, useEffect, useMemo } from 'react';
+import { NewAccountBlock, State } from '../utils/types';
 // @ts-ignore
 import WS_RPC from '@vite/vitejs-ws';
-import { copyToClipboardAsync, toBiggestUnit } from '../utils/strings';
+import { copyToClipboardAsync } from '../utils/strings';
 import Toast from '../containers/Toast';
 import Create from '../pages/Create';
 import Create2 from '../pages/Create2';
@@ -13,10 +13,7 @@ import Import from '../pages/Import';
 import Home from '../pages/Home';
 import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
-import en from '../i18n/en';
-import { getValue } from '../utils/storage';
 import Lock from '../pages/Lock';
-import { decrypt } from '../utils/encryption';
 import { wallet, ViteAPI } from '@vite/vitejs';
 import { i18nDict, now } from '../main';
 
@@ -41,7 +38,6 @@ const Router = ({
 	secrets,
 }: Props) => {
 	const initialEntries = useMemo(() => {
-		// alert(Date.now() - now);
 		if (encryptedSecrets) {
 			if (secrets) {
 				return ['/home'];
@@ -54,6 +50,7 @@ const Router = ({
 
 	const activeAddress = useMemo(() => {
 		if (addressList) {
+			alert(Date.now() - now);
 			return addressList[activeAccountIndex].address;
 		}
 	}, [addressList, activeAccountIndex]);
@@ -69,11 +66,11 @@ const Router = ({
 				}),
 			});
 		}
-	}, [secrets]);
+	}, [secrets, setState]);
 
 	useEffect(() => {
 		setState({ i18n: i18nDict[language] });
-	}, [language]);
+	}, [setState, language]);
 
 	const rpc = useMemo(
 		() =>
@@ -127,8 +124,8 @@ const Router = ({
 	useEffect(() => {
 		if (activeAddress) {
 			subscribe('newAccountBlocksByAddr', activeAddress)
-				.then((event: any) => {
-					event.on((result: NewAccountBlock) => {
+				.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
+					event.on(() => {
 						// NOTE: seems like a hack cuz I don't even need the block info
 						updateViteBalanceInfo();
 					});
@@ -152,7 +149,7 @@ const Router = ({
 			toastError: (text = '') => setState({ toast: [text, 'error'] }),
 			toastInfo: (text = '') => setState({ toast: [text, 'info'] }),
 		});
-	}, [i18n]);
+	}, [i18n, setState]);
 
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter

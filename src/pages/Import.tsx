@@ -1,4 +1,3 @@
-import { XIcon } from '@heroicons/react/outline';
 import { validateMnemonics } from '@vite/vitejs/distSrc/wallet/hdKey';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

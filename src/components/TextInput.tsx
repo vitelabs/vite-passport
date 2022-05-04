@@ -26,7 +26,7 @@ type Props = HTMLProps<HTMLInputElement> & {
 	maxLength?: number;
 	type?: string;
 	getIssue?: (text: string) => string | void;
-	_ref?: Function | React.MutableRefObject<TextInputRefObject | undefined>;
+	_ref?: React.MutableRefObject<TextInputRefObject | undefined> | ((ref: TextInputRefObject) => void);
 };
 
 const normalizeNumericInput = (str: string, decimals = 6, removeInsignificantZeros = false) => {
@@ -137,6 +137,7 @@ const TextInput = ({
 					}
 					issue && issueSet('');
 					if (numeric && value) {
+						// eslint-disable-next-line
 						value = value.replace(/[^0123456789\.]/g, '');
 						// value = value.replace(/\.+/g, '.');
 						value = normalizeNumericInput(value, maxDecimals);
