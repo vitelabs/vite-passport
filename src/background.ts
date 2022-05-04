@@ -22,20 +22,25 @@ console.log('background');
 // 	console.log('event:', event.detail);
 // }) as EventListener);
 
-let password: string | undefined;
+// let password: string | undefined;
 let secrets: Secrets | undefined;
 let lockTimers: NodeJS.Timeout[] = [];
 
 // https://stackoverflow.com/a/39732154/13442719
 chrome.runtime.onConnect.addListener((chromePort) => {
 	console.log('onConnect!!!');
-	chromePort.postMessage({ password, secrets, type: 'opening' } as PortMessage);
+	chromePort.postMessage({ secrets, type: 'opening' } as PortMessage);
 	chromePort.onMessage.addListener((message: PortMessage) => {
 		console.log('message:', message);
 		switch (message.type) {
-			case 'updatePassword':
-				if (message.password) {
-					password = message.password;
+			// case 'updatePassword':
+			// 	if (message.password) {
+			// 		password = message.password;
+			// 	}
+			// 	break;
+			case 'updateSecrets':
+				if (message.secrets) {
+					secrets = message.secrets;
 				}
 				break;
 			case 'reopen':
@@ -43,7 +48,8 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 				lockTimers = [];
 				break;
 			case 'lock':
-				password = secrets = undefined;
+				// password =
+				secrets = undefined;
 				break;
 			default:
 				break;
@@ -51,11 +57,12 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 	});
 	chromePort.onDisconnect.addListener(async () => {
 		console.log('onDisconnect');
-		if (password) {
+		if (secrets) {
 			lockTimers.push(
 				setTimeout(() => {
 					console.log('locked out');
-					password = secrets = undefined;
+					// password =
+					secrets = undefined;
 				}, 8000) // for testing
 				// }, 5 * MINUTE) // TODO: make this time adjustable
 			);
@@ -65,9 +72,6 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 
 chrome.runtime.onMessage.addListener((message: VitePassportMethodCall, sender, reply) => {
 	(async () => {
-		if (!password) {
-		}
-
 		switch (message.method) {
 			case 'getConnectedAccount':
 				// reply(() => {
@@ -76,10 +80,9 @@ chrome.runtime.onMessage.addListener((message: VitePassportMethodCall, sender, r
 				// });
 				// reply('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f');
 
-				// password = '1234';
-				if (password) {
-					const { encryptedSecrets, activeAccountIndex } = await getValue(['encryptedSecrets', 'activeAccountIndex']);
-					const { mnemonics, bip39Passphrase } = JSON.parse(await decrypt(encryptedSecrets!, password));
+				if (secrets) {
+					const { activeAccountIndex } = await getValue(['activeAccountIndex']);
+					const { mnemonics, bip39Passphrase } = secrets;
 					// const addr = wallet.deriveAddress({ mnemonics, index: activeAccountIndex || 0 });
 					// console.log('addr:', addr);
 					// reply(addr.address);
@@ -100,7 +103,7 @@ chrome.runtime.onMessage.addListener((message: VitePassportMethodCall, sender, r
 });
 
 const requireUnlock = async () => {
-	if (!password) {
+	if (!secrets) {
 		openPopup('/');
 	}
 	return true;

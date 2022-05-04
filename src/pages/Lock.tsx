@@ -24,7 +24,6 @@ const Lock = ({ i18n, setState, postPortMessage, encryptedSecrets }: Props) => {
 			try {
 				const secrets = JSON.parse(await decrypt(encryptedSecrets, password));
 				setState({ secrets });
-				postPortMessage({ password, type: 'updatePassword' });
 				postPortMessage({ secrets, type: 'updateSecrets' });
 				navigate('/home', { replace: true });
 			} catch {

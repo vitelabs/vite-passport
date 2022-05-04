@@ -55,7 +55,7 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 							mnemonics: mnemonics.trim(),
 						};
 						setState({ secrets });
-						postPortMessage({ password, type: 'updatePassword' });
+						postPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
 						setValue({ encryptedSecrets });
 						navigate('/home');

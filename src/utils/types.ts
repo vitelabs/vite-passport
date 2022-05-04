@@ -56,7 +56,7 @@ export type State = Storage & {
 };
 
 export type PortMessage = {
-	type: 'opening' | 'updatePassword' | 'updateSecrets' | 'approveContract' | 'reopen' | 'lock';
+	type: 'opening' | 'updateSecrets' | 'approveContract' | 'reopen' | 'lock';
 	password?: string;
 	secrets?: Secrets;
 };

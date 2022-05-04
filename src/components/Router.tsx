@@ -18,7 +18,7 @@ import { getValue } from '../utils/storage';
 import Lock from '../pages/Lock';
 import { decrypt } from '../utils/encryption';
 import { wallet, ViteAPI } from '@vite/vitejs';
-import { i18nDict } from './App';
+import { i18nDict, now } from '../main';
 
 const providerWsURLs = {
 	mainnet: 'wss://node.vite.net/gvite/ws', // or 'wss://node-tokyo.vite.net/ws'
@@ -41,6 +41,7 @@ const Router = ({
 	secrets,
 }: Props) => {
 	const initialEntries = useMemo(() => {
+		// alert(Date.now() - now);
 		if (encryptedSecrets) {
 			if (secrets) {
 				return ['/home'];
@@ -153,7 +154,7 @@ const Router = ({
 		});
 	}, [i18n]);
 
-	return !initialEntries ? null : (
+	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
 		<MemoryRouter initialEntries={initialEntries}>
 			<Routes>
