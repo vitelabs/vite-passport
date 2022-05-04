@@ -18,11 +18,12 @@ import { getValue } from '../utils/storage';
 import Lock from '../pages/Lock';
 import { decrypt } from '../utils/encryption';
 import { wallet, ViteAPI } from '@vite/vitejs';
+import { i18nDict } from './App';
 
 const providerWsURLs = {
-	localnet: 'ws://localhost:23457',
-	testnet: 'wss://buidl.vite.net/gvite/ws',
 	mainnet: 'wss://node.vite.net/gvite/ws', // or 'wss://node-tokyo.vite.net/ws'
+	testnet: 'wss://buidl.vite.net/gvite/ws',
+	localnet: 'ws://localhost:23457',
 };
 const providerTimeout = 60000;
 const providerOptions = { retryTimes: 10, retryInterval: 5000 };
@@ -32,15 +33,23 @@ type Props = State;
 const Router = ({
 	setState,
 	i18n,
-	secrets,
 	language,
-	chromePort,
-	postPortMessage,
 	activeAccountIndex,
 	networkType,
 	addressList,
+	encryptedSecrets,
+	secrets,
 }: Props) => {
-	const [initialEntries, initialEntriesSet] = useState<string[]>();
+	const initialEntries = useMemo(() => {
+		if (encryptedSecrets) {
+			if (secrets) {
+				return ['/home'];
+			} else {
+				return ['/lock'];
+			}
+		}
+		return ['/'];
+	}, []); // eslint-disable-line
 
 	const activeAddress = useMemo(() => {
 		if (addressList) {
@@ -51,49 +60,28 @@ const Router = ({
 	useEffect(() => {
 		if (secrets) {
 			setState({
-				addressList: wallet.deriveAddressList({ mnemonics: secrets.mnemonics, startIndex: 0, endIndex: 10 }),
+				addressList: wallet.deriveAddressList({
+					mnemonics: secrets.mnemonics,
+					passphrase: secrets.bip39Passphrase,
+					startIndex: 0,
+					endIndex: 10,
+				}),
 			});
 		}
 	}, [secrets]);
 
 	useEffect(() => {
-		// This is just here to enable the onDisconnect listener in background.ts
-		const listen = (message: PortMessage) => {
-			if (message.type === 'opening') {
-				getValue(['encryptedSecrets'])
-					.then((value) => {
-						if (value.encryptedSecrets) {
-							if (message.password) {
-								decrypt(value.encryptedSecrets, message.password).then((secrets) => {
-									setState({ secrets: JSON.parse(secrets) });
-									initialEntriesSet(['/home']);
-								});
-								postPortMessage({ type: 'reopen' });
-							} else {
-								initialEntriesSet(['/lock']);
-							}
-						} else {
-							initialEntriesSet(['/']);
-						}
-					})
-					.catch((e) => {
-						console.log('e:', e);
-					});
-
-				chromePort.onMessage.removeListener(listen);
-			}
-		};
-		chromePort.onMessage.addListener(listen);
-	}, []);
-
-	useEffect(() => {
-		setState({ i18n: { en }[language] });
+		setState({ i18n: i18nDict[language] });
 	}, [language]);
 
 	const rpc = useMemo(
 		() =>
 			new WS_RPC(
-				networkType === 'Mainnet' ? providerWsURLs.mainnet : providerWsURLs.testnet,
+				{
+					mainnet: providerWsURLs.mainnet,
+					testnet: providerWsURLs.testnet,
+					localnet: providerWsURLs.localnet,
+				}[networkType],
 				providerTimeout,
 				providerOptions
 			),

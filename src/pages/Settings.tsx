@@ -10,7 +10,7 @@ import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
-import { setValue } from '../utils/storage';
+import { removeKeys, setValue } from '../utils/storage';
 
 type Props = State;
 
@@ -171,7 +171,16 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 			>
 				<div className="p-2 space-y-2">
 					<p className="">{i18n.youAreAboutToErase}</p>
-					<button className="round-solid-button">{i18n.confirm}</button>
+					<button
+						className="round-solid-button"
+						onClick={() => {
+							// NOTE: This should contain all keys of type Storage
+							removeKeys(['encryptedSecrets', 'language', 'networkType', 'currencyConversion', 'activeAccountIndex']);
+							navigate('/', { replace: true });
+						}}
+					>
+						{i18n.confirm}
+					</button>
 				</div>
 			</Modal>
 		</TabContainer>

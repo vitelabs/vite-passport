@@ -14,6 +14,7 @@ type Props = HTMLProps<HTMLInputElement> & {
 	containerClassName?: string;
 	inputClassName?: string;
 	textarea?: boolean;
+	autoFocus?: boolean;
 	numeric?: boolean;
 	password?: boolean;
 	resizable?: boolean;
@@ -46,6 +47,7 @@ const TextInput = ({
 	containerClassName,
 	inputClassName,
 	textarea,
+	autoFocus = false,
 	numeric,
 	password,
 	resizable,
@@ -62,7 +64,7 @@ const TextInput = ({
 }: Props) => {
 	const input = useRef<HTMLInputElement | HTMLTextAreaElement | null>();
 	const [issue, issueSet] = useState('');
-	const [focused, focusedSet] = useState(false);
+	const [focused, focusedSet] = useState(autoFocus);
 	const [visible, visibleSet] = useState(false);
 	const id = useMemo(() => label.toLowerCase().replace(/\s+/g, '-'), [label]);
 	const Tag = useMemo(() => (textarea ? 'textarea' : 'input'), [textarea]);
@@ -102,6 +104,7 @@ const TextInput = ({
 				placeholder={focused || !!value ? placeholder : ''}
 				value={value}
 				disabled={disabled}
+				autoFocus={autoFocus}
 				autoComplete="off"
 				className={`px-2 pt-4 w-full text-lg block bg-skin-middleground transition duration-200 border-2 rounded ${
 					password ? 'pr-10' : ''

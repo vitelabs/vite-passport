@@ -8,7 +8,7 @@ import ModalListItem from '../components/ModalListItem';
 import TabContainer from '../components/TabContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
 import TransactionList from '../containers/TransactionList';
-import { providerWsURLs, testBalanceInfo, testTransactions } from '../utils/constants';
+import { providerWsURLs } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { shortenAddress, shortenTti, toSmallestUnit } from '../utils/strings';
@@ -87,7 +87,7 @@ const Home = ({
 						className="border-2 px-2 rounded-full border-skin-alt text-sm bg-skin-middleground text-skin-secondary hover:shadow-md active:shadow brightness-button"
 						onClick={() => pickingNetworkSet(true)}
 					>
-						{networkType}
+						{i18n[networkType]}
 					</button>
 					<button
 						className="p-1 -mt-1 -mr-1 text-skin-secondary darker-brightness-button"
@@ -379,7 +379,7 @@ const Home = ({
 				}
 			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
-					<TransactionList transactions={testTransactions} />
+					<TransactionList transactions={[]} />
 				</div>
 				<div className="fx p-2 gap-2 shadow">
 					<button className="round-outline-button p-0" onClick={() => receivingFundsSet(true)}>

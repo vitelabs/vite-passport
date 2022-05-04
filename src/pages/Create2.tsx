@@ -57,10 +57,10 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 					const valid = validateInputs([passwordRef, bip39PassphraseRef]);
 					if (valid) {
 						const secrets = { mnemonics, bip39Passphrase };
-						setState({ secrets });
 						postPortMessage({ password, type: 'updatePassword' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
 						setValue({ encryptedSecrets });
+						setState({ secrets, encryptedSecrets });
 						navigate('/home');
 					}
 				}}

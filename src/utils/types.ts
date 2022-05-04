@@ -2,7 +2,7 @@ import { AddressObj, ViteAPI } from '@vite/vitejs/distSrc/utils/type';
 import en from '../i18n/en';
 import { setStateType } from './global-context';
 
-export type NetworkTypes = 'Testnet' | 'Mainnet' | 'Localnet';
+export type NetworkTypes = 'testnet' | 'mainnet' | 'localnet';
 export type ToastTypes = 'success' | 'warning' | 'error' | 'info';
 export type CurrencyConversions =
 	| 'AUD'
@@ -30,14 +30,16 @@ export type Storage = {
 	activeAccountIndex: number;
 };
 
+export type Secrets = {
+	mnemonics: string;
+	bip39Passphrase?: string;
+};
+
 export type State = Storage & {
 	chromePort: chrome.runtime.Port;
 	postPortMessage: (message: PortMessage) => void;
 	setState: setStateType;
-	secrets: {
-		mnemonics: string;
-		bip39Passphrase?: string;
-	};
+	secrets: Secrets;
 	addressList: AddressObj[];
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
@@ -54,8 +56,9 @@ export type State = Storage & {
 };
 
 export type PortMessage = {
-	type: 'opening' | 'updatePassword' | 'approveContract' | 'reopen' | 'lock';
+	type: 'opening' | 'updatePassword' | 'updateSecrets' | 'approveContract' | 'reopen' | 'lock';
 	password?: string;
+	secrets?: Secrets;
 };
 
 // TODO: replace null types
