@@ -32,7 +32,7 @@ export type Storage = {
 
 export type Secrets = {
 	mnemonics: string;
-	bip39Passphrase?: string;
+	passphrase?: string;
 };
 
 export type State = Storage & {
@@ -40,7 +40,7 @@ export type State = Storage & {
 	postPortMessage: (message: PortMessage) => void;
 	setState: setStateType;
 	secrets: Secrets;
-	addressList: AddressObj[];
+	activeAccount: AddressObj; // caching cuz wallet.deriveAddress is very slow
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
 	toastWarning: (text: string) => void;

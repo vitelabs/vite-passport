@@ -1,4 +1,8 @@
-import { CreditCardIcon, DuplicateIcon, PencilIcon } from '@heroicons/react/outline';
+import {
+	CreditCardIcon,
+	DuplicateIcon,
+	PencilIcon,
+} from '@heroicons/react/outline';
 import { wallet } from '@vite/vitejs';
 import { useMemo, useRef, useState } from 'react';
 import Checkbox from '../components/Checkbox';
@@ -23,8 +27,9 @@ const Home = ({
 	i18n,
 	setState,
 	viteBalanceInfo,
-	addressList,
+	secrets,
 	activeAccountIndex,
+	activeAccount,
 	copyWithToast,
 	networkType,
 	transactionHistory,
@@ -44,7 +49,9 @@ const Home = ({
 	const [editingTokenList, editingTokenListSet] = useState(false);
 	const [tokenQuery, tokenQuerySet] = useState('');
 	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
-	const [displayedTokenDraft, displayedTokenDraftSet] = useState<{ [key: string]: boolean }>({});
+	const [displayedTokenDraft, displayedTokenDraftSet] = useState<{
+		[key: string]: boolean;
+	}>({});
 	const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
 	console.log('tokenOrderDraft:', tokenOrderDraft);
 	const [selectedTti, selectedTtiSet] = useState('');
@@ -55,21 +62,28 @@ const Home = ({
 	const [comment, commentSet] = useState('');
 	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
 
-	const activeAddress = useMemo(() => {
-		if (addressList) {
-			return addressList[activeAccountIndex].address;
-		}
-		return '';
-	}, [addressList, activeAccountIndex]);
-
 	const selectedToken = useMemo(() => {
 		if (viteBalanceInfo && selectedTti) {
 			return viteBalanceInfo.balance.balanceInfoMap![selectedTti];
 		}
 	}, [viteBalanceInfo, selectedTti]);
 
-	const accounts = [activeAddress];
-	const accountNames = [testAccountName];
+	// This is a very slow function - causes ui leg
+	// const derivedAccounts = useMemo(() => {
+	// 	return wallet.deriveAddressList({
+	// 		...secrets,
+	// 		startIndex: 0,
+	// 		endIndex: 1,
+	// 		// endIndex: 10,
+	// 	});
+	// }, [secrets]);
+
+	const activeAddress = useMemo(
+		() => activeAccount?.address || '',
+		[activeAccount]
+	);
+
+	// const accountNames = [testAccountName];
 
 	const assets = [
 		{ symbol: 'VITE', tti: 'tti_5649544520544f4b454e6e40' },
@@ -79,7 +93,11 @@ const Home = ({
 		{ symbol: 'ETH', tti: 'tti_687d8a93915393b219212c73' },
 		{ symbol: 'USDT', tti: 'tti_80f3751485e4e83456059473' },
 	];
-
+	// return (
+	// 	<TabContainer>
+	// 		<p className="">home</p>
+	// 	</TabContainer>
+	// );
 	return (
 		<TabContainer>
 			<div className="bg-skin-middleground shadow-md z-10 p-2">
@@ -134,8 +152,13 @@ const Home = ({
 							<PencilIcon className="ml-1.5 w-5 opacity-0 duration-200 group-hover:opacity-100" />
 						</button>
 					)}
-					<button className="ml-6 group fx darker-brightness-button" onClick={() => copyWithToast(activeAddress)}>
-						<p className="text-skin-secondary">{shortenAddress(activeAddress)}</p>
+					<button
+						className="ml-6 group fx darker-brightness-button"
+						onClick={() => copyWithToast(activeAddress)}
+					>
+						<p className="text-skin-secondary">
+							{shortenAddress(activeAddress)}
+						</p>
 						<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 					</button>
 				</div>
@@ -237,8 +260,16 @@ const Home = ({
 				}}
 			>
 				<div className="space-y-3 p-3">
-					<TextInput label="Network Name" value={networkName} onUserInput={(v) => networkNameSet(v)} />
-					<TextInput label="RPC URL" value={rpcUrl} onUserInput={(v) => rpcUrlSet(v)} />
+					<TextInput
+						label="Network Name"
+						value={networkName}
+						onUserInput={(v) => networkNameSet(v)}
+					/>
+					<TextInput
+						label="RPC URL"
+						value={rpcUrl}
+						onUserInput={(v) => rpcUrlSet(v)}
+					/>
 					<TextInput
 						optional
 						label="Block Explorer URL"
@@ -255,8 +286,12 @@ const Home = ({
 					</button>
 				</div>
 			</Modal>
-			<Modal heading={i18n.accounts} visible={changingActiveAccount} onClose={() => changingActiveAccountSet(false)}>
-				{accounts.map((address, i) => {
+			<Modal
+				heading={i18n.accounts}
+				visible={changingActiveAccount}
+				onClose={() => changingActiveAccountSet(false)}
+			>
+				{/* {derivedAccounts.map(({ address }, i) => {
 					const active = i === activeAccountIndex;
 					return (
 						<ModalListItem
@@ -280,7 +315,7 @@ const Home = ({
 							}}
 						/>
 					);
-				})}
+				})} */}
 				<ModalListBottomButton
 					label={i18n.deriveAddress}
 					onClick={() => {
@@ -319,8 +354,13 @@ const Home = ({
 								<div className="flex-1 fx">
 									<div className="flex flex-col flex-1 items-start">
 										<p className="text-lg">{symbol}</p>
-										<button className="group fx darker-brightness-button" onClick={() => copyWithToast(tti)}>
-											<p className="text-xs text-skin-secondary">{shortenTti(tti)}</p>
+										<button
+											className="group fx darker-brightness-button"
+											onClick={() => copyWithToast(tti)}
+										>
+											<p className="text-xs text-skin-secondary">
+												{shortenTti(tti)}
+											</p>
 											<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 										</button>
 									</div>
@@ -364,8 +404,13 @@ const Home = ({
 					<>
 						<div className="flex-1 fy">
 							<p className="text-xl leading-4 mt-1">BTC-000</p>
-							<button className="group fx darker-brightness-button" onClick={() => copyWithToast(activeAddress)}>
-								<p className="ml-5 leading-3 text-xs text-skin-secondary">{shortenTti(selectedTti)}</p>
+							<button
+								className="group fx darker-brightness-button"
+								onClick={() => copyWithToast(activeAddress)}
+							>
+								<p className="ml-5 leading-3 text-xs text-skin-secondary">
+									{shortenTti(selectedTti)}
+								</p>
 								<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 							</button>
 						</div>
@@ -383,10 +428,16 @@ const Home = ({
 					<TransactionList transactions={[]} />
 				</div>
 				<div className="fx p-2 gap-2 shadow">
-					<button className="round-outline-button p-0" onClick={() => receivingFundsSet(true)}>
+					<button
+						className="round-outline-button p-0"
+						onClick={() => receivingFundsSet(true)}
+					>
 						Receive
 					</button>
-					<button className="round-outline-button p-0" onClick={() => sendingFundsSet(true)}>
+					<button
+						className="round-outline-button p-0"
+						onClick={() => sendingFundsSet(true)}
+					>
 						Send
 					</button>
 				</div>
@@ -399,11 +450,22 @@ const Home = ({
 				subheading={selectedTti}
 			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
-					{/* {tokens[selectedTti].symbol} */}
 					{/* https://docs.vite.org/vite-docs/vep/vep-6.html */}
 					<QR data={activeAddress} className="h-40 w-40 mx-auto" />
-					<TextInput optional numeric label="Amount" value={amount} onUserInput={(v) => amountSet(v)} />
-					<TextInput optional textarea label="Comment" value={comment} onUserInput={(v) => commentSet(v)} />
+					<TextInput
+						optional
+						numeric
+						label="Amount"
+						value={amount}
+						onUserInput={(v) => amountSet(v)}
+					/>
+					<TextInput
+						optional
+						textarea
+						label="Comment"
+						value={comment}
+						onUserInput={(v) => commentSet(v)}
+					/>
 				</div>
 			</Modal>
 			<Modal
@@ -473,7 +535,11 @@ const Home = ({
 					<button
 						className="round-solid-button"
 						onClick={() => {
-							const valid = validateInputs([toAddressRef, amountRef, commentRef]);
+							const valid = validateInputs([
+								toAddressRef,
+								amountRef,
+								commentRef,
+							]);
 							if (valid) {
 								confirmingTransactionSet(true);
 								setTimeout(() => sendingFundsSet(false), 0);

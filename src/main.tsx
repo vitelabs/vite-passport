@@ -9,13 +9,12 @@ import './styles/theme.ts';
 import { PortMessage, State } from './utils/types';
 import en from './i18n/en';
 import { getValue } from './utils/storage';
+import { wallet } from '@vite/vitejs';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
 
 export const i18nDict = { en };
-
-export const now = Date.now();
 
 const chromePort = chrome.runtime.connect();
 const listen = async (message: PortMessage) => {
@@ -44,6 +43,10 @@ const listen = async (message: PortMessage) => {
 			transactionHistory: {},
 		};
 		if (message.secrets) {
+			state.activeAccount = wallet.deriveAddress({
+				...message.secrets,
+				index: activeAccountIndex,
+			});
 			state.secrets = message.secrets;
 			state.postPortMessage!({ type: 'reopen' });
 		}

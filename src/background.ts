@@ -84,8 +84,7 @@ chrome.runtime.onMessage.addListener((message: VitePassportMethodCall, sender, r
 
 				if (secrets) {
 					const { activeAccountIndex } = await getValue(['activeAccountIndex']);
-					const { mnemonics, bip39Passphrase } = secrets;
-					// const addr = wallet.deriveAddress({ mnemonics, index: activeAccountIndex || 0 });
+					// const addr = wallet.deriveAddress({ ...secrets, index: activeAccountIndex || 0 });
 					// console.log('addr:', addr);
 					// reply(addr.address);
 				} else {

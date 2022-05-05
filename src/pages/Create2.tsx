@@ -1,3 +1,4 @@
+import { wallet } from '@vite/vitejs';
 import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
@@ -18,9 +19,9 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 		state: { mnemonics: string };
 	};
 
-	const [bip39Passphrase, bip39PassphraseSet] = useState('');
+	const [passphrase, passphraseSet] = useState('');
 	const [password, passwordSet] = useState('');
-	const bip39PassphraseRef = useRef<TextInputRefObject>();
+	const passphraseRef = useRef<TextInputRefObject>();
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
@@ -28,36 +29,49 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 			<TextInput
 				optional
 				password
-				_ref={bip39PassphraseRef}
-				value={bip39Passphrase}
-				onUserInput={(v) => bip39PassphraseSet(v)}
+				_ref={passphraseRef}
+				value={passphrase}
+				onUserInput={(v) => passphraseSet(v)}
 				label={i18n.bip39Passphrase}
 				containerClassName="my-2"
 			/>
-			<TextInput password _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
+			<TextInput
+				password
+				_ref={passwordRef}
+				value={password}
+				onUserInput={(v) => passwordSet(v)}
+				label="Password"
+			/>
 			<p className="mt-2">{i18n.whatsTheDifference}</p>
 			<p
 				className=""
 				// TODO: i18n for these sentences
 			>
-				Your <span className="font-bold">BIP-39 passphrase</span> is like an additional word to your mnemonic phrase for
-				extra security.
+				Your <span className="font-bold">BIP-39 passphrase</span> is like an
+				additional word to your mnemonic phrase for extra security.
 			</p>
 			<p className="">
-				Your <span className="font-bold">password</span> is used for encrypting your mnemonic phrase and BIP-39
-				passphrase on your computer.
+				Your <span className="font-bold">password</span> is used for encrypting
+				your mnemonic phrase and BIP-39 passphrase on your computer.
 			</p>
 			<div className="flex-1"></div>
 			<button
 				className="round-solid-button"
 				onClick={async () => {
-					const valid = validateInputs([passwordRef, bip39PassphraseRef]);
+					const valid = validateInputs([passwordRef, passphraseRef]);
 					if (valid) {
-						const secrets = { mnemonics, bip39Passphrase };
+						const secrets = { mnemonics, passphrase };
 						postPortMessage({ secrets, type: 'updateSecrets' });
-						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
+						const encryptedSecrets = await encrypt(
+							JSON.stringify(secrets),
+							password
+						);
 						setValue({ encryptedSecrets });
-						setState({ secrets, encryptedSecrets });
+						setState({
+							secrets,
+							encryptedSecrets,
+							activeAccount: wallet.deriveAddress({ ...secrets, index: 0 }),
+						});
 						navigate('/home');
 					}
 				}}

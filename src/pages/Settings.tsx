@@ -13,6 +13,7 @@ import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
 import { removeKeys } from '../utils/storage';
+import { i18nDict } from '../main';
 
 type Props = State;
 
@@ -23,7 +24,7 @@ const ListItem = ({ label, value, onClick }: { label: string; value?: string; on
 	</button>
 );
 
-const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language, toastSuccess }: Props) => {
+const Settings = ({ postPortMessage, setState, currencyConversion, secrets, i18n, language, toastSuccess }: Props) => {
 	const navigate = useNavigate();
 	const oldPasswordRef = useRef<TextInputRefObject>();
 	const newPasswordRef = useRef<TextInputRefObject>();
@@ -94,6 +95,7 @@ const Settings = ({ postPortMessage, currencyConversion, secrets, i18n, language
 							onClick={() => {
 								if (!active) {
 									toastSuccess(i18n.languageChanged);
+									setState({ i18n: i18nDict[shorthand as keyof typeof i18nDict] });
 								}
 								changingLanguageSet(false);
 							}}

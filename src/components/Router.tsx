@@ -15,7 +15,6 @@ import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 import Lock from '../pages/Lock';
 import { wallet, ViteAPI } from '@vite/vitejs';
-import { i18nDict, now } from '../main';
 
 const providerWsURLs = {
 	mainnet: 'wss://node.vite.net/gvite/ws', // or 'wss://node-tokyo.vite.net/ws'
@@ -27,16 +26,7 @@ const providerOptions = { retryTimes: 10, retryInterval: 5000 };
 
 type Props = State;
 
-const Router = ({
-	setState,
-	i18n,
-	language,
-	activeAccountIndex,
-	networkType,
-	addressList,
-	encryptedSecrets,
-	secrets,
-}: Props) => {
+const Router = ({ setState, i18n, activeAccountIndex, networkType, encryptedSecrets, secrets }: Props) => {
 	const initialEntries = useMemo(() => {
 		if (encryptedSecrets) {
 			if (secrets) {
@@ -49,28 +39,10 @@ const Router = ({
 	}, []); // eslint-disable-line
 
 	const activeAddress = useMemo(() => {
-		if (addressList) {
-			alert(Date.now() - now);
-			return addressList[activeAccountIndex].address;
-		}
-	}, [addressList, activeAccountIndex]);
-
-	useEffect(() => {
 		if (secrets) {
-			setState({
-				addressList: wallet.deriveAddressList({
-					mnemonics: secrets.mnemonics,
-					passphrase: secrets.bip39Passphrase,
-					startIndex: 0,
-					endIndex: 10,
-				}),
-			});
+			return wallet.deriveAddress({ ...secrets, index: activeAccountIndex || 0 }).address;
 		}
-	}, [secrets, setState]);
-
-	useEffect(() => {
-		setState({ i18n: i18nDict[language] });
-	}, [setState, language]);
+	}, [secrets, activeAccountIndex]);
 
 	const rpc = useMemo(
 		() =>
@@ -133,7 +105,7 @@ const Router = ({
 				.catch((err: any) => console.warn(err));
 		}
 		return () => viteApi.unsubscribeAll();
-	}, [setState, subscribe, activeAddress, viteApi, updateViteBalanceInfo]);
+	}, [subscribe, activeAddress, viteApi, updateViteBalanceInfo]);
 
 	useEffect(() => {
 		setState({
@@ -149,7 +121,7 @@ const Router = ({
 			toastError: (text = '') => setState({ toast: [text, 'error'] }),
 			toastInfo: (text = '') => setState({ toast: [text, 'info'] }),
 		});
-	}, [i18n, setState]);
+	}, [i18n]); // eslint-disable-line
 
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter

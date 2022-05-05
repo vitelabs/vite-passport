@@ -1,5 +1,7 @@
 // import { BalanceInfo } from './types';
 
+import { i18nDict } from '../main';
+
 export const providerWsURLs = {
 	mainnet: 'wss://node.vite.net/gvite/ws',
 	testnet: 'wss://buidl.vite.net/gvite/ws',
@@ -61,10 +63,9 @@ export const currencyConversions = [
 	['RUB', 'Russian Ruble'],
 	['SGD', 'Singapore Dollar'],
 ];
-export const languages = {
+export const languages: { [key in keyof typeof i18nDict]: string } = {
 	// stored as an object for easier lookups. The language is stored in the shorthand version cuz they're filename friendly, but displayed in longhand for readability
 	en: 'English',
-	// ['en', 'English'],
 };
 
 export const testWallet = {

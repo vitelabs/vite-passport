@@ -1,3 +1,4 @@
+import { wallet } from '@vite/vitejs';
 import { useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
@@ -10,7 +11,13 @@ import { State } from '../utils/types';
 
 type Props = State;
 
-const Lock = ({ i18n, setState, postPortMessage, encryptedSecrets }: Props) => {
+const Lock = ({
+	i18n,
+	activeAccountIndex,
+	setState,
+	postPortMessage,
+	encryptedSecrets,
+}: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
 	const [password, passwordSet] = useState('');
 	const navigate = useNavigate();
@@ -21,21 +28,36 @@ const Lock = ({ i18n, setState, postPortMessage, encryptedSecrets }: Props) => {
 		if (valid) {
 			try {
 				const secrets = JSON.parse(await decrypt(encryptedSecrets, password));
-				setState({ secrets });
+				setState({
+					secrets,
+					activeAccount: wallet.deriveAddress({
+						...secrets,
+						index: activeAccountIndex,
+					}),
+				});
 				postPortMessage({ secrets, type: 'updateSecrets' });
 				navigate('/home', { replace: true });
 			} catch {
 				passwordRef.current?.issueSet(i18n.incorrectPassport);
 			}
 		}
-	}, [password, encryptedSecrets, i18n.incorrectPassport, navigate, postPortMessage, setState]);
+	}, [
+		password,
+		encryptedSecrets,
+		i18n.incorrectPassport,
+		navigate,
+		postPortMessage,
+		setState,
+	]);
 	// console.log('location:', location);
 
 	return (
 		<div className="p-4 h-full flex flex-col">
 			<div className="flex-1 xy flex-col">
 				{/* <ViteLogo size={170} className="drop-shadow-lg text-[var(--bg-base-color)]" /> */}
-				<p className="text-3xl drop-shadow-lg font-black text-skin-muted">Vite Passport</p>
+				<p className="text-3xl drop-shadow-lg font-black text-skin-muted">
+					Vite Passport
+				</p>
 			</div>
 			<form
 				className="w-full"

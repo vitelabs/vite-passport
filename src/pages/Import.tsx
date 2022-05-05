@@ -1,3 +1,4 @@
+import { wallet } from '@vite/vitejs';
 import { validateMnemonics } from '@vite/vitejs/distSrc/wallet/hdKey';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,10 +15,10 @@ type Props = State;
 const Import = ({ i18n, postPortMessage, setState }: Props) => {
 	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState('');
-	const [bip39Passphrase, bip39PassphraseSet] = useState('');
+	const [passphrase, passphraseSet] = useState('');
 	const [password, passwordSet] = useState('');
 	const mnemonicRef = useRef<TextInputRefObject>();
-	const bip39PassphraseRef = useRef<TextInputRefObject>();
+	const passphraseRef = useRef<TextInputRefObject>();
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
@@ -37,25 +38,41 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 			/>
 			<TextInput
 				optional
-				_ref={bip39PassphraseRef}
-				value={bip39Passphrase}
-				onUserInput={(v) => bip39PassphraseSet(v)}
+				_ref={passphraseRef}
+				value={passphrase}
+				onUserInput={(v) => passphraseSet(v)}
 				label={i18n.bip39Passphrase}
 			/>
-			<TextInput password _ref={passwordRef} value={password} onUserInput={(v) => passwordSet(v)} label="Password" />
+			<TextInput
+				password
+				_ref={passwordRef}
+				value={password}
+				onUserInput={(v) => passwordSet(v)}
+				label="Password"
+			/>
 			<div className="flex-1"></div>
 			<button
 				className="mt-4 round-solid-button"
 				onClick={async () => {
-					const valid = validateInputs([mnemonicRef, bip39PassphraseRef, passwordRef]);
+					const valid = validateInputs([
+						mnemonicRef,
+						passphraseRef,
+						passwordRef,
+					]);
 					if (valid) {
 						const secrets = {
-							bip39Passphrase,
+							passphrase,
 							mnemonics: mnemonics.trim(),
 						};
-						setState({ secrets });
+						setState({
+							secrets,
+							activeAccount: wallet.deriveAddress({ ...secrets, index: 0 }),
+						});
 						postPortMessage({ secrets, type: 'updateSecrets' });
-						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
+						const encryptedSecrets = await encrypt(
+							JSON.stringify(secrets),
+							password
+						);
 						setValue({ encryptedSecrets });
 						navigate('/home');
 					}
