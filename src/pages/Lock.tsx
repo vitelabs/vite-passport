@@ -22,7 +22,7 @@ const Lock = ({
 	const [password, passwordSet] = useState('');
 	const navigate = useNavigate();
 	const location = useLocation();
-	console.log('location:', location);
+
 	const attemptUnlock = useCallback(async () => {
 		const valid = validateInputs([passwordRef]);
 		if (valid) {

@@ -2,9 +2,9 @@ import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
 import { useCallback, useEffect, useMemo } from 'react';
-import { NewAccountBlock, State } from '../utils/types';
-// @ts-ignore
+import { NewAccountBlock, State, ViteBalanceInfo } from '../utils/types';
 import WS_RPC from '@vite/vitejs-ws';
+import HTTP_RPC from '@vite/vitejs-http';
 import { copyToClipboardAsync } from '../utils/strings';
 import Toast from '../containers/Toast';
 import Create from '../pages/Create';
@@ -14,19 +14,22 @@ import Home from '../pages/Home';
 import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 import Lock from '../pages/Lock';
-import { wallet, ViteAPI } from '@vite/vitejs';
+import { wallet, ViteAPI, accountBlock } from '@vite/vitejs';
 
-const providerWsURLs = {
-	mainnet: 'wss://node.vite.net/gvite/ws', // or 'wss://node-tokyo.vite.net/ws'
-	testnet: 'wss://buidl.vite.net/gvite/ws',
-	localnet: 'ws://localhost:23457',
-};
-const providerTimeout = 60000;
-const providerOptions = { retryTimes: 10, retryInterval: 5000 };
+// const providerTimeout = 60000;
+// const providerOptions = { retryTimes: 5, retryInterval: 5000 };
+// new WS_RPC(networkUrl, providerTimeout, providerOptions)
 
 type Props = State;
 
-const Router = ({ setState, i18n, activeAccountIndex, networkType, encryptedSecrets, secrets }: Props) => {
+const Router = ({
+	setState,
+	i18n,
+	activeAccount,
+	networkUrl,
+	encryptedSecrets,
+	secrets,
+}: Props) => {
 	const initialEntries = useMemo(() => {
 		if (encryptedSecrets) {
 			if (secrets) {
@@ -38,24 +41,12 @@ const Router = ({ setState, i18n, activeAccountIndex, networkType, encryptedSecr
 		return ['/'];
 	}, []); // eslint-disable-line
 
-	const activeAddress = useMemo(() => {
-		if (secrets) {
-			return wallet.deriveAddress({ ...secrets, index: activeAccountIndex || 0 }).address;
-		}
-	}, [secrets, activeAccountIndex]);
-
 	const rpc = useMemo(
 		() =>
-			new WS_RPC(
-				{
-					mainnet: providerWsURLs.mainnet,
-					testnet: providerWsURLs.testnet,
-					localnet: providerWsURLs.localnet,
-				}[networkType],
-				providerTimeout,
-				providerOptions
-			),
-		[networkType]
+			/^ws/.test(networkUrl)
+				? new WS_RPC(networkUrl)
+				: new HTTP_RPC(networkUrl),
+		[networkUrl]
 	);
 
 	const viteApi = useMemo(() => {
@@ -66,46 +57,56 @@ const Router = ({ setState, i18n, activeAccountIndex, networkType, encryptedSecr
 
 	useEffect(() => setState({ viteApi }), [viteApi]); // eslint-disable-line
 
-	const subscribe = useCallback(
-		(event: string, ...args: any) => {
-			return viteApi.subscribe(event, ...args);
-		},
-		[viteApi]
-	);
-
 	const updateViteBalanceInfo = useCallback(() => {
-		if (activeAddress) {
+		if (activeAccount) {
 			viteApi
-				.getBalanceInfo(activeAddress)
-				// @ts-ignore
+				.getBalanceInfo(activeAccount.address)
+				// @ts-ignore getBalanceInfo needs a more descriptive return type
 				.then((res: ViteBalanceInfo) => {
 					console.log('res:', res);
 					setState({ viteBalanceInfo: res });
+
+					if (res.unreceived.blockCount !== '0') {
+						const receiveTask = new accountBlock.ReceiveAccountBlockTask({
+							address: activeAccount.address,
+							privateKey: activeAccount.privateKey,
+							provider: viteApi,
+						});
+						receiveTask.start();
+					}
 				})
-				.catch((e) => {
-					console.log(e);
-					setState({ toast: [JSON.stringify(e), 'error'] });
+				.catch((err) => {
+					console.log(err);
+					setState({ toast: [JSON.stringify(err), 'error'] });
 					// Sometimes on page load, this will catch with
 					// Error: CONNECTION ERROR: Couldn't connect to node wss://buidl.vite.net/gvite/ws.
 				});
 		}
-	}, [setState, viteApi, activeAddress]);
+	}, [setState, viteApi, activeAccount]);
 
-	useEffect(updateViteBalanceInfo, [activeAddress]); // eslint-disable-line
+	useEffect(updateViteBalanceInfo, [activeAccount]); // eslint-disable-line
 
 	useEffect(() => {
-		if (activeAddress) {
-			subscribe('newAccountBlocksByAddr', activeAddress)
-				.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
-					event.on(() => {
-						// NOTE: seems like a hack cuz I don't even need the block info
-						updateViteBalanceInfo();
-					});
-				})
-				.catch((err: any) => console.warn(err));
+		if (activeAccount) {
+			viteApi
+				.subscribe('newAccountBlocksByAddr', activeAccount.address)
+				.then(
+					(event: {
+						on: (callback: (result: NewAccountBlock) => void) => void;
+					}) => {
+						event.on(() => {
+							// TODO: throttle updateViteBalanceInfo()
+							updateViteBalanceInfo();
+						});
+					}
+				)
+				.catch((err: any) => {
+					console.log(err);
+					setState({ toast: [JSON.stringify(err), 'error'] });
+				});
 		}
 		return () => viteApi.unsubscribeAll();
-	}, [subscribe, activeAddress, viteApi, updateViteBalanceInfo]);
+	}, [activeAccount, viteApi, updateViteBalanceInfo]);
 
 	useEffect(() => {
 		setState({

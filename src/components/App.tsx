@@ -13,3 +13,7 @@ const App = ({ initialState }: Props) => {
 };
 
 export default App;
+
+// test wallet
+// vite_9ec6e8ff9dfa0c0ca29be649bf1430bd0ea7504fa96f142a07
+// weird soul hour mango catalog deposit sorry wild hazard verb vehicle solar bacon debris nut excuse key slogan screen excess leaf tape snake quit

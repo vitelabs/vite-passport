@@ -28,6 +28,12 @@ console.log('background');
 let secrets: Secrets | undefined;
 let lockTimers: NodeJS.Timeout[] = [];
 
+const getActiveTabId = () => {
+	return new Promise((resolve) => {
+		chrome.tabs.query({ active: true }, ([tab]) => resolve(tab.id));
+	});
+};
+
 // https://stackoverflow.com/a/39732154/13442719
 chrome.runtime.onConnect.addListener((chromePort) => {
 	console.log('onConnect!!!');
@@ -65,43 +71,52 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 					console.log('locked out');
 					// password =
 					secrets = undefined;
-				}, 8000) // for testing
+				}, 3000) // for testing
 				// }, 5 * MINUTE) // TODO: make this time adjustable
 			);
 		}
 	});
 });
 
-chrome.runtime.onMessage.addListener((message: VitePassportMethodCall, sender, reply) => {
-	(async () => {
-		switch (message.method) {
-			case 'getConnectedAccount':
-				// reply(() => {
-				// 	// await requireUnlock();
-				// 	return 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f';
-				// });
-				// reply('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f');
+chrome.runtime.onMessage.addListener(
+	(message: VitePassportMethodCall, sender, reply) => {
+		(async () => {
+			switch (message.method) {
+				case 'getConnectedAccount':
+					// TODO: only allow active tab to call this
+					// getActiveTabId
 
-				if (secrets) {
-					const { activeAccountIndex } = await getValue(['activeAccountIndex']);
-					// const addr = wallet.deriveAddress({ ...secrets, index: activeAccountIndex || 0 });
-					// console.log('addr:', addr);
-					// reply(addr.address);
-				} else {
+					// reply(() => {
+					// 	// await requireUnlock();
+					// 	return 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f';
+					// });
+					// reply('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f');
+
+					if (secrets) {
+						const { activeAccountIndex } = await getValue([
+							'activeAccountIndex',
+						]);
+						// const addr = wallet.deriveAddress({ ...secrets, index: activeAccountIndex || 0 });
+						// console.log('addr:', addr);
+						// reply(addr.address);
+					} else {
+						await requireUnlock();
+					}
+					break;
+				case 'signBlock':
 					await requireUnlock();
-				}
-				break;
-			case 'signBlock':
-				await requireUnlock();
-				reply({ sig: 'signed block' });
-				break;
-			default:
-				break;
-		}
-	})();
+					// TODO: only allow active tab to call this
+					// getActiveTabId
+					reply({ sig: 'signed block' });
+					break;
+				default:
+					break;
+			}
+		})();
 
-	return true;
-});
+		return true;
+	}
+);
 
 const requireUnlock = async () => {
 	if (!secrets) {

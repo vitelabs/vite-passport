@@ -6,7 +6,8 @@ export const shortenTti = (hash: string) => shortenString(hash, 7, 5);
 
 // https://www.30secondsofcode.org/js/s/copy-to-clipboard-async?from=autocomplete
 export const copyToClipboardAsync = (str = '') => {
-	if (navigator && navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(str);
+	if (navigator && navigator.clipboard && navigator.clipboard.writeText)
+		return navigator.clipboard.writeText(str);
 	return window.alert('The Clipboard API is not available.');
 };
 
@@ -32,4 +33,9 @@ export const toSmallestUnit = (num: string, decimals = 0) => {
 	);
 };
 
-export const roundDownTo6Decimals = (balance: string) => Math.floor(+balance * 1000000) / 1000000 + '';
+export const roundDownTo6Decimals = (balance: string) =>
+	Math.floor(+balance * 1000000) / 1000000 + '';
+
+// These don't check for what comes after the protocol
+export const validateWsUrl = (v = '') => /^(ws:\/\/|wss:\/\/)/.test(v);
+export const validateHttpUrl = (v = '') => /^(http:\/\/|https:\/\/)/.test(v);

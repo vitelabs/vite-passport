@@ -1,31 +1,15 @@
 import { AddressObj, ViteAPI } from '@vite/vitejs/distSrc/utils/type';
 import en from '../i18n/en';
 import { setStateType } from './global-context';
+import { currencyConversions, i18nDict } from '../utils/constants';
 
-export type NetworkTypes = 'testnet' | 'mainnet' | 'localnet';
-export type ToastTypes = 'success' | 'warning' | 'error' | 'info';
-export type CurrencyConversions =
-	| 'AUD'
-	| 'BTC'
-	| 'CAD'
-	| 'EUR'
-	| 'HKD'
-	| 'INR'
-	| 'IDR'
-	| 'LTC'
-	| 'XMR'
-	| 'NZD'
-	| 'PHP'
-	| 'RUB'
-	| 'SGD'
-	| 'USD';
-
-export type Languages = 'en';
+export type CurrencyConversions = typeof currencyConversions[number];
 
 export type Storage = {
 	encryptedSecrets: string;
-	language: Languages;
-	networkType: NetworkTypes; // suffixed with "Type" cuz "network" by itself could mean the name of the network (e.g. Rinkeby) which is not what's intended
+	language: keyof typeof i18nDict;
+	networkUrl: string;
+	networks: { [url: string]: string };
 	currencyConversion: CurrencyConversions;
 	activeAccountIndex: number;
 };
@@ -48,10 +32,11 @@ export type State = Storage & {
 	toastInfo: (text: string) => void;
 	i18n: typeof en;
 	viteApi: ViteAPI;
-	toast: [string, ToastTypes];
+	toast: [string, 'success' | 'warning' | 'error' | 'info'];
 	viteBalanceInfo: ViteBalanceInfo;
 	transactionHistory: {
-		[address: string]: Transaction[];
+		all: Transaction[];
+		[tti: string]: Transaction[];
 	};
 };
 
@@ -128,23 +113,31 @@ export type ViteBalanceInfo = {
 		};
 	};
 	unreceived: {
-		address: string;
-		blockCount: string;
+		address: string; // "address": "vite_9ec6e8ff9dfa0c0ca29be649bf1430bd0ea7504fa96f142a07"
+		blockCount: string; // "blockCount": "1"
+		balanceInfoMap?: {
+			[tokenId: string]: {
+				// "tti_5649544520544f4b454e6e40"
+				tokenInfo: TokenInfo;
+				balance: string; // "10000000000000000000000"
+				transactionCount: string; // "1"
+			};
+		};
 	};
 };
 
 export type TokenInfo = {
-	tokenName: string;
-	tokenSymbol: string;
-	totalSupply: string;
-	decimals: number;
-	owner: string;
-	tokenId: string;
-	maxSupply: string;
-	ownerBurnOnly: false;
-	isReIssuable: false;
-	index: number;
-	isOwnerBurnOnly: false;
+	tokenName: string; // "Vite Token",
+	tokenSymbol: string; // "VITE",
+	totalSupply: string; // "999999996999999999999999751",
+	decimals: number; // 18,
+	owner: string; // "vite_962eab5a19e51fe36506308f6fcf337876139bd5fee3048c46",
+	tokenId: string; // "tti_5649544520544f4b454e6e40",
+	maxSupply: string; // "100000000000000000000000000000",
+	ownerBurnOnly: boolean; // false,
+	isReIssuable: boolean; // true,
+	index: number; // 0,
+	isOwnerBurnOnly: boolean; // false
 };
 
 export type NewAccountBlock = {

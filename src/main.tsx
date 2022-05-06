@@ -7,14 +7,11 @@ import './styles/classes.css';
 import './styles/theme.ts';
 
 import { PortMessage, State } from './utils/types';
-import en from './i18n/en';
 import { getValue } from './utils/storage';
 import { wallet } from '@vite/vitejs';
+import { i18nDict, storageDefaults } from './utils/constants';
 
-const container = document.getElementById('root');
-const root = createRoot(container!);
-
-export const i18nDict = { en };
+const root = createRoot(document.getElementById('root')!);
 
 const chromePort = chrome.runtime.connect();
 const listen = async (message: PortMessage) => {
@@ -22,16 +19,18 @@ const listen = async (message: PortMessage) => {
 		chromePort.onMessage.removeListener(listen);
 		const {
 			encryptedSecrets,
-			// storage defaults
-			language = 'en',
-			networkType = 'mainnet',
-			currencyConversion = 'USD',
-			activeAccountIndex = 0,
+			language = storageDefaults.language,
+			networkUrl = storageDefaults.networkUrl,
+			networks = storageDefaults.networks,
+			currencyConversion = storageDefaults.currencyConversion,
+			activeAccountIndex = storageDefaults.activeAccountIndex,
 		} = await getValue(null);
+
 		const state: Partial<State> = {
 			encryptedSecrets,
 			language,
-			networkType,
+			networkUrl,
+			networks,
 			currencyConversion,
 			activeAccountIndex,
 			// above are values in chrome.storage. Below are everything else.
@@ -40,12 +39,11 @@ const listen = async (message: PortMessage) => {
 				chromePort.postMessage(message);
 			},
 			i18n: i18nDict[language],
-			transactionHistory: {},
 		};
 		if (message.secrets) {
 			state.activeAccount = wallet.deriveAddress({
 				...message.secrets,
-				index: activeAccountIndex,
+				index: state.activeAccountIndex!,
 			});
 			state.secrets = message.secrets;
 			state.postPortMessage!({ type: 'reopen' });

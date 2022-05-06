@@ -1,10 +1,12 @@
+/* eslint-disable */
+
 import {
 	CreditCardIcon,
 	DuplicateIcon,
 	PencilIcon,
 } from '@heroicons/react/outline';
 import { wallet } from '@vite/vitejs';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Checkbox from '../components/Checkbox';
 import Modal from '../components/Modal';
 import QR from '../components/QR';
@@ -12,12 +14,18 @@ import ModalListItem from '../components/ModalListItem';
 import TabContainer from '../components/TabContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
 import TransactionList from '../containers/TransactionList';
-import { providerWsURLs } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
-import { shortenAddress, shortenTti, toSmallestUnit } from '../utils/strings';
-import { NetworkTypes, State } from '../utils/types';
+import {
+	shortenAddress,
+	shortenTti,
+	toSmallestUnit,
+	validateHttpUrl,
+	validateWsUrl,
+} from '../utils/strings';
+import { State } from '../utils/types';
 import ModalListBottomButton from '../components/ModalListBottomButton';
+import { setValue } from '../utils/storage';
 
 type Props = State;
 
@@ -31,11 +39,15 @@ const Home = ({
 	activeAccountIndex,
 	activeAccount,
 	copyWithToast,
-	networkType,
+	networks,
+	networkUrl,
 	transactionHistory,
 	toastSuccess,
 }: Props) => {
 	console.log('viteBalanceInfo:', viteBalanceInfo);
+	const networkNameRef = useRef<TextInputRefObject>();
+	const rpcUrlRef = useRef<TextInputRefObject>();
+	const blockExplorerUrlRef = useRef<TextInputRefObject>();
 	const toAddressRef = useRef<TextInputRefObject>();
 	const amountRef = useRef<TextInputRefObject>();
 	const commentRef = useRef<TextInputRefObject>();
@@ -53,7 +65,6 @@ const Home = ({
 		[key: string]: boolean;
 	}>({});
 	const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
-	console.log('tokenOrderDraft:', tokenOrderDraft);
 	const [selectedTti, selectedTtiSet] = useState('');
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
@@ -62,8 +73,14 @@ const Home = ({
 	const [comment, commentSet] = useState('');
 	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
 
+	useEffect(() => {
+		// if (changingActiveAccount)
+		// TODO: get derivedAccounts elegantly somehow - this is a slow function that freezes the UI
+	}, [changingActiveAccount]);
+
 	const selectedToken = useMemo(() => {
 		if (viteBalanceInfo && selectedTti) {
+			// TODO: what if use selects token not in wallet balance?
 			return viteBalanceInfo.balance.balanceInfoMap![selectedTti];
 		}
 	}, [viteBalanceInfo, selectedTti]);
@@ -93,11 +110,7 @@ const Home = ({
 		{ symbol: 'ETH', tti: 'tti_687d8a93915393b219212c73' },
 		{ symbol: 'USDT', tti: 'tti_80f3751485e4e83456059473' },
 	];
-	// return (
-	// 	<TabContainer>
-	// 		<p className="">home</p>
-	// 	</TabContainer>
-	// );
+
 	return (
 		<TabContainer>
 			<div className="bg-skin-middleground shadow-md z-10 p-2">
@@ -106,7 +119,7 @@ const Home = ({
 						className="border-2 px-2 rounded-full border-skin-alt text-sm bg-skin-middleground text-skin-secondary hover:shadow-md active:shadow brightness-button"
 						onClick={() => pickingNetworkSet(true)}
 					>
-						{i18n[networkType]}
+						{networks[networkUrl]}
 					</button>
 					<button
 						className="p-1 -mt-1 -mr-1 text-skin-secondary darker-brightness-button"
@@ -197,7 +210,7 @@ const Home = ({
 						</button>
 					);
 				})}
-				<button
+				{/* <button
 					className="mx-auto block text-skin-highlight brightness-button"
 					onClick={() => {
 						editingTokenListSet(true);
@@ -211,8 +224,8 @@ const Home = ({
 						tokenOrderDraftSet(tokenOrderDraft);
 					}}
 				>
-					Edit token list
-				</button>
+					{i18n.editTokenList}
+				</button> */}
 			</div>
 			<Modal
 				visible={pickingNetwork}
@@ -220,19 +233,20 @@ const Home = ({
 				onClose={() => pickingNetworkSet(false)}
 				heading={i18n.networks}
 			>
-				{Object.entries(providerWsURLs).map(([label, uri]) => {
-					const active = networkType === label;
+				{Object.entries(networks).map(([url, label]) => {
+					const active = networkUrl === url;
 					return (
 						<ModalListItem
 							radio
-							key={uri}
+							key={url}
 							active={active}
 							label={label}
-							sublabel={uri}
+							sublabel={url}
 							onClick={() => {
 								if (!active) {
 									toastSuccess(i18n.networkChanged);
-									setState({ networkType: label as NetworkTypes });
+									setState({ networkUrl: url });
+									setValue({ networkUrl: url });
 								}
 								pickingNetworkSet(false);
 							}}
@@ -254,37 +268,68 @@ const Home = ({
 				onStartClose={() => {
 					pickingNetworkSet(true);
 					setTimeout(() => addingNetworkSet(false), 0);
+				}}
+				onClose={() => {
 					networkNameSet('');
 					rpcUrlSet('');
 					blockExplorerUrlSet('');
 				}}
 			>
-				<div className="space-y-3 p-3">
-					<TextInput
-						label="Network Name"
-						value={networkName}
-						onUserInput={(v) => networkNameSet(v)}
-					/>
-					<TextInput
-						label="RPC URL"
-						value={rpcUrl}
-						onUserInput={(v) => rpcUrlSet(v)}
-					/>
-					<TextInput
-						optional
-						label="Block Explorer URL"
-						value={blockExplorerUrl}
-						onUserInput={(v) => blockExplorerUrlSet(v)}
-					/>
-					<button
-						className="round-solid-button p-1"
-						onClick={() => {
-							// TODO: store
-						}}
-					>
-						Add
-					</button>
-				</div>
+				{(close) => (
+					<div className="space-y-3 p-3">
+						<TextInput
+							_ref={networkNameRef}
+							label="Network Name"
+							value={networkName}
+							onUserInput={(v) => networkNameSet(v)}
+						/>
+						<TextInput
+							_ref={rpcUrlRef}
+							label="RPC URL"
+							value={rpcUrl}
+							onUserInput={(v) => rpcUrlSet(v)}
+							getIssue={(v) => {
+								if (!validateWsUrl(v) || !validateHttpUrl(v)) {
+									// return i18n.urlMustStartWithWsWssHttpOrHttps;
+								}
+							}}
+						/>
+						<TextInput
+							optional
+							_ref={blockExplorerUrlRef}
+							label="Block Explorer URL"
+							value={blockExplorerUrl}
+							onUserInput={(v) => blockExplorerUrlSet(v)}
+							getIssue={(v) => {
+								console.log(v, validateHttpUrl(v));
+								if (!validateHttpUrl(v)) {
+									return i18n.urlMustStartWithHttpOrHttps;
+								}
+							}}
+						/>
+						<button
+							className="round-solid-button p-1"
+							onClick={() => {
+								const valid = validateInputs([
+									networkNameRef,
+									rpcUrlRef,
+									blockExplorerUrlRef,
+								]);
+								if (valid) {
+									const newNetworks = {
+										...networks,
+										[rpcUrl]: networkName,
+									};
+									setState({ networks: newNetworks });
+									setValue({ networks: newNetworks });
+									close();
+								}
+							}}
+						>
+							Add
+						</button>
+					</div>
+				)}
 			</Modal>
 			<Modal
 				heading={i18n.accounts}
@@ -301,7 +346,8 @@ const Home = ({
 							label={accountNames[i] || 'Account ' + i}
 							sublabel={shortenAddress(address)}
 							rightJSX={
-								!transactionHistory[address]?.length && (
+								// not that useful a feature for the technical overhead it creates. 
+								false && (
 									<div className="self-start border-2 border-skin-alt px-1 text-skin-muted rounded-full text-xs">
 										{i18n.new}
 									</div>
@@ -323,7 +369,7 @@ const Home = ({
 					}}
 				/>
 			</Modal>
-			<Modal
+			{/* <Modal
 				fullscreen
 				heading={i18n.editTokenList}
 				visible={editingTokenList}
@@ -394,7 +440,7 @@ const Home = ({
 						{i18n.confirm}
 					</button>
 				</div>
-			</Modal>
+			</Modal> */}
 			<Modal
 				fullscreen
 				visible={!!selectedTti}

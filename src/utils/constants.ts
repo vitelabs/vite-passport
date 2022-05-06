@@ -1,12 +1,23 @@
 // import { BalanceInfo } from './types';
+import en from '../i18n/en';
 
-import { i18nDict } from '../main';
+export const i18nDict = { en };
 
-export const providerWsURLs = {
-	mainnet: 'wss://node.vite.net/gvite/ws',
-	testnet: 'wss://buidl.vite.net/gvite/ws',
-	localnet: 'ws://localhost:23457',
-};
+export const PROD = process.env.NODE_ENV === 'production';
+
+export const storageDefaults = {
+	language: 'en',
+	networkUrl: 'wss://node.vite.net/gvite/ws',
+	currencyConversion: 'USD',
+	activeAccountIndex: 0,
+	networks: {
+		// url => label is more extensible than label => url.
+		// e.g. 'wss://node-tokyo.vite.net/ws': 'Mainnet',
+		'wss://node.vite.net/gvite/ws': 'Mainnet',
+		'wss://buidl.vite.net/gvite/ws': 'Testnet',
+		'ws://localhost:23457': 'Localnet',
+	},
+} as const;
 
 export const ExplorerURLs = {
 	vitescan: {
@@ -49,20 +60,21 @@ export const ExplorerURLs = {
 };
 
 export const currencyConversions = [
-	['USD', 'United States Dollar'],
-	['AUD', 'Australian Dollar'],
-	['BTC', 'Bitcoin'],
-	['CAD', 'Canadian Dollar'],
-	['EUR', 'Euro'],
-	['HKD', 'Hong Kong Dollar'],
-	['INR', 'Indian Rupee'],
-	['IDR', 'Indonesian Rupiah'],
-	['XMR', 'Monero'],
-	['NZD', 'New Zealand Dollar'],
-	['PHP', 'Philippine Peso'],
-	['RUB', 'Russian Ruble'],
-	['SGD', 'Singapore Dollar'],
-];
+	'USD',
+	'AUD',
+	'BTC',
+	'CAD',
+	'EUR',
+	'HKD',
+	'INR',
+	'IDR',
+	'XMR',
+	'NZD',
+	'PHP',
+	'RUB',
+	'SGD',
+] as const;
+
 export const languages: { [key in keyof typeof i18nDict]: string } = {
 	// stored as an object for easier lookups. The language is stored in the shorthand version cuz they're filename friendly, but displayed in longhand for readability
 	en: 'English',

@@ -1,9 +1,10 @@
 import { XIcon } from '@heroicons/react/outline';
-import { useRef, ReactNode, useMemo, useEffect, useState, useCallback } from 'react';
+import { useRef, ReactNode, useEffect, useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useKeyPress } from '../utils/hooks';
 
 type Props = {
+	// TODO: editing - for removing items from lists
 	visible?: boolean;
 	invisible?: boolean;
 	fullscreen?: boolean;
@@ -14,9 +15,11 @@ type Props = {
 	headerComponent?: ReactNode;
 	onClose?: () => void;
 	onStartClose?: () => void;
-	children: ReactNode;
+	children: ReactNode | ((close: () => void) => ReactNode);
 	className?: string;
 };
+
+const modalParent = document.getElementById('modal');
 
 const Modal = ({
 	visible,
@@ -35,7 +38,6 @@ const Modal = ({
 	const mouseDraggingModal = useRef(false);
 	const [mounted, mountedSet] = useState(false);
 	const [animationStage, animationStageSet] = useState(0);
-	const modalParent: HTMLElement | null = useMemo(() => document.getElementById('modal'), []);
 
 	const close = useCallback(() => {
 		onStartClose();
@@ -50,14 +52,17 @@ const Modal = ({
 		if (visible && !mounted) {
 			mountedSet(true);
 			setTimeout(() => animationStageSet(1), 0);
-		} else if (mounted) {
+		} else if (!visible && mounted) {
 			close();
 		}
 	}, [visible, mounted, close]);
 
 	useKeyPress('Escape', () => {
 		if (mounted) {
-			const index = Array.prototype.indexOf.call(modalParent!.children, modalRef.current);
+			const index = Array.prototype.indexOf.call(
+				modalParent!.children,
+				modalRef.current
+			);
 			if (modalParent!.children.length - 1 === index) {
 				close();
 			}
@@ -78,7 +83,9 @@ const Modal = ({
 				<div
 					ref={modalRef}
 					className={`z-10 h-[30rem] w-[18rem] fixed inset-0 bg-black overflow-scroll flex flex-col transition duration-500 ${
-						animationStage === 1 ? 'backdrop-blur-sm bg-opacity-10 dark:bg-opacity-20' : 'bg-opacity-0'
+						animationStage === 1
+							? 'backdrop-blur-sm bg-opacity-10 dark:bg-opacity-20'
+							: 'bg-opacity-0'
 					}`}
 					onClick={() => {
 						!mouseDraggingModal.current && close();
@@ -96,10 +103,14 @@ const Modal = ({
 								<button className="brightness-button" onClick={close}>
 									<XIcon className="w-8 text-skin-secondary" />
 								</button>
-								{heading && <p className="text-xl flex-1 text-center p-2 mr-8">{heading}</p>}
+								{heading && (
+									<p className="text-xl flex-1 text-center p-2 mr-8">
+										{heading}
+									</p>
+								)}
 								{headerComponent}
 							</div>
-							{children}
+							{typeof children === 'function' ? children(close) : children}
 						</div>
 					) : (
 						<>
@@ -108,7 +119,13 @@ const Modal = ({
 								className={`flex justify-center transition duration-500 ${
 									animationStage === 1
 										? ''
-										: `${fromRight ? 'translate-x-10' : fromLeft ? '-translate-x-10' : 'translate-y-10'} opacity-0`
+										: `${
+												fromRight
+													? 'translate-x-10'
+													: fromLeft
+													? '-translate-x-10'
+													: 'translate-y-10'
+										  } opacity-0`
 								}`}
 							>
 								<div
@@ -120,10 +137,12 @@ const Modal = ({
 									<div className="min-h-[2.5rem] xy fy border-b-2 border-skin-alt">
 										<p className="text-xl text-center leading-4">{heading}</p>
 										{subheading && (
-											<p className="mt-1 text-center leading-3 text-xs text-skin-secondary">{subheading}</p>
+											<p className="mt-1 text-center leading-3 text-xs text-skin-secondary">
+												{subheading}
+											</p>
 										)}
 									</div>
-									{children}
+									{typeof children === 'function' ? children(close) : children}
 								</div>
 							</div>
 							<div className="flex-1 min-h-[2rem]"></div>

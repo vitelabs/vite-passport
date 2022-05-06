@@ -20,16 +20,23 @@ type Props = HTMLProps<HTMLInputElement> & {
 	resizable?: boolean;
 	maxDecimals?: number;
 	disabled?: boolean;
-	onMetaEnter?: () => void;
 	placeholder?: string;
 	optional?: boolean;
 	maxLength?: number;
 	type?: string;
 	getIssue?: (text: string) => string | void;
-	_ref?: React.MutableRefObject<TextInputRefObject | undefined> | ((ref: TextInputRefObject) => void);
+	_ref?:
+		| React.MutableRefObject<TextInputRefObject | undefined>
+		| ((ref: TextInputRefObject) => void);
 };
 
-const normalizeNumericInput = (str: string, decimals = 6, removeInsignificantZeros = false) => {
+let lastKeyDown = '';
+
+const normalizeNumericInput = (
+	str: string,
+	decimals = 6,
+	removeInsignificantZeros = false
+) => {
 	if (Number.isNaN(+str) || !str) {
 		return '';
 	}
@@ -75,7 +82,9 @@ const TextInput = ({
 				htmlFor={id}
 				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}
 				className={`absolute transition-all pt-0.5 w-[calc(100%-1.2rem)] duration-200 ${
-					focused || value ? 'bg-skin-middleground top-0.5 left-2 font-bold text-xs' : 'text-md top-2.5 left-2.5'
+					focused || value
+						? 'bg-skin-middleground top-0.5 left-2 font-bold text-xs'
+						: 'text-md top-2.5 left-2.5'
 				} ${focused ? 'text-skin-highlight' : 'text-skin-muted'}`}
 			>
 				{label}
@@ -89,14 +98,20 @@ const TextInput = ({
 					}`}
 					onMouseDown={(e) => e.preventDefault()}
 					onClick={() => {
-						visibleSet(!visible);
-						setTimeout(() => {
-							// move cursor to end
-							input.current!.setSelectionRange(value.length, value.length);
-						}, 0);
+						if (lastKeyDown !== 'Enter') {
+							visibleSet(!visible);
+							setTimeout(() => {
+								// move cursor to end
+								input.current!.setSelectionRange(value.length, value.length);
+							}, 0);
+						}
 					}}
 				>
-					{visible ? <EyeOffIcon className="text-inherit" /> : <EyeIcon className="text-inherit" />}
+					{visible ? (
+						<EyeOffIcon className="text-inherit" />
+					) : (
+						<EyeIcon className="text-inherit" />
+					)}
 				</button>
 			)}
 			<Tag
@@ -106,11 +121,18 @@ const TextInput = ({
 				disabled={disabled}
 				autoFocus={autoFocus}
 				autoComplete="off"
+				onKeyDown={(event) => {
+					// Prevents onClick from being triggered when TextInput is placed in a form
+					// https://stackoverflow.com/questions/33166871/javascript-why-onclick-getting-called-by-enter-key
+					lastKeyDown = event.key;
+				}}
 				className={`px-2 pt-4 w-full text-lg block bg-skin-middleground transition duration-200 border-2 rounded ${
 					password ? 'pr-10' : ''
-				} ${focused ? 'border-skin-highlight shadow-md' : 'shadow ' + (issue ? 'border-red-400' : 'border-skin-alt')} ${
-					resizable ? 'resize-y' : 'resize-none'
-				} ${inputClassName}`}
+				} ${
+					focused
+						? 'border-skin-highlight shadow-md'
+						: 'shadow ' + (issue ? 'border-red-400' : 'border-skin-alt')
+				} ${resizable ? 'resize-y' : 'resize-none'} ${inputClassName}`}
 				{...(numeric
 					? {
 							type: 'number',
@@ -151,11 +173,13 @@ const TextInput = ({
 							tag,
 							issueSet,
 							get isValid() {
-								if (!optional && !value.trim()) {
+								// NOTE: all text inputs should be trimmed before using
+								const trimmedValue = value.trim();
+								if (!optional && !trimmedValue) {
 									issueSet(`This field cannot be blank`);
 									return false;
-								} else if (value && getIssue) {
-									const newIssue = getIssue(value);
+								} else if (trimmedValue && getIssue) {
+									const newIssue = getIssue(trimmedValue) || '';
 									// if (typeof newIssue === 'object') {
 									// 	newIssue.then((newIssue) => issueSet(newIssue));
 									// 	return newIssue;
@@ -174,7 +198,9 @@ const TextInput = ({
 					}
 				}}
 			/>
-			{issue && <p className="mt-1 text-sm leading-3 font-bold text-red-500">{issue}</p>}
+			{issue && (
+				<p className="mt-1 text-sm leading-3 font-bold text-red-500">{issue}</p>
+			)}
 		</div>
 	);
 };

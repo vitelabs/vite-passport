@@ -7,29 +7,48 @@ import ModalListItem from '../components/ModalListItem';
 import Secrets from '../containers/Secrets';
 import TabContainer from '../components/TabContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
-import { currencyConversions, languages } from '../utils/constants';
+import { currencyConversions, i18nDict, languages } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
 import { removeKeys } from '../utils/storage';
-import { i18nDict } from '../main';
 
 type Props = State;
 
-const ListItem = ({ label, value, onClick }: { label: string; value?: string; onClick: () => void }) => (
-	<button onClick={onClick} className="fx w-full bg-skin-base justify-between p-2 brightness-button">
+const ListItem = ({
+	label,
+	value,
+	onClick,
+}: {
+	label: string;
+	value?: string;
+	onClick: () => void;
+}) => (
+	<button
+		onClick={onClick}
+		className="fx w-full bg-skin-base justify-between p-2 brightness-button"
+	>
 		<p>{label}</p>
 		{value && <p>{value}</p>}
 	</button>
 );
 
-const Settings = ({ postPortMessage, setState, currencyConversion, secrets, i18n, language, toastSuccess }: Props) => {
+const Settings = ({
+	postPortMessage,
+	setState,
+	currencyConversion,
+	secrets,
+	i18n,
+	language,
+	toastSuccess,
+}: Props) => {
 	const navigate = useNavigate();
 	const oldPasswordRef = useRef<TextInputRefObject>();
 	const newPasswordRef = useRef<TextInputRefObject>();
 	const [changingNetwork, changingNetworkSet] = useState(false);
-	const [changingCurrencyConversion, changingCurrencyConversionSet] = useState(false);
+	const [changingCurrencyConversion, changingCurrencyConversionSet] =
+		useState(false);
 	const [changingLanguage, changingLanguageSet] = useState(false);
 	const [changingContacts, changingContactsSet] = useState(false);
 	const [changingPassword, changingPasswordSet] = useState(false);
@@ -46,11 +65,27 @@ const Settings = ({ postPortMessage, setState, currencyConversion, secrets, i18n
 					label={i18n.currencyConversion}
 					value={currencyConversion}
 				/>
-				<ListItem onClick={() => changingLanguageSet(true)} label={i18n.language} value={languages[language]} />
-				<ListItem onClick={() => changingContactsSet(true)} label={i18n.contacts} />
-				<ListItem onClick={() => changingPasswordSet(true)} label={i18n.changePassword} />
-				<ListItem onClick={() => showingSecretsSet(true)} label={i18n.showSecrets} />
-				<ListItem onClick={() => confirmResetSet(true)} label={i18n.resetWallet} />
+				<ListItem
+					onClick={() => changingLanguageSet(true)}
+					label={i18n.language}
+					value={languages[language]}
+				/>
+				<ListItem
+					onClick={() => changingContactsSet(true)}
+					label={i18n.contacts}
+				/>
+				<ListItem
+					onClick={() => changingPasswordSet(true)}
+					label={i18n.changePassword}
+				/>
+				<ListItem
+					onClick={() => showingSecretsSet(true)}
+					label={i18n.showSecrets}
+				/>
+				<ListItem
+					onClick={() => confirmResetSet(true)}
+					label={i18n.resetWallet}
+				/>
 				<ListItem
 					onClick={() => {
 						postPortMessage({ type: 'lock' });
@@ -83,7 +118,11 @@ const Settings = ({ postPortMessage, setState, currencyConversion, secrets, i18n
 					);
 				})}
 			</Modal>
-			<Modal heading={i18n.language} visible={changingLanguage} onClose={() => changingLanguageSet(false)}>
+			<Modal
+				heading={i18n.language}
+				visible={changingLanguage}
+				onClose={() => changingLanguageSet(false)}
+			>
 				{Object.entries(languages).map(([shorthand, label]) => {
 					const active = currencyConversion === shorthand;
 					return (
@@ -95,7 +134,9 @@ const Settings = ({ postPortMessage, setState, currencyConversion, secrets, i18n
 							onClick={() => {
 								if (!active) {
 									toastSuccess(i18n.languageChanged);
-									setState({ i18n: i18nDict[shorthand as keyof typeof i18nDict] });
+									setState({
+										i18n: i18nDict[shorthand as keyof typeof i18nDict],
+									});
 								}
 								changingLanguageSet(false);
 							}}
@@ -103,8 +144,17 @@ const Settings = ({ postPortMessage, setState, currencyConversion, secrets, i18n
 					);
 				})}
 			</Modal>
-			<Modal heading={i18n.contacts} visible={changingContacts} onClose={() => changingContactsSet(false)}>
-				{[['account', 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f']].map(([label, address]) => {
+			<Modal
+				heading={i18n.contacts}
+				visible={changingContacts}
+				onClose={() => changingContactsSet(false)}
+			>
+				{[
+					[
+						'account',
+						'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f',
+					],
+				].map(([label, address]) => {
 					return (
 						<ModalListItem
 							key={address}
@@ -179,7 +229,14 @@ const Settings = ({ postPortMessage, setState, currencyConversion, secrets, i18n
 						className="round-solid-button"
 						onClick={() => {
 							// NOTE: This should contain all keys of type Storage
-							removeKeys(['encryptedSecrets', 'language', 'networkType', 'currencyConversion', 'activeAccountIndex']);
+							removeKeys([
+								'encryptedSecrets',
+								'language',
+								'networks',
+								'networkUrl',
+								'currencyConversion',
+								'activeAccountIndex',
+							]);
 							navigate('/', { replace: true });
 						}}
 					>
