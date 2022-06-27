@@ -28,8 +28,8 @@
 .dark {
 	--bg-base-color: #131418;
 	--bg-middleground-color: #212227;
-	/* --bg-foreground-color: #2f3038; */
-	--bg-foreground-color: #212227;
+	--bg-foreground-color: #2f3038;
+	/* --bg-foreground-color: #212227; */
 	--alt-color: rgb(67, 71, 83);
 	--text-primary-color: #eeeeee;
 	--text-secondary-color: #a6a9b6;

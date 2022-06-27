@@ -1,16 +1,20 @@
 import { DuplicateIcon } from '@heroicons/react/outline';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
+import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
+import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { useMemo, useState } from 'react';
 import A from '../components/A';
 import Modal from '../components/Modal';
+import TransactionModal from '../components/TransactionModal';
 import FetchWidget from '../containers/FetchWidget';
 import { connect } from '../utils/global-context';
 import { shortenAddress, shortenHash, toBiggestUnit } from '../utils/strings';
 import { formatDate } from '../utils/time';
-import { State, Transaction } from '../utils/types';
+import { State } from '../utils/types';
 
 type Props = State & {
 	tti?: string;
+	unreceived?: boolean;
 };
 
 const TransactionList = ({
@@ -18,28 +22,57 @@ const TransactionList = ({
 	activeAccount,
 	setState,
 	i18n,
-	tti,
 	copyWithToast,
 	transactionHistory,
+	tti,
+	unreceived,
 }: Props) => {
-	const transactions = useMemo(
-		() => transactionHistory?.[tti || 'all'],
-		[transactionHistory]
+	const txListKey = useMemo(
+		() => (unreceived ? 'unreceived' : tti || 'all'),
+		[unreceived, tti]
 	);
-	const [txInfoModalTx, txInfoModalTxSet] = useState<Transaction>();
+	const transactions = useMemo(
+		() => transactionHistory?.[txListKey],
+		[transactionHistory, txListKey]
+	);
+	const [txInfoModalTx, txInfoModalTxSet] = useState<AccountBlockBlock | null>(
+		null
+	);
 
 	return (
 		<FetchWidget
 			shouldFetch={!transactions}
 			getPromise={() => {
+				if (unreceived) {
+					return viteApi.request(
+						'ledger_getUnreceivedBlocksByAddress',
+						activeAccount.address,
+						0,
+						20
+					);
+				} else if (tti) {
+					// console.log('tti:', tti);
+					return viteApi.request(
+						'ledger_getAccountBlocks',
+						activeAccount.address,
+						null, // last tx hash
+						tti,
+						20
+					);
+				}
 				return viteApi.getTransactionList(
 					{ address: activeAccount.address, pageIndex: 0, pageSize: 10 },
 					'all'
 				);
 			}}
 			onResolve={(list: Transaction[]) => {
+				// console.log('list:', list);
 				setState(
-					{ transactionHistory: { [tti || 'all']: list } },
+					{
+						transactionHistory: {
+							[txListKey]: list,
+						},
+					},
 					{ deepMerge: true }
 				);
 				console.log('list:', list);
@@ -55,6 +88,7 @@ const TransactionList = ({
 						<button
 							key={tx.hash}
 							className="fx text-sm rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
+							// @ts-ignore
 							onClick={() => txInfoModalTxSet(tx)}
 						>
 							<div className="ml-2 flex-1 flex justify-between">
@@ -73,14 +107,14 @@ const TransactionList = ({
 										}
 									</p>
 									<p className="">
-										{toBiggestUnit(tx.amount, tx.tokenInfo.decimals)}{' '}
-										{tx.tokenInfo.tokenSymbol}
+										{toBiggestUnit(tx.amount!, +tx.tokenInfo!.decimals)}{' '}
+										{tx.tokenInfo!.tokenSymbol}
 									</p>
 								</div>
 								<div className="flex flex-col items-end">
 									<p className="">{shortenAddress(tx.address)}</p>
 									<p className="text-skin-secondary">
-										{formatDate(tx.timestamp)}
+										{formatDate(+tx.timestamp!)}
 									</p>
 								</div>
 							</div>
@@ -88,51 +122,10 @@ const TransactionList = ({
 					);
 				})
 			)}
-			<Modal
-				heading={i18n.transaction}
-				visible={!!txInfoModalTx}
-				onClose={() => txInfoModalTxSet(undefined)}
-			>
-				{!!txInfoModalTx && (
-					<div className="">
-						{[
-							['Hash', txInfoModalTx.hash, shortenHash(txInfoModalTx.hash)],
-							[
-								'To',
-								txInfoModalTx.toAddress,
-								shortenAddress(txInfoModalTx.toAddress),
-							],
-							[
-								'From',
-								txInfoModalTx.fromAddress,
-								shortenAddress(txInfoModalTx.fromAddress),
-							],
-							['Height', txInfoModalTx.height],
-							['Block type', txInfoModalTx.blockType],
-							['Timestamp', txInfoModalTx.timestamp],
-						].map(([label, value, displayedValue]) => {
-							return (
-								<button
-									key={label}
-									className="group fx w-full px-2 py-1 bg-skin-middleground brightness-button"
-									onClick={() => copyWithToast(value + '')}
-								>
-									<p className="text-skin-secondary mr-1">{label}:</p>
-									<p className="">{displayedValue ? displayedValue : value}</p>
-									<DuplicateIcon className="ml-1 w-5 mr-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-								</button>
-							);
-						})}
-						<A
-							className="px-1 py-2 fx w-full bg-skin-middleground brightness-button"
-							// href={`${explorerURL}`}
-						>
-							<ExternalLinkIcon className="w-6 ml-1 mr-2 text-skin-secondary" />
-							<p className="text-left text-skin-secondary">View on ViteScan</p>
-						</A>
-					</div>
-				)}
-			</Modal>
+			<TransactionModal
+				transaction={txInfoModalTx}
+				onClose={() => txInfoModalTxSet(null)}
+			/>
 		</FetchWidget>
 	);
 };

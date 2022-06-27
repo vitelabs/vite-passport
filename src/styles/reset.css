@@ -5,7 +5,7 @@
 body,
 #root {
 	-webkit-font-smoothing: antialiased;
-	@apply bg-skin-base h-[30rem] w-[18rem] text-base overflow-scroll;
+	@apply bg-skin-base h-[35rem] w-[calc(9/16*35rem)] text-base overflow-scroll;
 }
 
 #root::-webkit-scrollbar {

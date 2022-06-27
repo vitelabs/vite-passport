@@ -46,44 +46,52 @@ const Settings = ({
 	const navigate = useNavigate();
 	const oldPasswordRef = useRef<TextInputRefObject>();
 	const newPasswordRef = useRef<TextInputRefObject>();
-	const [changingNetwork, changingNetworkSet] = useState(false);
-	const [changingCurrencyConversion, changingCurrencyConversionSet] =
-		useState(false);
-	const [changingLanguage, changingLanguageSet] = useState(false);
-	const [changingContacts, changingContactsSet] = useState(false);
-	const [changingPassword, changingPasswordSet] = useState(false);
+	const [activeModal, activeModalSet] = useState<
+		| 'currency'
+		| 'language'
+		| 'contacts'
+		| 'password'
+		| 'secrets'
+		| 'reset'
+		| 'voting'
+		| 'quota'
+		| ''
+	>();
 	const [oldPassword, oldPasswordSet] = useState('');
 	const [newPassword, newPasswordSet] = useState('');
-	const [showingSecrets, showingSecretsSet] = useState(false);
-	const [confirmReset, confirmResetSet] = useState(false);
 
 	return (
 		<TabContainer heading={i18n.settings}>
 			<div className="flex-1 overflow-scroll">
 				<ListItem
-					onClick={() => changingCurrencyConversionSet(true)}
+					onClick={() => activeModalSet('currency')}
 					label={i18n.currencyConversion}
 					value={currencyConversion}
 				/>
 				<ListItem
-					onClick={() => changingLanguageSet(true)}
+					onClick={() => activeModalSet('language')}
 					label={i18n.language}
 					value={languages[language]}
 				/>
-				<ListItem
-					onClick={() => changingContactsSet(true)}
+				{/* <ListItem
+					onClick={() => activeModalSet('contacts')}
 					label={i18n.contacts}
-				/>
+				/> */}
+				{/* <ListItem
+					onClick={() => activeModalSet('voting')}
+					label={i18n.voting}
+				/> */}
+				<ListItem onClick={() => activeModalSet('quota')} label={i18n.quota} />
 				<ListItem
-					onClick={() => changingPasswordSet(true)}
+					onClick={() => activeModalSet('password')}
 					label={i18n.changePassword}
 				/>
 				<ListItem
-					onClick={() => showingSecretsSet(true)}
+					onClick={() => activeModalSet('secrets')}
 					label={i18n.showSecrets}
 				/>
 				<ListItem
-					onClick={() => confirmResetSet(true)}
+					onClick={() => activeModalSet('reset')}
 					label={i18n.resetWallet}
 				/>
 				<ListItem
@@ -96,8 +104,8 @@ const Settings = ({
 			</div>
 			<Modal
 				heading={i18n.currencyConversion}
-				visible={changingCurrencyConversion}
-				onClose={() => changingCurrencyConversionSet(false)}
+				visible={activeModal === 'currency'}
+				onClose={() => activeModalSet('')}
 			>
 				{currencyConversions.map(([shorthand, label], i) => {
 					const active = currencyConversion === shorthand;
@@ -112,7 +120,7 @@ const Settings = ({
 								if (!active) {
 									toastSuccess(i18n.currencyChanged);
 								}
-								changingCurrencyConversionSet(false);
+								activeModalSet('');
 							}}
 						/>
 					);
@@ -120,8 +128,8 @@ const Settings = ({
 			</Modal>
 			<Modal
 				heading={i18n.language}
-				visible={changingLanguage}
-				onClose={() => changingLanguageSet(false)}
+				visible={activeModal === 'language'}
+				onClose={() => activeModalSet('')}
 			>
 				{Object.entries(languages).map(([shorthand, label]) => {
 					const active = currencyConversion === shorthand;
@@ -138,16 +146,16 @@ const Settings = ({
 										i18n: i18nDict[shorthand as keyof typeof i18nDict],
 									});
 								}
-								changingLanguageSet(false);
+								activeModalSet('');
 							}}
 						/>
 					);
 				})}
 			</Modal>
-			<Modal
+			{/* <Modal
 				heading={i18n.contacts}
-				visible={changingContacts}
-				onClose={() => changingContactsSet(false)}
+				visible={activeModal === 'contacts'}
+				onClose={() => activeModalSet('')}
 			>
 				{[
 					[
@@ -172,15 +180,15 @@ const Settings = ({
 						// TODO: add contact
 					}}
 				/>
-			</Modal>
+			</Modal> */}
 			<Modal
-				visible={changingPassword}
+				heading={i18n.changePassword}
+				visible={activeModal === 'password'}
 				onClose={() => {
-					changingPasswordSet(false);
+					activeModalSet('');
 					oldPasswordSet('');
 					newPasswordSet('');
 				}}
-				heading={i18n.changePassword}
 			>
 				<div className="p-2 space-y-2">
 					<TextInput
@@ -208,19 +216,15 @@ const Settings = ({
 				</div>
 			</Modal>
 			<Modal
-				visible={showingSecrets}
-				onClose={() => {
-					showingSecretsSet(false);
-				}}
+				visible={activeModal === 'secrets'}
+				onClose={() => activeModalSet('')}
 				heading={i18n.secrets}
 			>
 				<Secrets {...secrets} />
 			</Modal>
 			<Modal
-				visible={confirmReset}
-				onClose={() => {
-					confirmResetSet(false);
-				}}
+				visible={activeModal === 'reset'}
+				onClose={() => activeModalSet('')}
 				heading={i18n.resetWallet}
 			>
 				<div className="p-2 space-y-2">

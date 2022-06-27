@@ -1,6 +1,6 @@
 import { wallet } from '@vite/vitejs';
 import { useCallback, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
 import { decrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
@@ -21,7 +21,6 @@ const Lock = ({
 	const passwordRef = useRef<TextInputRefObject>();
 	const [password, passwordSet] = useState('');
 	const navigate = useNavigate();
-	const location = useLocation();
 
 	const attemptUnlock = useCallback(async () => {
 		const valid = validateInputs([passwordRef]);
@@ -43,13 +42,13 @@ const Lock = ({
 		}
 	}, [
 		password,
+		activeAccountIndex,
 		encryptedSecrets,
 		i18n.incorrectPassport,
 		navigate,
 		postPortMessage,
 		setState,
 	]);
-	// console.log('location:', location);
 
 	return (
 		<div className="p-4 h-full flex flex-col">

@@ -4,9 +4,12 @@ import {
 	CreditCardIcon,
 	DuplicateIcon,
 	PencilIcon,
+	LockClosedIcon,
+	SortAscendingIcon,
+	XIcon,
 } from '@heroicons/react/outline';
-import { wallet } from '@vite/vitejs';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { accountBlock, constant, wallet } from '@vite/vitejs';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Checkbox from '../components/Checkbox';
 import Modal from '../components/Modal';
 import QR from '../components/QR';
@@ -19,17 +22,24 @@ import { validateInputs } from '../utils/misc';
 import {
 	shortenAddress,
 	shortenTti,
+	toBiggestUnit,
+	toQueryString,
 	toSmallestUnit,
 	validateHttpUrl,
 	validateWsUrl,
 } from '../utils/strings';
-import { State } from '../utils/types';
+import { State, TokenInfo } from '../utils/types';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 import { setValue } from '../utils/storage';
+import { _Buffer } from '@vite/vitejs/distSrc/utils';
+import TransactionModal from '../components/TransactionModal';
+import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
+import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 
 type Props = State;
 
-const testAccountName = 'Main wallet';
+// constant.Contracts.StakeForQuota_V1
+// constant.Contracts.StakeForQuota
 
 const Home = ({
 	i18n,
@@ -41,10 +51,13 @@ const Home = ({
 	copyWithToast,
 	networks,
 	networkUrl,
-	transactionHistory,
+	accountList,
+	contacts,
+	viteApi,
 	toastSuccess,
 }: Props) => {
-	console.log('viteBalanceInfo:', viteBalanceInfo);
+	const quotaBeneficiaryRef = useRef<TextInputRefObject>();
+	const lockedAmountRef = useRef<TextInputRefObject>();
 	const networkNameRef = useRef<TextInputRefObject>();
 	const rpcUrlRef = useRef<TextInputRefObject>();
 	const blockExplorerUrlRef = useRef<TextInputRefObject>();
@@ -55,61 +68,63 @@ const Home = ({
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
 	const [editingAccountName, editingAccountNameSet] = useState(false);
-	const [accountName, accountNameSet] = useState(testAccountName);
+	const [accountName, accountNameSet] = useState(
+		contacts[activeAccount.address] || `${i18n.account} ${activeAccountIndex}`
+	);
 	const [networkName, networkNameSet] = useState('');
 	const [rpcUrl, rpcUrlSet] = useState('');
-	const [editingTokenList, editingTokenListSet] = useState(false);
-	const [tokenQuery, tokenQuerySet] = useState('');
+	// const [votingModalOpen, votingModalOpenSet] = useState(false);
+	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
+	// const [editingTokenList, editingTokenListSet] = useState(false);
+	// const [tokenQuery, tokenQuerySet] = useState('');
 	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
-	const [displayedTokenDraft, displayedTokenDraftSet] = useState<{
-		[key: string]: boolean;
-	}>({});
-	const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
-	const [selectedTti, selectedTtiSet] = useState('');
+	// const [displayedTokenDraft, displayedTokenDraftSet] = useState<{
+	// 	[key: string]: boolean;
+	// }>({});
+	// const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
+	const [selectedTokenInfo, selectedTokenInfoSet] = useState<TokenInfo | null>(
+		null
+	);
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
 	const [toAddress, toAddressSet] = useState('');
 	const [amount, amountSet] = useState('');
 	const [comment, commentSet] = useState('');
 	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
+	const [sentTx, sentTxSet] = useState<Transaction | null>(null);
+	// const [quotaBeneficiary, quotaBeneficiarySet] = useState('');
+	// const [lockedAmount, lockedAmountSet] = useState('');
 
 	useEffect(() => {
 		// if (changingActiveAccount)
 		// TODO: get derivedAccounts elegantly somehow - this is a slow function that freezes the UI
 	}, [changingActiveAccount]);
 
-	const selectedToken = useMemo(() => {
-		if (viteBalanceInfo && selectedTti) {
-			// TODO: what if use selects token not in wallet balance?
-			return viteBalanceInfo.balance.balanceInfoMap![selectedTti];
-		}
-	}, [viteBalanceInfo, selectedTti]);
+	const activeAddress = useMemo(() => {
+		accountNameSet(
+			contacts[activeAccount.address] || `${i18n.account} ${activeAccountIndex}`
+		);
+		return activeAccount?.address || '';
+	}, [activeAccount]);
 
-	// This is a very slow function - causes ui leg
-	// const derivedAccounts = useMemo(() => {
-	// 	return wallet.deriveAddressList({
-	// 		...secrets,
-	// 		startIndex: 0,
-	// 		endIndex: 1,
-	// 		// endIndex: 10,
-	// 	});
-	// }, [secrets]);
-
-	const activeAddress = useMemo(
-		() => activeAccount?.address || '',
-		[activeAccount]
+	const saveAccountName = useCallback(() => {
+		accountNameSet(accountName);
+		const data = {
+			contacts: { ...contacts, [activeAddress]: accountName },
+		};
+		setValue(data);
+		setState(data);
+	}, []);
+	const balanceInfoMap = useMemo(
+		() => viteBalanceInfo?.balance?.balanceInfoMap,
+		[viteBalanceInfo]
 	);
-
-	// const accountNames = [testAccountName];
-
-	const assets = [
-		{ symbol: 'VITE', tti: 'tti_5649544520544f4b454e6e40' },
-		{ symbol: 'VX', tti: 'tti_564954455820434f494e69b5' },
-		{ symbol: 'VIVA', tti: 'tti_a23c2f75791efafe5fada99e' },
-		{ symbol: 'BTC', tti: 'tti_b90c9baffffc9dae58d1f33f' },
-		{ symbol: 'ETH', tti: 'tti_687d8a93915393b219212c73' },
-		{ symbol: 'USDT', tti: 'tti_80f3751485e4e83456059473' },
-	];
+	const assets = useMemo(() => {
+		if (viteBalanceInfo) {
+			return Object.values(balanceInfoMap || {});
+		}
+		return null;
+	}, [viteBalanceInfo]);
 
 	return (
 		<TabContainer>
@@ -134,24 +149,24 @@ const Home = ({
 							className="w-full"
 							onSubmit={(e) => {
 								e.preventDefault();
-								accountNameSet(accountName);
+								saveAccountName();
 							}}
 						>
 							<input
 								autoFocus
 								className="text-xl text-center px-2 w-full bg-skin-base rounded"
 								value={accountName}
-								placeholder={testAccountName}
+								placeholder={accountName}
 								onChange={(e) => accountNameSet(e.target.value)}
 								onBlur={() => {
 									// TODO: set account name
 									editingAccountNameSet(false);
-									accountNameSet(accountName);
+									saveAccountName();
 								}}
 								onKeyDown={(e) => {
 									if (e.key === 'Escape') {
 										editingAccountNameSet(false);
-										accountNameSet(testAccountName);
+										accountNameSet(contacts[activeAccount.address]);
 									}
 								}}
 							/>
@@ -161,7 +176,7 @@ const Home = ({
 							className="group ml-[1.625rem] fx darker-brightness-button"
 							onClick={() => editingAccountNameSet(true)}
 						>
-							<p className="text-xl">{testAccountName}</p>
+							<p className="text-xl">{accountName}</p>
 							<PencilIcon className="ml-1.5 w-5 opacity-0 duration-200 group-hover:opacity-100" />
 						</button>
 					)}
@@ -177,39 +192,68 @@ const Home = ({
 				</div>
 			</div>
 			<div className="flex-1 p-2 space-y-2 overflow-scroll">
-				{assets.map(({ tti, symbol }) => {
-					return (
-						<button
-							key={tti}
-							className="fx rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
-							onClick={() => {
-								selectedTtiSet(tti);
-							}}
-						>
-							<img
-								src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${symbol.toLowerCase()}/${tti}.png?raw=true`}
-								alt={symbol}
-								className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-							/>
-							<div className="flex-1 flex">
-								<div className="flex flex-col flex-1 items-start">
-									<p className="text-lg">{symbol}</p>
-									{/* <button
+				{/* <div className="flex gap-2 h-10">
+					<button
+						className="bg-skin-middleground xy flex-1 rounded brightness-button gap-1.5"
+						onClick={() => votingModalOpenSet(true)}
+					>
+						<SortAscendingIcon className="w-4" />
+						<p>{i18n.voting}</p>
+					</button>
+					<button
+						className="bg-skin-middleground xy flex-1 rounded brightness-button gap-1.5"
+						onClick={() => quotaModalOpenSet(true)}
+					>
+						<LockClosedIcon className="w-4" />
+						<p>{i18n.quota}</p>
+					</button>
+				</div> */}
+
+				{assets === null ? (
+					<p className="text-center text-skin-secondary">{i18n.loading}...</p>
+				) : !assets.length ? (
+					<p className="text-center text-skin-secondary">
+						{i18n.yourWalletIsEmpty}
+					</p>
+				) : (
+					assets.map(({ balance, tokenInfo }) => {
+						return (
+							<button
+								key={tokenInfo.tokenId}
+								className="fx rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
+								onClick={() => selectedTokenInfoSet(tokenInfo)}
+							>
+								<img
+									src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${tokenInfo.tokenSymbol.toLowerCase()}/${
+										tokenInfo.tokenId
+									}.png?raw=true`}
+									alt={tokenInfo.tokenSymbol}
+									className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+								/>
+								<div className="flex-1 flex">
+									<div className="flex flex-col flex-1 items-start">
+										<p className="text-lg">{tokenInfo.tokenSymbol}</p>
+										{/* <button
 										className="text-xs text-skin-muted darker-brightness-button"
-										onClick={() => copyWithToast(tti)}
+										onClick={() => copyWithToast(tokenInfo.tokenId)}
 									>
-										{shortenTti(tti)}
+										{shortenTti(tokenInfo.tokenId)}
 									</button> */}
-									<p className="text-xs text-skin-muted">{shortenTti(tti)}</p>
+										<p className="text-xs text-skin-muted">
+											{shortenTti(tokenInfo.tokenId)}
+										</p>
+									</div>
+									<div className="flex flex-col items-end mr-1.5">
+										<p className="text-lg">
+											{toBiggestUnit(balance, tokenInfo.decimals)}
+										</p>
+										<p className="text-xs text-skin-secondary">$0</p>
+									</div>
 								</div>
-								<div className="flex flex-col items-end mr-1.5">
-									<p className="text-lg">{'0'}</p>
-									<p className="text-xs text-skin-secondary">$0</p>
-								</div>
-							</div>
-						</button>
-					);
-				})}
+							</button>
+						);
+					})
+				)}
 				{/* <button
 					className="mx-auto block text-skin-highlight brightness-button"
 					onClick={() => {
@@ -227,6 +271,31 @@ const Home = ({
 					{i18n.editTokenList}
 				</button> */}
 			</div>
+			{/* <Modal
+				visible={votingModalOpen}
+				onClose={() => votingModalOpenSet(false)}
+				heading={i18n.voting}
+			>
+				test
+			</Modal>
+			<Modal
+				visible={quotaModalOpen}
+				onClose={() => quotaModalOpenSet(false)}
+				heading={i18n.quota}
+			>
+				<TextInput
+					_ref={quotaBeneficiaryRef}
+					label={i18n.quotaBeneficiary}
+					value={quotaBeneficiary}
+					onUserInput={(v) => quotaBeneficiarySet(v)}
+				/>
+				<TextInput
+					_ref={lockedAmountRef}
+					label={i18n.lockedAmount}
+					value={lockedAmount}
+					onUserInput={(v) => lockedAmountSet(v)}
+				/>
+			</Modal> */}
 			<Modal
 				visible={pickingNetwork}
 				fromLeft={addingNetwork}
@@ -245,7 +314,7 @@ const Home = ({
 							onClick={() => {
 								if (!active) {
 									toastSuccess(i18n.networkChanged);
-									setState({ networkUrl: url });
+									setState({ networkUrl: url, viteBalanceInfo: undefined });
 									setValue({ networkUrl: url });
 								}
 								pickingNetworkSet(false);
@@ -279,13 +348,13 @@ const Home = ({
 					<div className="space-y-3 p-3">
 						<TextInput
 							_ref={networkNameRef}
-							label="Network Name"
+							label={i18n.networkName}
 							value={networkName}
 							onUserInput={(v) => networkNameSet(v)}
 						/>
 						<TextInput
 							_ref={rpcUrlRef}
-							label="RPC URL"
+							label={i18n.rpcUrl}
 							value={rpcUrl}
 							onUserInput={(v) => rpcUrlSet(v)}
 							getIssue={(v) => {
@@ -297,11 +366,11 @@ const Home = ({
 						<TextInput
 							optional
 							_ref={blockExplorerUrlRef}
-							label="Block Explorer URL"
+							label={i18n.blockExplorerUrl}
 							value={blockExplorerUrl}
 							onUserInput={(v) => blockExplorerUrlSet(v)}
 							getIssue={(v) => {
-								console.log(v, validateHttpUrl(v));
+								// console.log(v, validateHttpUrl(v));
 								if (!validateHttpUrl(v)) {
 									return i18n.urlMustStartWithHttpOrHttps;
 								}
@@ -336,36 +405,71 @@ const Home = ({
 				visible={changingActiveAccount}
 				onClose={() => changingActiveAccountSet(false)}
 			>
-				{/* {derivedAccounts.map(({ address }, i) => {
+				{accountList.map(({ address }, i) => {
 					const active = i === activeAccountIndex;
 					return (
-						<ModalListItem
-							radio
-							key={address}
-							active={active}
-							label={accountNames[i] || 'Account ' + i}
-							sublabel={shortenAddress(address)}
-							rightJSX={
-								// not that useful a feature for the technical overhead it creates. 
-								false && (
-									<div className="self-start border-2 border-skin-alt px-1 text-skin-muted rounded-full text-xs">
-										{i18n.new}
-									</div>
-								)
-							}
-							onClick={() => {
-								if (!active) {
-									toastSuccess(i18n.accountChanged);
-								}
-								changingActiveAccountSet(false);
-							}}
-						/>
+						<div key={address} className="flex items-center">
+							<ModalListItem
+								radio
+								active={active}
+								className="flex-1"
+								label={contacts[address] || `${i18n.account} ${i}`}
+								sublabel={shortenAddress(address)}
+								// rightJSX={
+								// 	// not that useful a feature for the technical overhead it creates.
+								// 	false && (
+								// 		<div className="self-start border-2 border-skin-alt px-1 text-skin-muted rounded-full text-xs">
+								// 			{i18n.new}
+								// 		</div>
+								// 	)
+								// }
+								onClick={() => {
+									if (!active) {
+										toastSuccess(i18n.accountChanged);
+										const data = { activeAccountIndex: i };
+										setState({ ...data, activeAccount: accountList[i] });
+										setValue(data);
+									}
+									changingActiveAccountSet(false);
+								}}
+							/>
+							{i + 1 === accountList.length && (
+								<button
+									className="xy w-8 h-8 mr-2 overflow-hidden rounded-full bg-skin-middleground brightness-button"
+									onClick={() => {
+										const data: Partial<State> = {
+											accountList: [...accountList].slice(
+												0,
+												accountList.length - 1
+											),
+										};
+										if (activeAccountIndex === data.accountList!.length - 1) {
+											data.activeAccountIndex = 0;
+										}
+										setState(data);
+										setValue(data);
+									}}
+								>
+									<XIcon className="w-5 text-skin-secondary" />
+								</button>
+							)}
+						</div>
 					);
-				})} */}
+				})}
 				<ModalListBottomButton
 					label={i18n.deriveAddress}
 					onClick={() => {
-						// TODO: derive address
+						const data = {
+							accountList: [
+								...accountList,
+								wallet.deriveAddress({
+									...secrets,
+									index: accountList.length,
+								}),
+							],
+						};
+						setState(data);
+						setValue(data);
 					}}
 				/>
 			</Modal>
@@ -443,35 +547,43 @@ const Home = ({
 			</Modal> */}
 			<Modal
 				fullscreen
-				visible={!!selectedTti}
-				onClose={() => selectedTtiSet('')}
+				visible={!!selectedTokenInfo}
+				onClose={() => selectedTokenInfoSet(null)}
 				className="flex flex-col"
 				headerComponent={
-					<>
-						<div className="flex-1 fy">
-							<p className="text-xl leading-4 mt-1">BTC-000</p>
-							<button
-								className="group fx darker-brightness-button"
-								onClick={() => copyWithToast(activeAddress)}
-							>
-								<p className="ml-5 leading-3 text-xs text-skin-secondary">
-									{shortenTti(selectedTti)}
+					selectedTokenInfo && (
+						<>
+							<div className="flex-1 fy">
+								<p className="text-xl leading-4 mt-1">
+									{selectedTokenInfo?.tokenSymbol}
 								</p>
-								<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-							</button>
-						</div>
-						<div className="w-10 p-1">
-							<img
-								src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${selectedToken?.tokenInfo.tokenSymbol.toLowerCase()}/${selectedTti}.png?raw=true`}
-								alt={selectedToken?.tokenInfo.tokenSymbol}
-								className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-							/>
-						</div>
-					</>
+								<button
+									className="group fx darker-brightness-button"
+									onClick={() => copyWithToast(activeAddress)}
+								>
+									<p className="ml-5 leading-3 text-xs text-skin-secondary">
+										{shortenTti(selectedTokenInfo?.tokenId!)}
+									</p>
+									<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+								</button>
+							</div>
+							<div className="w-10 p-1">
+								<img
+									src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${selectedTokenInfo?.tokenSymbol.toLowerCase()}/${
+										selectedTokenInfo?.tokenId
+									}.png?raw=true`}
+									alt={selectedTokenInfo?.tokenSymbol}
+									className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+								/>
+							</div>
+						</>
+					)
 				}
 			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
-					<TransactionList transactions={[]} />
+					{selectedTokenInfo && (
+						<TransactionList tti={selectedTokenInfo?.tokenId} />
+					)}
 				</div>
 				<div className="fx p-2 gap-2 shadow">
 					<button
@@ -484,7 +596,7 @@ const Home = ({
 						className="round-outline-button p-0"
 						onClick={() => sendingFundsSet(true)}
 					>
-						Send
+						{i18n.send}
 					</button>
 				</div>
 			</Modal>
@@ -492,12 +604,21 @@ const Home = ({
 				visible={receivingFunds}
 				onClose={() => receivingFundsSet(false)}
 				className="flex flex-col"
-				heading={`${i18n.receive} ${'BTC-000'}`}
-				subheading={selectedTti}
+				heading={`${i18n.receive} ${selectedTokenInfo?.tokenSymbol}`}
+				subheading={selectedTokenInfo?.tokenId}
 			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
 					{/* https://docs.vite.org/vite-docs/vep/vep-6.html */}
-					<QR data={activeAddress} className="h-40 w-40 mx-auto" />
+					{/* vite:vite_fa1d81d93bcc36f234f7bccf1403924a0834609f4b2e9856ad?tti=tti_5649544520544f4b454e6e40&amount=1&data=MTIzYWJjZA	 */}
+					<QR
+						data={`vite:${activeAddress}${toQueryString({
+							amount,
+							tti: selectedTokenInfo?.tokenId,
+							// data: _Buffer.from(comment).toString('base64'),
+							data: btoa(comment).replace(/=+$/, ''),
+						})}`}
+						className="h-40 w-40 mx-auto"
+					/>
 					<TextInput
 						optional
 						numeric
@@ -510,7 +631,10 @@ const Home = ({
 						textarea
 						label="Comment"
 						value={comment}
-						onUserInput={(v) => commentSet(v)}
+						onUserInput={(v) => {
+							console.log(v, _Buffer.from(v).toString('base64'));
+							commentSet(v);
+						}}
 					/>
 				</div>
 			</Modal>
@@ -526,17 +650,25 @@ const Home = ({
 				}}
 				fromLeft={confirmingTransaction}
 				className="flex flex-col"
-				heading={`${i18n.send} ${'BTC-000'}`}
-				subheading={selectedTti}
+				heading={`${i18n.send} ${selectedTokenInfo?.tokenSymbol}`}
+				subheading={selectedTokenInfo?.tokenId}
 			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
 					<div className="">
 						<p className="leading-5 text-skin-secondary">{i18n.from}</p>
+						<p className="break-words text-sm">{accountName}</p>
 						<p className="break-words text-sm">{activeAddress}</p>
 					</div>
 					<div className="">
 						<p className="leading-5 text-skin-secondary">{i18n.balance}</p>
-						<p className="">{toSmallestUnit('100000')}</p>
+						<p className="">
+							{balanceInfoMap?.[selectedTokenInfo?.tokenId!]?.balance &&
+								toBiggestUnit(
+									balanceInfoMap[selectedTokenInfo?.tokenId!]?.balance,
+									balanceInfoMap[selectedTokenInfo?.tokenId!]?.tokenInfo
+										?.decimals
+								)}
+						</p>
 					</div>
 					{/* <div className="">
 						<p className="leading-5 text-skin-secondary">
@@ -565,7 +697,7 @@ const Home = ({
 						onUserInput={(v) => amountSet(v)}
 						getIssue={(v) => {
 							console.log('v:', v);
-							// if (+toBiggestUnit(v, balances[selectedTti].decimals) > +balances[selectedTti].balance) {
+							// if (+toBiggestUnit(v, balances[selectedTokenInfo].decimals) > +balances[selectedTokenInfo].balance) {
 							// 	return i18n.insufficientFunds;
 							// }
 						}}
@@ -622,14 +754,42 @@ const Home = ({
 					)}
 					<button
 						className="round-solid-button"
-						onClick={() => {
-							// TODO
+						onClick={async () => {
+							const block = accountBlock.createAccountBlock('send', {
+								address: activeAddress,
+								toAddress: toAddress.trim(),
+								tokenId: selectedTokenInfo?.tokenId,
+								amount: toSmallestUnit(
+									amount,
+									balanceInfoMap![selectedTokenInfo?.tokenId!]?.tokenInfo
+										?.decimals
+								),
+							});
+							block.setProvider(viteApi);
+							block.setPrivateKey(activeAccount.privateKey);
+							await block.autoSetPreviousAccountBlock();
+							block.sign(activeAccount.privateKey);
+							const res: Transaction = await block.autoSendByPoW();
+							res.fromAddress = activeAddress;
+							res.timestamp = '' + Math.round(Date.now() / 1000);
+							sentTxSet(res);
 						}}
 					>
 						{i18n.confirm}
 					</button>
 				</div>
 			</Modal>
+			<TransactionModal
+				visible={!!sentTx}
+				fromRight
+				heading={i18n.transactionSent}
+				onClose={() => {
+					sendingFundsSet(false);
+					confirmingTransactionSet(false);
+					setTimeout(() => sentTxSet(null), 0);
+				}}
+				transaction={sentTx}
+			/>
 		</TabContainer>
 	);
 };

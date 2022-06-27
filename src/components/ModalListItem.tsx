@@ -8,11 +8,25 @@ type Props = {
 	rightJSX?: ReactNode;
 	label: string;
 	sublabel?: string;
+	className?: string;
 };
 
-const ModalListItem = ({ radio, active, onClick, label, sublabel, rightJSX }: Props) => {
+const ModalListItem = ({
+	radio,
+	active,
+	onClick,
+	label,
+	sublabel,
+	rightJSX,
+	className,
+}: Props) => {
 	return (
-		<button className={`p-2 ${radio ? 'pl-0' : ''} fx w-full bg-skin-middleground brightness-button`} onClick={onClick}>
+		<button
+			className={`p-2 ${
+				radio ? 'pl-0' : ''
+			} fx w-full bg-skin-middleground brightness-button ${className}`}
+			onClick={onClick}
+		>
 			{radio && (
 				<div className="w-10 xy">
 					{active ? (
@@ -24,7 +38,11 @@ const ModalListItem = ({ radio, active, onClick, label, sublabel, rightJSX }: Pr
 			)}
 			<div className="text-left flex-1">
 				<p className="leading-4">{label}</p>
-				{sublabel && <p className="mt-1 leading-4 text-sm text-skin-secondary">{sublabel}</p>}
+				{sublabel && (
+					<p className="mt-1 leading-4 text-sm text-skin-secondary">
+						{sublabel}
+					</p>
+				)}
 			</div>
 			{rightJSX}
 		</button>

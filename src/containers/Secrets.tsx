@@ -1,3 +1,4 @@
+import { DuplicateIcon } from '@heroicons/react/outline';
 import { useState } from 'react';
 import { connect } from '../utils/global-context';
 import { isDarkMode } from '../utils/misc';
@@ -9,13 +10,25 @@ type Props = State & {
 	className?: string;
 };
 
-const Secrets = ({ i18n, mnemonics, passphrase, className }: Props) => {
+const Secrets = ({
+	i18n,
+	mnemonics,
+	copyWithToast,
+	passphrase,
+	className,
+}: Props) => {
 	const [visible, visibleSet] = useState(false);
 	return (
 		<div
 			className={`relative overflow-hidden w-full bg-skin-middleground rounded shadow p-2 ${className}`}
 		>
 			<p className="text-skin-secondary">{i18n.mnemonicPhrase}</p>
+			<button
+				className="darker-brightness-button -m-1 p-1"
+				onClick={() => copyWithToast(mnemonics)}
+			>
+				<DuplicateIcon className="w-6 text-skin-secondary" />
+			</button>
 			<div className="grid grid-flow-col grid-rows-[repeat(12,minmax(0,1fr))]">
 				{mnemonics.split(' ').map((word, i) => (
 					<p key={i}>

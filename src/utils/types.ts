@@ -2,6 +2,7 @@ import { AddressObj, ViteAPI } from '@vite/vitejs/distSrc/utils/type';
 import en from '../i18n/en';
 import { setStateType } from './global-context';
 import { currencyConversions, i18nDict } from '../utils/constants';
+import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 
 export type CurrencyConversions = typeof currencyConversions[number];
 
@@ -12,6 +13,8 @@ export type Storage = {
 	networks: { [url: string]: string };
 	currencyConversion: CurrencyConversions;
 	activeAccountIndex: number;
+	accountList: AddressObj[];
+	contacts: { [address: string]: string };
 };
 
 export type Secrets = {
@@ -36,6 +39,7 @@ export type State = Storage & {
 	viteBalanceInfo: ViteBalanceInfo;
 	transactionHistory: {
 		all: Transaction[];
+		unreceived: Transaction[];
 		[tti: string]: Transaction[];
 	};
 };
@@ -44,61 +48,6 @@ export type PortMessage = {
 	type: 'opening' | 'updateSecrets' | 'approveContract' | 'reopen' | 'lock';
 	password?: string;
 	secrets?: Secrets;
-};
-
-// TODO: replace null types
-export type Transaction = {
-	blockType: number;
-	height: string;
-	hash: string;
-	prevHash: string;
-	previousHash: string;
-	accountAddress: string;
-	address: string;
-	publicKey: string;
-	producer: string;
-	fromAddress: string;
-	toAddress: string;
-	fromBlockHash: string;
-	sendBlockHash: string;
-	tokenId: string;
-	amount: string;
-	fee: string;
-	data: null;
-	difficulty: null;
-	nonce: null;
-	signature: string;
-	quota: string;
-	quotaByStake: string;
-	quotaUsed: string;
-	totalQuota: string;
-	utUsed: string;
-	logHash: null;
-	vmLogHash: null;
-	sendBlockList: null;
-	triggeredSendBlockList: null;
-	tokenInfo: {
-		tokenName: string;
-		tokenSymbol: string;
-		totalSupply: string;
-		decimals: 18;
-		owner: string;
-		tokenId: string;
-		maxSupply: string;
-		ownerBurnOnly: boolean;
-		isReIssuable: boolean;
-		index: 1;
-		isOwnerBurnOnly: boolean;
-	};
-	confirmedTimes: string;
-	confirmations: string;
-	confirmedHash: string;
-	firstSnapshotHash: string;
-	firstSnapshotHeight: string;
-	receiveBlockHeight: null;
-	receiveBlockHash: null;
-	timestamp: number;
-	transactionType: string;
 };
 
 export type ViteBalanceInfo = {

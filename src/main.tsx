@@ -9,7 +9,7 @@ import './styles/theme.ts';
 import { PortMessage, State } from './utils/types';
 import { getValue } from './utils/storage';
 import { wallet } from '@vite/vitejs';
-import { i18nDict, storageDefaults } from './utils/constants';
+import { i18nDict } from './utils/constants';
 
 const root = createRoot(document.getElementById('root')!);
 
@@ -19,11 +19,20 @@ const listen = async (message: PortMessage) => {
 		chromePort.onMessage.removeListener(listen);
 		const {
 			encryptedSecrets,
-			language = storageDefaults.language,
-			networkUrl = storageDefaults.networkUrl,
-			networks = storageDefaults.networks,
-			currencyConversion = storageDefaults.currencyConversion,
-			activeAccountIndex = storageDefaults.activeAccountIndex,
+			language = 'en',
+			networkUrl = 'wss://node.vite.net/gvite/ws',
+			networks = {
+				// url => label is more extensible than label => url.
+				// e.g. 'wss://node-tokyo.vite.net/ws': 'Mainnet',
+				// URLs are unique, network names are not.
+				'wss://node.vite.net/gvite/ws': 'Mainnet',
+				'wss://buidl.vite.net/gvite/ws': 'Testnet',
+				'ws://localhost:23457': 'Localnet',
+			},
+			currencyConversion = 'USD',
+			activeAccountIndex = 0,
+			accountList = [],
+			contacts = {},
 		} = await getValue(null);
 
 		const state: Partial<State> = {
@@ -33,6 +42,8 @@ const listen = async (message: PortMessage) => {
 			networks,
 			currencyConversion,
 			activeAccountIndex,
+			accountList,
+			contacts,
 			// above are values in chrome.storage. Below are everything else.
 			chromePort,
 			postPortMessage: (message: PortMessage) => {
@@ -41,6 +52,10 @@ const listen = async (message: PortMessage) => {
 			i18n: i18nDict[language],
 		};
 		if (message.secrets) {
+			// state.activeAccount = wallet.deriveAddress({
+			// 	...message.secrets,
+			// 	index: state.activeAccountIndex!,
+			// });
 			state.activeAccount = wallet.deriveAddress({
 				...message.secrets,
 				index: state.activeAccountIndex!,

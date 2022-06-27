@@ -27,10 +27,8 @@ export const toSmallestUnit = (num: string, decimals = 0) => {
 	}
 	const decimalPlaces = num.length - indexOfDot - 1;
 	return (
-		num.substring(num[0] === '0' ? 1 : 0, indexOfDot) +
-		num.substring(indexOfDot + 1) +
-		'0'.repeat(decimals - decimalPlaces)
-	);
+		num.substring(indexOfDot + 1) + '0'.repeat(decimals - decimalPlaces)
+	).replace(/^0+/g, '');
 };
 
 export const roundDownTo6Decimals = (balance: string) =>
@@ -39,3 +37,11 @@ export const roundDownTo6Decimals = (balance: string) =>
 // These don't check for what comes after the protocol
 export const validateWsUrl = (v = '') => /^(ws:\/\/|wss:\/\/)/.test(v);
 export const validateHttpUrl = (v = '') => /^(http:\/\/|https:\/\/)/.test(v);
+
+// https://howchoo.com/javascript/how-to-turn-an-object-into-query-string-parameters-in-javascript
+export const toQueryString = (params: { [key: string]: any }) =>
+	'?' +
+	Object.keys(params)
+		.filter((key) => !!params[key])
+		.map((key) => key + '=' + params[key])
+		.join('&');

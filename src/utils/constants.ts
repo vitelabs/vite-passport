@@ -5,20 +5,6 @@ export const i18nDict = { en };
 
 export const PROD = process.env.NODE_ENV === 'production';
 
-export const storageDefaults = {
-	language: 'en',
-	networkUrl: 'wss://node.vite.net/gvite/ws',
-	currencyConversion: 'USD',
-	activeAccountIndex: 0,
-	networks: {
-		// url => label is more extensible than label => url.
-		// e.g. 'wss://node-tokyo.vite.net/ws': 'Mainnet',
-		'wss://node.vite.net/gvite/ws': 'Mainnet',
-		'wss://buidl.vite.net/gvite/ws': 'Testnet',
-		'ws://localhost:23457': 'Localnet',
-	},
-} as const;
-
 export const ExplorerURLs = {
 	vitescan: {
 		mainnet: {
@@ -547,7 +533,7 @@ export const testWallet = {
 // 		receiveBlockHeight: '94730',
 // 		receiveBlockHash: '062437dc3637e11cc8df03d158a72d12a361cd821ee9736b1ef5d38fc76cd388',
 // 		timestamp: 1636445372,
-// 		transactionType: 'CancelSBPVoting',
+// 		transactionType: 'Cancelvoting',
 // 		contractParams: {},
 // 	},
 // 	{

@@ -18,14 +18,20 @@ module.exports = {
 		ecmaVersion: 'latest',
 		sourceType: 'module',
 	},
-	plugins: ['react', '@typescript-eslint'],
+	settings: {
+		react: {
+			version: 'detect',
+		},
+	},
+	plugins: ['react', '@typescript-eslint', 'react-hooks'],
 	rules: {
 		'@typescript-eslint/ban-ts-ignore': 'off',
 		'@typescript-eslint/no-non-null-assertion': 'off',
-		'react/prop-types': 'off',
 		'@typescript-eslint/no-empty-function': 'off',
 		'no-mixed-spaces-and-tabs': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
 		'@typescript-eslint/ban-ts-comment': 'off',
+		'react/prop-types': 'off',
+		'react/no-unescaped-entities': 0, // https://stackoverflow.com/a/53994887/4975090
 	},
 };

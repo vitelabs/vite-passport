@@ -22,7 +22,7 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
-		<PageContainer heading="Import Wallet" className="gap-3">
+		<PageContainer heading={i18n.importWallet} className="gap-3">
 			<TextInput
 				textarea
 				_ref={mnemonicRef}
@@ -64,16 +64,25 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 							passphrase,
 							mnemonics: mnemonics.trim(),
 						};
-						setState({
-							secrets,
-							activeAccount: wallet.deriveAddress({ ...secrets, index: 0 }),
-						});
 						postPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(
 							JSON.stringify(secrets),
 							password
 						);
-						setValue({ encryptedSecrets });
+						const accountList = [
+							wallet.deriveAddress({
+								...secrets,
+								index: 0,
+							}),
+						];
+						setValue({ encryptedSecrets, accountList });
+						setState({
+							secrets,
+							encryptedSecrets,
+							accountList,
+							activeAccountIndex: 0,
+							activeAccount: accountList[0],
+						});
 						navigate('/home');
 					}
 				}}

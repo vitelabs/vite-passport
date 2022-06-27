@@ -16,33 +16,42 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 	}, []);
 
 	return (
-		<PageContainer heading="Create Wallet">
+		<PageContainer heading={i18n.createWallet}>
 			<div className="w-full justify-between fx">
 				<div className="w-6"></div>
 				<div className="flex bg-skin-middleground shadow rounded overflow-hidden">
 					<button
 						className={`brightness-button px-2 py-0.5 text-sm ${
-							mnemonics.length === 12 ? 'bg-skin-foreground' : 'bg-skin-middleground'
+							mnemonics.length === 12
+								? 'bg-skin-foreground'
+								: 'bg-skin-middleground'
 						}`}
 						onClick={() => createMnemonics(true)}
 					>
-						12 words
+						{i18n._12Words}
 					</button>
 					<button
 						className={`brightness-button px-2 py-0.5 text-sm ${
-							mnemonics.length === 24 ? 'bg-skin-foreground' : 'bg-skin-middleground'
+							mnemonics.length === 24
+								? 'bg-skin-foreground'
+								: 'bg-skin-middleground'
 						}`}
 						onClick={() => createMnemonics()}
 					>
-						24 words
+						{i18n._24Words}
 					</button>
 				</div>
-				<button className="darker-brightness-button -m-1 p-1" onClick={() => copyWithToast(mnemonics)}>
+				<button
+					className="darker-brightness-button -m-1 p-1"
+					onClick={() => copyWithToast(mnemonics)}
+				>
 					<DuplicateIcon className="w-6 text-skin-secondary" />
 				</button>
 			</div>
 			<Secrets mnemonics={mnemonics} className="mt-2" />
-			<p className="mt-1 text-skin-secondary text-center text-sm">Store these words somewhere safe</p>
+			<p className="mt-1 text-skin-secondary text-center text-sm">
+				Store these words somewhere safe
+			</p>
 			<div className="flex-1"></div>
 			<A to="/create2" className="round-solid-button" state={{ mnemonics }}>
 				{i18n.next}

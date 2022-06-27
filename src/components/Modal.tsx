@@ -19,7 +19,7 @@ type Props = {
 	className?: string;
 };
 
-const modalParent = document.getElementById('modal');
+const modalParent = document.getElementById('modal')!;
 
 const Modal = ({
 	visible,
@@ -72,17 +72,17 @@ const Modal = ({
 	useEffect(() => {
 		document.body.style.overflow = 'hidden';
 		return () => {
-			if (!modalParent?.children.length) {
+			if (!modalParent.children.length) {
 				document.body.style.overflow = 'visible';
 			}
 		};
-	}, [modalParent]);
+	}, []);
 
 	return mounted
 		? ReactDOM.createPortal(
 				<div
 					ref={modalRef}
-					className={`z-10 h-[30rem] w-[18rem] fixed inset-0 bg-black overflow-scroll flex flex-col transition duration-500 ${
+					className={`z-10 h-full w-full fixed inset-0 bg-black overflow-scroll flex flex-col transition duration-500 ${
 						animationStage === 1
 							? 'backdrop-blur-sm bg-opacity-10 dark:bg-opacity-20'
 							: 'bg-opacity-0'
@@ -95,7 +95,7 @@ const Modal = ({
 					{fullscreen ? (
 						<div
 							onClick={(e) => e.stopPropagation()}
-							className={`w-[18rem] h-[30rem] bg-skin-middleground transition duration-500 ${
+							className={`w-full h-full bg-skin-middleground transition duration-500 ${
 								animationStage === 1 ? '' : 'translate-y-10 opacity-0'
 							} ${className}`}
 						>

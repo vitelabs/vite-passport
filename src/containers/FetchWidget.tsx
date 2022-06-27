@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback, useRef, ReactNode } from 'react';
-import { PROD } from '../utils/constants';
+import { useEffect, useState, useCallback, ReactNode } from 'react';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
 
@@ -28,8 +27,8 @@ const FetchWidget = ({
 		getPromise()
 			.then((result) => onResolve && onResolve(result))
 			.catch((err) => {
-				console.log('err:', err);
-				const errorString = typeof err === 'object' ? JSON.stringify(err) : err;
+				console.log('err:', err.constructor, err);
+				const errorString = err.toString();
 				if (onCatch) {
 					onCatch(errorString);
 				}

@@ -14,7 +14,7 @@ import Home from '../pages/Home';
 import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 import Lock from '../pages/Lock';
-import { wallet, ViteAPI, accountBlock } from '@vite/vitejs';
+import { ViteAPI, accountBlock } from '@vite/vitejs';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
@@ -63,7 +63,7 @@ const Router = ({
 				.getBalanceInfo(activeAccount.address)
 				// @ts-ignore getBalanceInfo needs a more descriptive return type
 				.then((res: ViteBalanceInfo) => {
-					console.log('res:', res);
+					// console.log('res:', res);
 					setState({ viteBalanceInfo: res });
 
 					if (res.unreceived.blockCount !== '0') {
@@ -84,7 +84,7 @@ const Router = ({
 		}
 	}, [setState, viteApi, activeAccount]);
 
-	useEffect(updateViteBalanceInfo, [activeAccount]); // eslint-disable-line
+	useEffect(updateViteBalanceInfo, [activeAccount, networkUrl]); // eslint-disable-line
 
 	useEffect(() => {
 		if (activeAccount) {
@@ -106,7 +106,7 @@ const Router = ({
 				});
 		}
 		return () => viteApi.unsubscribeAll();
-	}, [activeAccount, viteApi, updateViteBalanceInfo]);
+	}, [activeAccount, setState, viteApi, updateViteBalanceInfo]);
 
 	useEffect(() => {
 		setState({

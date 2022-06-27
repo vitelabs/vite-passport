@@ -25,7 +25,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
-		<PageContainer heading="Create Wallet">
+		<PageContainer heading={i18n.createWallet}>
 			<TextInput
 				optional
 				password
@@ -66,11 +66,19 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 							JSON.stringify(secrets),
 							password
 						);
-						setValue({ encryptedSecrets });
+						const accountList = [
+							wallet.deriveAddress({
+								...secrets,
+								index: 0,
+							}),
+						];
+						setValue({ encryptedSecrets, accountList });
 						setState({
 							secrets,
 							encryptedSecrets,
-							activeAccount: wallet.deriveAddress({ ...secrets, index: 0 }),
+							accountList,
+							activeAccountIndex: 0,
+							activeAccount: accountList[0],
 						});
 						navigate('/home');
 					}
