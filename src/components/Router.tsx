@@ -96,7 +96,7 @@ const Router = ({
 		getVitePrice().then((usd) => {
 			setState({ vitePrice: usd });
 		});
-	}, [setState]);
+	}, []); // eslint-disable-line
 
 	const updateViteBalanceInfo = useCallback(() => {
 		if (activeAccount) {
