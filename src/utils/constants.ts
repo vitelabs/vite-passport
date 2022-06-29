@@ -1,9 +1,28 @@
 // import { BalanceInfo } from './types';
 import en from '../i18n/en';
+import { Storage } from './types';
 
 export const i18nDict = { en };
 
 export const PROD = process.env.NODE_ENV === 'production';
+
+export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> =
+	{
+		language: 'en',
+		networkUrl: 'wss://node.vite.net/gvite/ws',
+		networks: {
+			// url => label is more extensible than label => url.
+			// e.g. 'wss://node-tokyo.vite.net/ws': 'Mainnet',
+			// URLs are unique, network names are not.
+			'wss://node.vite.net/gvite/ws': 'Mainnet',
+			'wss://buidl.vite.net/gvite/ws': 'Testnet',
+			'ws://localhost:23457': 'Localnet',
+		},
+		currencyConversion: 'USD',
+		activeAccountIndex: 0,
+		contacts: {},
+		connectedDomains: {},
+	} as const;
 
 export const ExplorerURLs = {
 	vitescan: {
@@ -20,29 +39,42 @@ export const ExplorerURLs = {
 			token: 'https://test.vitescan.io/token/',
 		},
 	},
-	// mainnet: 'https://mainnet.viteview.xyz',
+	viteview: {
+		mainnet: {
+			home: 'https://mainnet.viteview.xyz/#/',
+			address: 'https://mainnet.viteview.xyz/#/account/',
+			hash: 'https://mainnet.viteview.xyz/#/snapshot/',
+			token: 'https://mainnet.viteview.xyz/#/token/',
+		},
+		testnet: {
+			home: 'https://buidl.viteview.xyz/#/',
+			address: 'https://buidl.viteview.xyz/#/account/',
+			hash: 'https://buidl.viteview.xyz/#/snapshot/',
+			token: 'https://buidl.viteview.xyz/#/token/',
+		},
+	},
 	// vitetxs: {
 	// 	home: 'https://vitetxs.de/#/',
 	// 	address: '',
 	// 	hash: '',
 	// 	token: '',
 	// },
-	VITCScan: {
-		mainnet: {
-			home: 'https://vitcscan.com/',
-			address: 'https://vitcscan.com/address/',
-			hash: 'https://vitcscan.com/tx/',
-			token: 'https://vitcscan.com/token/',
-		},
-	},
-	vitexplorer: {
-		mainnet: {
-			home: 'https://vitexplorer.fr/dashboard',
-			address: 'https://vitexplorer.fr/address/',
-			hash: 'https://vitexplorer.fr/transaction/',
-			token: 'https://vitexplorer.fr/token/',
-		},
-	},
+	// VITCScan: {
+	// 	mainnet: {
+	// 		home: 'https://vitcscan.com/',
+	// 		address: 'https://vitcscan.com/address/',
+	// 		hash: 'https://vitcscan.com/tx/',
+	// 		token: 'https://vitcscan.com/token/',
+	// 	},
+	// },
+	// vitexplorer: {
+	// 	mainnet: {
+	// 		home: 'https://vitexplorer.fr/dashboard',
+	// 		address: 'https://vitexplorer.fr/address/',
+	// 		hash: 'https://vitexplorer.fr/transaction/',
+	// 		token: 'https://vitexplorer.fr/token/',
+	// 	},
+	// },
 };
 
 export const currencyConversions = [

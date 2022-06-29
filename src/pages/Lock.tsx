@@ -40,14 +40,14 @@ const Lock = ({
 				const routeAfterUnlock = searchParams.get('routeAfterUnlock');
 				navigate(routeAfterUnlock || '/home', { replace: true });
 			} catch {
-				passwordRef.current?.issueSet(i18n.incorrectPassport);
+				passwordRef.current?.issueSet(i18n.incorrectPassword);
 			}
 		}
 	}, [
 		password,
 		activeAccountIndex,
 		encryptedSecrets,
-		i18n.incorrectPassport,
+		i18n.incorrectPassword,
 		navigate,
 		postPortMessage,
 		setState,

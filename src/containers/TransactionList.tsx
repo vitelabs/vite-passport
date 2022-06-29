@@ -88,7 +88,6 @@ const TransactionList = ({
 						<button
 							key={tx.hash}
 							className="fx text-sm rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
-							// @ts-ignore
 							onClick={() => txInfoModalTxSet(tx)}
 						>
 							<div className="ml-2 flex-1 flex justify-between">

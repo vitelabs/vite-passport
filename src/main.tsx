@@ -7,56 +7,37 @@ import './styles/classes.css';
 import './styles/theme.ts';
 
 import { PortMessage, State } from './utils/types';
-import { getValue } from './utils/storage';
+import { getValue, setValue } from './utils/storage';
 import { wallet } from '@vite/vitejs';
-import { i18nDict } from './utils/constants';
+import { defaultStorage, i18nDict } from './utils/constants';
 
 const root = createRoot(document.getElementById('root')!);
 
 const chromePort = chrome.runtime.connect();
 const listen = async (message: PortMessage) => {
-	console.log('message:', message);
 	if (message.type === 'opening') {
 		chromePort.onMessage.removeListener(listen);
-		const {
-			encryptedSecrets,
-			language = 'en',
-			networkUrl = 'wss://node.vite.net/gvite/ws',
-			networks = {
-				// url => label is more extensible than label => url.
-				// e.g. 'wss://node-tokyo.vite.net/ws': 'Mainnet',
-				// URLs are unique, network names are not.
-				'wss://node.vite.net/gvite/ws': 'Mainnet',
-				'wss://buidl.vite.net/gvite/ws': 'Testnet',
-				'ws://localhost:23457': 'Localnet',
-			},
-			currencyConversion = 'USD',
-			activeAccountIndex = 0,
-			accountList = [],
-			contacts = {},
-		} = await getValue(null);
+		const storage = await getValue(null);
+
+		(Object.keys(defaultStorage) as (keyof typeof defaultStorage)[]).forEach(
+			(key) => {
+				if (storage[key] === undefined) {
+					// @ts-ignore
+					storage[key] = defaultStorage[key];
+					setValue({ [key]: defaultStorage[key] });
+				}
+			}
+		);
 
 		const state: Partial<State> = {
-			encryptedSecrets,
-			language,
-			networkUrl,
-			networks,
-			currencyConversion,
-			activeAccountIndex,
-			accountList,
-			contacts,
-			// above are values in chrome.storage. Below are everything else.
+			...storage,
 			chromePort,
 			postPortMessage: (message: PortMessage) => {
 				chromePort.postMessage(message);
 			},
-			i18n: i18nDict[language],
+			i18n: i18nDict[storage.language!],
 		};
 		if (message.secrets) {
-			// state.activeAccount = wallet.deriveAddress({
-			// 	...message.secrets,
-			// 	index: state.activeAccountIndex!,
-			// });
 			state.activeAccount = wallet.deriveAddress({
 				...message.secrets,
 				index: state.activeAccountIndex!,

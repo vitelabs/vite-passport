@@ -5,19 +5,9 @@ import { MINUTE } from './utils/time';
 import { PortMessage, Secrets } from './utils/types';
 
 // console.log('background');
-// // export const port = chrome.runtime.connect(extensionId);
-// const port = chrome.runtime.connect(extensionId, { name: 'vitePassport' });
-// console.log('port:', port);
-
-// port.onMessage.addListener((msg) => {
-// 	console.log('msg:', msg);
-// 	if (msg.question === "Who's there?") port.postMessage({ answer: 'Madame' });
-// 	else if (msg.question === 'Madame who?') port.postMessage({ answer: 'Madame... Bovary' });
-// });
 
 let secrets: Secrets | undefined;
 let lockTimer: NodeJS.Timeout | undefined;
-let anyReject: ((reason?: any) => void) | undefined;
 
 // Below are messages from within the extension
 chrome.runtime.onConnect.addListener((chromePort) => {
@@ -116,26 +106,25 @@ chrome.runtime.onMessage.addListener(
 			// The above ensures that only the focused tab can send messages to Vite Passport and the user has approved the URL
 			// respond back to contentScript.ts
 			switch (message.method) {
+				case 'signBlock':
+					// TODO: only allow active tab to call this
+					reply({ result: { sig: 'signed block' } });
+					break;
 				case 'getConnectedAccount':
-					// reply(() => {
-					// 	return 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f';
-					// });
-					// reply('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f');
-
 					const { accountList, activeAccountIndex } = await getValue([
 						'accountList',
 						'activeAccountIndex',
 					]);
-					if (!!accountList && activeAccountIndex !== undefined) {
-						reply({ result: accountList[activeAccountIndex] });
+					if (!!accountList) {
+						reply({ result: accountList[activeAccountIndex!] });
 					} else {
 						reply({ result: 'account not yet created' });
-						// i don't think this will ever be called cuz the user needs to create an account to do anything
+						// I don't think this will ever be called cuz the user needs to create an account to do anything
 					}
 					break;
-				case 'signBlock':
-					// TODO: only allow active tab to call this
-					reply({ result: { sig: 'signed block' } });
+				case 'getNetwork':
+					const { networkUrl } = await getValue(['networkUrl']);
+					reply({ result: networkUrl });
 					break;
 				default:
 					break;

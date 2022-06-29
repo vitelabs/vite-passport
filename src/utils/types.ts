@@ -8,12 +8,12 @@ export type CurrencyConversions = typeof currencyConversions[number];
 
 export type Storage = {
 	encryptedSecrets: string;
+	accountList: AddressObj[];
 	language: keyof typeof i18nDict;
 	networkUrl: string;
 	networks: { [url: string]: string };
 	currencyConversion: CurrencyConversions;
 	activeAccountIndex: number;
-	accountList: AddressObj[];
 	contacts: { [address: string]: string };
 	connectedDomains: {
 		[domain: string]: {

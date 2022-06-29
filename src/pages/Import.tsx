@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
+import { defaultStorage } from '../utils/constants';
 import { encrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
@@ -80,12 +81,12 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 								index: 0,
 							}),
 						];
-						setValue({ encryptedSecrets, accountList, activeAccountIndex: 0 });
+						setValue({ ...defaultStorage, encryptedSecrets, accountList });
 						setState({
+							...defaultStorage,
 							secrets,
 							encryptedSecrets,
 							accountList,
-							activeAccountIndex: 0,
 							activeAccount: accountList[0],
 						});
 						navigate(routeAfterUnlock || '/home', { replace: true });
