@@ -1,7 +1,7 @@
 import { wallet } from '@vite/vitejs';
 import { validateMnemonics } from '@vite/vitejs/distSrc/wallet/hdKey';
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
 import { encrypt } from '../utils/encryption';
@@ -20,6 +20,11 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 	const mnemonicRef = useRef<TextInputRefObject>();
 	const passphraseRef = useRef<TextInputRefObject>();
 	const passwordRef = useRef<TextInputRefObject>();
+	const {
+		state: { routeAfterUnlock },
+	} = useLocation() as {
+		state: { routeAfterUnlock?: string };
+	};
 
 	return (
 		<PageContainer heading={i18n.importWallet} className="gap-3">
@@ -75,7 +80,7 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 								index: 0,
 							}),
 						];
-						setValue({ encryptedSecrets, accountList });
+						setValue({ encryptedSecrets, accountList, activeAccountIndex: 0 });
 						setState({
 							secrets,
 							encryptedSecrets,
@@ -83,7 +88,7 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 							activeAccountIndex: 0,
 							activeAccount: accountList[0],
 						});
-						navigate('/home');
+						navigate(routeAfterUnlock || '/home', { replace: true });
 					}
 				}}
 			>

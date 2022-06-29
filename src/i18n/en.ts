@@ -126,6 +126,10 @@ const en = {
 	_12Words: '12 words',
 	_24Words: '24 words',
 	transactionSent: 'Transaction Sent!',
+	doYouWantToConnectVitePassportToThisDomain:
+		'Do you want to connect Vite Passport to this domain?',
+	notAtThisTime: 'Not at this time',
+	no: 'No',
 	test: 'test',
 	'': '',
 };

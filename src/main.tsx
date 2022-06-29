@@ -15,6 +15,7 @@ const root = createRoot(document.getElementById('root')!);
 
 const chromePort = chrome.runtime.connect();
 const listen = async (message: PortMessage) => {
+	console.log('message:', message);
 	if (message.type === 'opening') {
 		chromePort.onMessage.removeListener(listen);
 		const {

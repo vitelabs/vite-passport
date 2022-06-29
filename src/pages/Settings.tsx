@@ -47,18 +47,12 @@ const Settings = ({
 	const oldPasswordRef = useRef<TextInputRefObject>();
 	const newPasswordRef = useRef<TextInputRefObject>();
 	const [activeModal, activeModalSet] = useState<
-		| 'currency'
-		| 'language'
-		| 'contacts'
-		| 'password'
-		| 'secrets'
-		| 'reset'
-		| 'voting'
-		| 'quota'
-		| ''
+		'currency' | 'language' | 'contacts' | 'password' | 'secrets' | 'reset' | ''
 	>();
 	const [oldPassword, oldPasswordSet] = useState('');
 	const [newPassword, newPasswordSet] = useState('');
+
+	// TODO: show prices
 
 	return (
 		<TabContainer heading={i18n.settings}>
@@ -77,11 +71,6 @@ const Settings = ({
 					onClick={() => activeModalSet('contacts')}
 					label={i18n.contacts}
 				/> */}
-				{/* <ListItem
-					onClick={() => activeModalSet('voting')}
-					label={i18n.voting}
-				/> */}
-				<ListItem onClick={() => activeModalSet('quota')} label={i18n.quota} />
 				<ListItem
 					onClick={() => activeModalSet('password')}
 					label={i18n.changePassword}

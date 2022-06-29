@@ -14,9 +14,9 @@ type Props = State;
 const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 	const navigate = useNavigate();
 	const {
-		state: { mnemonics },
+		state: { mnemonics, routeAfterUnlock },
 	} = useLocation() as {
-		state: { mnemonics: string };
+		state: { mnemonics: string; routeAfterUnlock?: string };
 	};
 
 	const [passphrase, passphraseSet] = useState('');
@@ -72,7 +72,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 								index: 0,
 							}),
 						];
-						setValue({ encryptedSecrets, accountList });
+						setValue({ encryptedSecrets, accountList, activeAccountIndex: 0 });
 						setState({
 							secrets,
 							encryptedSecrets,
@@ -80,7 +80,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 							activeAccountIndex: 0,
 							activeAccount: accountList[0],
 						});
-						navigate('/home');
+						navigate(routeAfterUnlock || '/home', { replace: true });
 					}
 				}}
 			>

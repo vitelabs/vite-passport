@@ -28,7 +28,7 @@ const TabContainer = ({ heading, children }: Props) => {
 				</div>
 			)}
 			<div className="top-0 flex-1 overflow-scroll">{children}</div>
-			<div className="top-10 h-8 bg-skin-middleground flex">
+			<div className="h-10 bg-skin-middleground flex">
 				{[
 					['/home', OutlineCreditCardIcon, SolidCreditCardIcon],
 					['/my-transactions', OutlineBookOpenIcon, SolidBookOpenIcon],
@@ -40,7 +40,9 @@ const TabContainer = ({ heading, children }: Props) => {
 						<button
 							key={to as string}
 							disabled={active}
-							className={`flex-1 xy darker-brightness-button ${active ? 'text-skin-primary' : 'text-skin-secondary'}`}
+							className={`flex-1 xy darker-brightness-button ${
+								active ? 'text-skin-primary' : 'text-skin-secondary'
+							}`}
 							onClick={() => navigate(to as string, { replace: true })}
 						>
 							<Icon className="h-6 w-6 text-inherit" />

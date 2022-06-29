@@ -15,6 +15,11 @@ export type Storage = {
 	activeAccountIndex: number;
 	accountList: AddressObj[];
 	contacts: { [address: string]: string };
+	connectedDomains: {
+		[domain: string]: {
+			[contractAddress: string]: boolean;
+		};
+	};
 };
 
 export type Secrets = {
@@ -27,6 +32,7 @@ export type State = Storage & {
 	postPortMessage: (message: PortMessage) => void;
 	setState: setStateType;
 	secrets: Secrets;
+	vitePrice: number;
 	activeAccount: AddressObj; // caching cuz wallet.deriveAddress is very slow
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
@@ -44,11 +50,18 @@ export type State = Storage & {
 	};
 };
 
-export type PortMessage = {
-	type: 'opening' | 'updateSecrets' | 'approveContract' | 'reopen' | 'lock';
-	password?: string;
-	secrets?: Secrets;
-};
+export type PortMessage =
+	| {
+			type: 'approveContract' | 'reopen' | 'lock';
+	  }
+	| {
+			type: 'opening' | 'updateSecrets';
+			secrets: Secrets;
+	  }
+	| {
+			type: 'connectDomain';
+			domain: string;
+	  };
 
 export type ViteBalanceInfo = {
 	balance: {

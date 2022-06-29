@@ -1,11 +1,21 @@
-import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
+import {
+	MemoryRouter,
+	Route,
+	Routes,
+	Navigate,
+	useSearchParams,
+} from 'react-router-dom';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
 import { useCallback, useEffect, useMemo } from 'react';
 import { NewAccountBlock, State, ViteBalanceInfo } from '../utils/types';
 import WS_RPC from '@vite/vitejs-ws';
 import HTTP_RPC from '@vite/vitejs-http';
-import { copyToClipboardAsync } from '../utils/strings';
+import {
+	copyToClipboardAsync,
+	parseQueryString,
+	toQueryString,
+} from '../utils/strings';
 import Toast from '../containers/Toast';
 import Create from '../pages/Create';
 import Create2 from '../pages/Create2';
@@ -14,13 +24,26 @@ import Home from '../pages/Home';
 import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 import Lock from '../pages/Lock';
+import Connect from '../pages/Connect';
 import { ViteAPI, accountBlock } from '@vite/vitejs';
+import { PROD } from '../utils/constants';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
 // new WS_RPC(networkUrl, providerTimeout, providerOptions)
 
 type Props = State;
+
+const getVitePrice = async () => {
+	const res = await fetch(
+		'https://api.coingecko.com/api/v3/simple/price?ids=vite&vs_currencies=usd'
+	);
+	const {
+		vite: { usd },
+	} = await res.json();
+	// console.log('usd:', typeof usd, usd);
+	return usd;
+};
 
 const Router = ({
 	setState,
@@ -31,6 +54,25 @@ const Router = ({
 	secrets,
 }: Props) => {
 	const initialEntries = useMemo(() => {
+		if (window.location.pathname === '/src/confirmation.html') {
+			// This pathname is only used for popups (i.e. vitePassport.<methodName> was called from a third party tab)
+			const obj = parseQueryString(window.location.search);
+			if (typeof obj.route === 'string') {
+				if (!obj.route.startsWith('/')) {
+					throw new Error('route param must start with "/"');
+				}
+				if (!encryptedSecrets) {
+					// create account
+					return ['/' + toQueryString({ routeAfterUnlock: obj.route })];
+				}
+				if (secrets) {
+					return [obj.route];
+				}
+				return ['/lock' + toQueryString({ routeAfterUnlock: obj.route })];
+			} else {
+				throw new Error('route param must be provided');
+			}
+		}
 		if (encryptedSecrets) {
 			if (secrets) {
 				return ['/home'];
@@ -57,6 +99,12 @@ const Router = ({
 
 	useEffect(() => setState({ viteApi }), [viteApi]); // eslint-disable-line
 
+	useEffect(() => {
+		getVitePrice().then((usd) => {
+			setState({ vitePrice: usd });
+		});
+	}, []);
+
 	const updateViteBalanceInfo = useCallback(() => {
 		if (activeAccount) {
 			viteApi
@@ -65,7 +113,6 @@ const Router = ({
 				.then((res: ViteBalanceInfo) => {
 					// console.log('res:', res);
 					setState({ viteBalanceInfo: res });
-
 					if (res.unreceived.blockCount !== '0') {
 						const receiveTask = new accountBlock.ReceiveAccountBlockTask({
 							address: activeAccount.address,
@@ -126,7 +173,7 @@ const Router = ({
 
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
-		<MemoryRouter initialEntries={initialEntries}>
+		<MemoryRouter initialEntries={initialEntries} initialIndex={0}>
 			<Routes>
 				<Route path="/" element={<Start />} />
 				<Route path="/create" element={<Create />} />
@@ -136,6 +183,7 @@ const Router = ({
 				<Route path="/my-transactions" element={<MyTransactions />} />
 				<Route path="/settings" element={<Settings />} />
 				<Route path="/lock" element={<Lock />} />
+				<Route path="/connect" element={<Connect />} />
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
 			<Toast />

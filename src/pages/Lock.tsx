@@ -1,6 +1,6 @@
 import { wallet } from '@vite/vitejs';
 import { useCallback, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
 import { decrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
@@ -20,7 +20,9 @@ const Lock = ({
 }: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
 	const [password, passwordSet] = useState('');
+	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
+	console.log('navigate:', navigate);
 
 	const attemptUnlock = useCallback(async () => {
 		const valid = validateInputs([passwordRef]);
@@ -35,7 +37,8 @@ const Lock = ({
 					}),
 				});
 				postPortMessage({ secrets, type: 'updateSecrets' });
-				navigate('/home', { replace: true });
+				const routeAfterUnlock = searchParams.get('routeAfterUnlock');
+				navigate(routeAfterUnlock || '/home', { replace: true });
 			} catch {
 				passwordRef.current?.issueSet(i18n.incorrectPassport);
 			}

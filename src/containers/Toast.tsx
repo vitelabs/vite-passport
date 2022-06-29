@@ -28,7 +28,7 @@ let mountTimer: NodeJS.Timeout;
 let unmountTimer: NodeJS.Timeout;
 let enterDate = 0;
 let exiting = false;
-const minShowTime = 2000;
+const minShowTime = 3000;
 const toastParent = document.getElementById('toast');
 
 const Toast = ({ setState, toast }: Props) => {

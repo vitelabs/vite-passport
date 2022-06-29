@@ -1,14 +1,10 @@
-/* eslint-disable */
-
-import { wallet } from '@vite/vitejs';
-import { VitePassportMethodCall } from './injectedScript';
-import { decrypt } from './utils/encryption';
-import { getValue, setValue } from './utils/storage';
+import { VitePassportMethodCall, BackgroundResponse } from './injectedScript';
+import { getValue } from './utils/storage';
+import { getHostname, toQueryString } from './utils/strings';
 import { MINUTE } from './utils/time';
-import { PortMessage, Secrets, State } from './utils/types';
+import { PortMessage, Secrets } from './utils/types';
 
-console.log('background');
-
+// console.log('background');
 // // export const port = chrome.runtime.connect(extensionId);
 // const port = chrome.runtime.connect(extensionId, { name: 'vitePassport' });
 // console.log('port:', port);
@@ -19,95 +15,127 @@ console.log('background');
 // 	else if (msg.question === 'Madame who?') port.postMessage({ answer: 'Madame... Bovary' });
 // });
 
-// https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
-// window.addEventListener('signBlock', ((event: CustomEvent) => {
-// 	console.log('event:', event.detail);
-// }) as EventListener);
-
-// let password: string | undefined;
 let secrets: Secrets | undefined;
-let lockTimers: NodeJS.Timeout[] = [];
+let lockTimer: NodeJS.Timeout | undefined;
+let anyReject: ((reason?: any) => void) | undefined;
 
-const getActiveTabId = () => {
-	return new Promise((resolve) => {
-		chrome.tabs.query({ active: true }, ([tab]) => resolve(tab.id));
-	});
-};
-
-// https://stackoverflow.com/a/39732154/13442719
+// Below are messages from within the extension
 chrome.runtime.onConnect.addListener((chromePort) => {
-	console.log('onConnect!!!');
 	chromePort.postMessage({ secrets, type: 'opening' } as PortMessage);
 	chromePort.onMessage.addListener((message: PortMessage) => {
-		console.log('message:', message);
+		// console.log('message:', message);
 		switch (message.type) {
-			// case 'updatePassword':
-			// 	if (message.password) {
-			// 		password = message.password;
-			// 	}
-			// 	break;
-			case 'updateSecrets':
-				if (message.secrets) {
-					secrets = message.secrets;
+			case 'reopen':
+				if (lockTimer) {
+					clearTimeout(lockTimer);
+					lockTimer = undefined;
 				}
 				break;
-			case 'reopen':
-				lockTimers.forEach((lockTimer) => clearTimeout(lockTimer));
-				lockTimers = [];
+			case 'updateSecrets':
+				secrets = message.secrets;
+				break;
+			case 'connectDomain':
+				dispatchEvent(
+					new CustomEvent('vitePassportConnectDomain', {
+						detail: { domain: message.domain },
+					})
+				);
 				break;
 			case 'lock':
-				// password =
 				secrets = undefined;
 				break;
 			default:
 				break;
 		}
 	});
+
+	// https://stackoverflow.com/a/39732154/13442719
 	chromePort.onDisconnect.addListener(async () => {
-		console.log('onDisconnect');
 		if (secrets) {
-			lockTimers.push(
-				setTimeout(() => {
-					console.log('locked out');
-					// password =
-					secrets = undefined;
-				}, 3000) // for testing
-				// }, 5 * MINUTE) // TODO: make this time adjustable
-			);
+			if (lockTimer) {
+				clearTimeout(lockTimer);
+			}
+			lockTimer = setTimeout(() => {
+				secrets = undefined;
+				// }, 3000) // for testing
+			}, 5 * MINUTE); // TODO: make this time adjustable
 		}
+		dispatchEvent(new CustomEvent('vitePassportChromePortDisconnect'));
 	});
 });
 
+// Below are messages from the injected vitePassport object
 chrome.runtime.onMessage.addListener(
-	(message: VitePassportMethodCall, sender, reply) => {
+	(
+		message: VitePassportMethodCall,
+		sender,
+		reply: (res: Omit<BackgroundResponse, '_messageId'>) => void
+	) => {
+		// console.log('message:', message);
 		(async () => {
+			if ((await getFocusedTabId()) !== sender.tab?.id) {
+				throw new Error('sender.tab?.id does not match focused tab Id');
+			}
+			if (!sender.origin) {
+				throw new Error('sender.origin does not exist');
+			}
+			const { connectedDomains } = await getValue('connectedDomains');
+			const hostname = getHostname(sender.origin);
+			if (!connectedDomains?.[hostname]) {
+				openPopup('/connect' + toQueryString({ hostname }));
+				try {
+					await new Promise((resolve, reject) => {
+						const connectListener = () => {
+							resolve(true);
+							removeListeners();
+						};
+						const disconnectListener = () => {
+							reject();
+							reply({
+								error: 'Vite Passport closed before user approved domain',
+							});
+							removeListeners();
+						};
+						const removeListeners = () => {
+							removeEventListener('vitePassportConnectDomain', connectListener);
+							removeEventListener(
+								'vitePassportChromePortDisconnect',
+								disconnectListener
+							);
+						};
+						addEventListener('vitePassportConnectDomain', connectListener);
+						addEventListener(
+							'vitePassportChromePortDisconnect',
+							disconnectListener
+						);
+					});
+				} catch (e) {
+					return;
+				}
+			}
+			// The above ensures that only the focused tab can send messages to Vite Passport and the user has approved the URL
+			// respond back to contentScript.ts
 			switch (message.method) {
 				case 'getConnectedAccount':
-					// TODO: only allow active tab to call this
-					// getActiveTabId
-
 					// reply(() => {
-					// 	// await requireUnlock();
 					// 	return 'vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f';
 					// });
 					// reply('vite_5e8d4ac7dc8b75394cacd21c5667d79fe1824acb46c6b7ab1f');
 
-					if (secrets) {
-						const { activeAccountIndex } = await getValue([
-							'activeAccountIndex',
-						]);
-						// const addr = wallet.deriveAddress({ ...secrets, index: activeAccountIndex || 0 });
-						// console.log('addr:', addr);
-						// reply(addr.address);
+					const { accountList, activeAccountIndex } = await getValue([
+						'accountList',
+						'activeAccountIndex',
+					]);
+					if (!!accountList && activeAccountIndex !== undefined) {
+						reply({ result: accountList[activeAccountIndex] });
 					} else {
-						await requireUnlock();
+						reply({ result: 'account not yet created' });
+						// i don't think this will ever be called cuz the user needs to create an account to do anything
 					}
 					break;
 				case 'signBlock':
-					await requireUnlock();
 					// TODO: only allow active tab to call this
-					// getActiveTabId
-					reply({ sig: 'signed block' });
+					reply({ result: { sig: 'signed block' } });
 					break;
 				default:
 					break;
@@ -118,22 +146,24 @@ chrome.runtime.onMessage.addListener(
 	}
 );
 
-const requireUnlock = async () => {
-	if (!secrets) {
-		openPopup('/');
-	}
-	return true;
-};
-
 const host = chrome.runtime.getURL('src/confirmation.html');
-const openPopup = async (path: string) => {
+const openPopup = async (route: string) => {
+	// route is specified in the params cuz frontend routing doesn't work here (popup window would loost for a file under host+route)
 	const lastFocused = await chrome.windows.getCurrent();
-	await chrome.windows.create({
-		url: host + path,
+	chrome.windows.create({
+		url: host + toQueryString({ route }),
 		type: 'popup',
-		width: 18 * 16, // w-[18rem]
-		height: 30 * 16 + 22, // h-[30rem] + frame header height (22px on macOS?)
+		width: (9 / 16) * 35 * 16, // w-[calc(9/16*35rem)
+		height: 35 * 16 + 22, // h-[35rem] + frame header height (22px on macOS?)
 		top: lastFocused.top,
 		left: lastFocused.left! + (lastFocused.width! - 18 * 16),
+	});
+};
+
+const getFocusedTabId = () => {
+	return new Promise((resolve) => {
+		chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) =>
+			resolve(tab.id)
+		);
 	});
 };

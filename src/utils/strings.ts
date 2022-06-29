@@ -43,5 +43,36 @@ export const toQueryString = (params: { [key: string]: any }) =>
 	'?' +
 	Object.keys(params)
 		.filter((key) => !!params[key])
-		.map((key) => key + '=' + params[key])
+		.map(
+			(key) => encodeURIComponent(key) + '=' + encodeURIComponent(params[key])
+		)
 		.join('&');
+
+export const getTokenImage = (symbol: string, tti: string) => {
+	return `https://github.com/vitelabs/crypto-info/blob/master/tokens/${symbol.toLowerCase()}/${tti}.png?raw=true`;
+};
+
+export const getHostname = (url = '') => {
+	if (!url.startsWith('http')) {
+		return '';
+	}
+	return new URL(url).hostname;
+};
+
+export const parseQueryString = (
+	urlSearchParams: string
+): { [key: string]: string } => {
+	if (urlSearchParams[0] !== '?') {
+		throw new Error('urlSearchParams must start with "?"');
+	}
+	const split = urlSearchParams.slice(1).split('&');
+	return split
+		.map((p) => p.split('='))
+		.reduce((obj, pair) => {
+			const [key, value] = pair.map(decodeURIComponent);
+			if (key) {
+				return { ...obj, [key]: value };
+			}
+			return obj;
+		}, {});
+};

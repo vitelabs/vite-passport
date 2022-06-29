@@ -18,8 +18,9 @@ import TabContainer from '../components/TabContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
 import TransactionList from '../containers/TransactionList';
 import { connect } from '../utils/global-context';
-import { validateInputs } from '../utils/misc';
+import { calculatePrice, validateInputs } from '../utils/misc';
 import {
+	getTokenImage,
 	shortenAddress,
 	shortenTti,
 	toBiggestUnit,
@@ -55,6 +56,7 @@ const Home = ({
 	contacts,
 	viteApi,
 	toastSuccess,
+	vitePrice,
 }: Props) => {
 	const quotaBeneficiaryRef = useRef<TextInputRefObject>();
 	const lockedAmountRef = useRef<TextInputRefObject>();
@@ -75,13 +77,13 @@ const Home = ({
 	const [rpcUrl, rpcUrlSet] = useState('');
 	// const [votingModalOpen, votingModalOpenSet] = useState(false);
 	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
-	// const [editingTokenList, editingTokenListSet] = useState(false);
-	// const [tokenQuery, tokenQuerySet] = useState('');
+	const [editingTokenList, editingTokenListSet] = useState(false);
+	const [tokenQuery, tokenQuerySet] = useState('');
 	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
-	// const [displayedTokenDraft, displayedTokenDraftSet] = useState<{
-	// 	[key: string]: boolean;
-	// }>({});
-	// const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
+	const [displayedTokenDraft, displayedTokenDraftSet] = useState<{
+		[key: string]: boolean;
+	}>({});
+	const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
 	const [selectedTokenInfo, selectedTokenInfoSet] = useState<TokenInfo | null>(
 		null
 	);
@@ -216,60 +218,64 @@ const Home = ({
 						{i18n.yourWalletIsEmpty}
 					</p>
 				) : (
-					assets.map(({ balance, tokenInfo }) => {
-						return (
-							<button
-								key={tokenInfo.tokenId}
-								className="fx rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
-								onClick={() => selectedTokenInfoSet(tokenInfo)}
-							>
-								<img
-									src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${tokenInfo.tokenSymbol.toLowerCase()}/${
-										tokenInfo.tokenId
-									}.png?raw=true`}
-									alt={tokenInfo.tokenSymbol}
-									className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-								/>
-								<div className="flex-1 flex">
-									<div className="flex flex-col flex-1 items-start">
-										<p className="text-lg">{tokenInfo.tokenSymbol}</p>
-										{/* <button
+					<>
+						{assets.map(({ balance, tokenInfo }) => {
+							const biggestUnit = toBiggestUnit(balance, tokenInfo.decimals);
+							return (
+								<button
+									key={tokenInfo.tokenId}
+									className="fx rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
+									onClick={() => selectedTokenInfoSet(tokenInfo)}
+								>
+									<img
+										src={getTokenImage(
+											tokenInfo.tokenSymbol,
+											tokenInfo.tokenId
+										)}
+										alt={tokenInfo.tokenSymbol}
+										className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+									/>
+									<div className="flex-1 flex">
+										<div className="flex flex-col flex-1 items-start">
+											<p className="text-lg">{tokenInfo.tokenSymbol}</p>
+											{/* <button
 										className="text-xs text-skin-muted darker-brightness-button"
 										onClick={() => copyWithToast(tokenInfo.tokenId)}
 									>
 										{shortenTti(tokenInfo.tokenId)}
 									</button> */}
-										<p className="text-xs text-skin-muted">
-											{shortenTti(tokenInfo.tokenId)}
-										</p>
+											<p className="text-xs text-skin-muted">
+												{shortenTti(tokenInfo.tokenId)}
+											</p>
+										</div>
+										<div className="flex flex-col items-end mr-1.5">
+											<p className="text-lg">{biggestUnit}</p>
+											<p className="text-xs text-skin-secondary">
+												{calculatePrice(biggestUnit, vitePrice)}
+											</p>
+										</div>
 									</div>
-									<div className="flex flex-col items-end mr-1.5">
-										<p className="text-lg">
-											{toBiggestUnit(balance, tokenInfo.decimals)}
-										</p>
-										<p className="text-xs text-skin-secondary">$0</p>
-									</div>
-								</div>
-							</button>
-						);
-					})
+								</button>
+							);
+						})}
+						<button
+							className="mx-auto block text-skin-highlight brightness-button"
+							onClick={() => {
+								editingTokenListSet(true);
+								const displayedTokenDraft: { [key: string]: boolean } = {};
+								const tokenOrderDraft: string[] = [];
+								// assets.forEach(({ tti }) => {
+								// 	displayedTokenDraft[tti] = true;
+								// 	tokenOrderDraft.push(tti);
+								// });
+								displayedTokenDraftSet(displayedTokenDraft);
+								tokenOrderDraftSet(tokenOrderDraft);
+							}}
+						>
+							{i18n.editTokenList}
+						</button>
+					</>
 				)}
-				{/* <button
-					className="mx-auto block text-skin-highlight brightness-button"
-					onClick={() => {
-						editingTokenListSet(true);
-						const displayedTokenDraft: { [key: string]: boolean } = {};
-						const tokenOrderDraft: string[] = [];
-						assets.forEach(({ tti }) => {
-							displayedTokenDraft[tti] = true;
-							tokenOrderDraft.push(tti);
-						});
-						displayedTokenDraftSet(displayedTokenDraft);
-						tokenOrderDraftSet(tokenOrderDraft);
-					}}
-				>
-					{i18n.editTokenList}
-				</button> */}
 			</div>
 			{/* <Modal
 				visible={votingModalOpen}
@@ -473,7 +479,7 @@ const Home = ({
 					}}
 				/>
 			</Modal>
-			{/* <Modal
+			<Modal
 				fullscreen
 				heading={i18n.editTokenList}
 				visible={editingTokenList}
@@ -487,44 +493,52 @@ const Home = ({
 					onChange={(e) => tokenQuerySet(e.target.value)}
 				/>
 				<div className="flex-1 overflow-scroll">
-					{assets.map(({ tti, symbol }) => {
-						return (
-							<div
-								key={tti}
-								className="fx rounded py-1 px-2 bg-skin-middleground"
-								onMouseDown={() => {
-									// TODO: drag to sort
-								}}
-							>
-								<img
-									src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${symbol.toLowerCase()}/${tti}.png?raw=true`}
-									alt={symbol}
-									className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-								/>
-								<div className="flex-1 fx">
-									<div className="flex flex-col flex-1 items-start">
-										<p className="text-lg">{symbol}</p>
-										<button
-											className="group fx darker-brightness-button"
-											onClick={() => copyWithToast(tti)}
-										>
-											<p className="text-xs text-skin-secondary">
-												{shortenTti(tti)}
-											</p>
-											<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-										</button>
-									</div>
-									<Checkbox
-										checked={displayedTokenDraft[tti]}
-										onUserInput={(checked) => {
-											displayedTokenDraft[tti] = checked;
-											displayedTokenDraftSet({ ...displayedTokenDraft });
+					{!assets
+						? null
+						: assets.map(({ tokenInfo }) => {
+								const tti = tokenInfo.tokenId;
+								const symbol = tokenInfo.tokenSymbol;
+								console.log(
+									'getTokenImage(symbol, tti):',
+									getTokenImage(symbol, tti)
+								);
+								return (
+									<div
+										key={tti}
+										className="fx rounded py-1 px-2 bg-skin-middleground"
+										onMouseDown={() => {
+											// TODO: drag to sort
 										}}
-									/>
-								</div>
-							</div>
-						);
-					})}
+									>
+										<img
+											src={getTokenImage(symbol, tti)}
+											alt={symbol}
+											className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+										/>
+										<div className="flex-1 fx">
+											<div className="flex flex-col flex-1 items-start">
+												<p className="text-lg">{symbol}</p>
+												<button
+													className="group fx darker-brightness-button"
+													onClick={() => copyWithToast(tti)}
+												>
+													<p className="text-xs text-skin-secondary">
+														{shortenTti(tti)}
+													</p>
+													<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+												</button>
+											</div>
+											<Checkbox
+												checked={displayedTokenDraft[tti]}
+												onUserInput={(checked) => {
+													displayedTokenDraft[tti] = checked;
+													displayedTokenDraftSet({ ...displayedTokenDraft });
+												}}
+											/>
+										</div>
+									</div>
+								);
+						  })}
 				</div>
 				<div className="flex gap-2 p-2 shadow z-50">
 					<button
@@ -544,7 +558,7 @@ const Home = ({
 						{i18n.confirm}
 					</button>
 				</div>
-			</Modal> */}
+			</Modal>
 			<Modal
 				fullscreen
 				visible={!!selectedTokenInfo}
@@ -569,9 +583,10 @@ const Home = ({
 							</div>
 							<div className="w-10 p-1">
 								<img
-									src={`https://github.com/vitelabs/crypto-info/blob/master/tokens/${selectedTokenInfo?.tokenSymbol.toLowerCase()}/${
+									src={getTokenImage(
+										selectedTokenInfo?.tokenSymbol,
 										selectedTokenInfo?.tokenId
-									}.png?raw=true`}
+									)}
 									alt={selectedTokenInfo?.tokenSymbol}
 									className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
 								/>

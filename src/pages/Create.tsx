@@ -6,6 +6,7 @@ import { State } from '../utils/types';
 import PageContainer from '../components/PageContainer';
 import Secrets from '../containers/Secrets';
 import { wallet } from '@vite/vitejs';
+import { useLocation } from 'react-router-dom';
 
 type Props = State;
 
@@ -14,6 +15,11 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 	const createMnemonics = useCallback((twelveWords = false) => {
 		mnemonicsSet(wallet.createMnemonics(twelveWords ? 128 : 256));
 	}, []);
+	const {
+		state: { routeAfterUnlock },
+	} = useLocation() as {
+		state: { routeAfterUnlock?: string };
+	};
 
 	return (
 		<PageContainer heading={i18n.createWallet}>
@@ -53,7 +59,11 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 				Store these words somewhere safe
 			</p>
 			<div className="flex-1"></div>
-			<A to="/create2" className="round-solid-button" state={{ mnemonics }}>
+			<A
+				to="/create2"
+				className="round-solid-button"
+				state={{ mnemonics, routeAfterUnlock }}
+			>
 				{i18n.next}
 			</A>
 		</PageContainer>

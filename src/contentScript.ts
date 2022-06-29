@@ -1,3 +1,5 @@
+import { BackgroundResponse, VitePassportMethodCall } from './injectedScript';
+
 console.log('content');
 
 // OPTIMIZE: chrome.scripting.executeScript https://developer.chrome.com/docs/extensions/reference/scripting/#method-executeScript
@@ -7,11 +9,20 @@ scriptTag.src = chrome.runtime.getURL('src/injectedScript.js'); // made availabl
 document.documentElement.appendChild(scriptTag);
 scriptTag.remove();
 
-window.addEventListener('vitePassportMethodCalled', ((event: CustomEvent) => {
-	chrome.runtime.sendMessage(event.detail as object, (result) => {
-		console.log('result:', result);
-		window.postMessage({ result, _messageId: event.detail._messageId });
-	});
-}) as EventListener);
+window.addEventListener('vitePassportMethodCalled', ((
+	event: CustomEvent<VitePassportMethodCall>
+) => {
+	// sendMessage to background.ts
+	chrome.runtime.sendMessage(
+		event.detail,
+		// response from background.ts
+		(response: Omit<BackgroundResponse, '_messageId'>) => {
+			window.postMessage({
+				...response,
+				_messageId: event.detail._messageId,
+			} as BackgroundResponse);
+		}
+	);
+}) as EventListener); // https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
 
 export {};
