@@ -1,14 +1,13 @@
 import { useMemo } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { connect } from '../utils/global-context';
-import { getValue, setValue } from '../utils/storage';
 import { State } from '../utils/types';
 
 type Props = State;
 
 const Connect = ({ i18n, postPortMessage }: Props) => {
 	const [searchParams] = useSearchParams();
-	const hostname = useMemo(() => searchParams.get('hostname'), []);
+	const hostname = useMemo(() => searchParams.get('hostname'), [searchParams]);
 	if (!hostname) {
 		throw new Error('hostname not provided in search params');
 	}

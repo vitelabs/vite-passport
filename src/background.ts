@@ -115,7 +115,7 @@ chrome.runtime.onMessage.addListener(
 						'accountList',
 						'activeAccountIndex',
 					]);
-					if (!!accountList) {
+					if (accountList) {
 						reply({ result: accountList[activeAccountIndex!] });
 					} else {
 						reply({ result: 'account not yet created' });

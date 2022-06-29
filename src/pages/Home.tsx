@@ -624,7 +624,6 @@ const Home = ({
 			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
 					{/* https://docs.vite.org/vite-docs/vep/vep-6.html */}
-					{/* vite:vite_fa1d81d93bcc36f234f7bccf1403924a0834609f4b2e9856ad?tti=tti_5649544520544f4b454e6e40&amount=1&data=MTIzYWJjZA	 */}
 					<QR
 						data={`vite:${activeAddress}${toQueryString({
 							amount,

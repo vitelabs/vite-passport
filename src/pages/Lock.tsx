@@ -46,6 +46,7 @@ const Lock = ({
 	}, [
 		password,
 		activeAccountIndex,
+		searchParams,
 		encryptedSecrets,
 		i18n.incorrectPassword,
 		navigate,

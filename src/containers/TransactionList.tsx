@@ -1,14 +1,10 @@
-import { DuplicateIcon } from '@heroicons/react/outline';
-import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { useMemo, useState } from 'react';
-import A from '../components/A';
-import Modal from '../components/Modal';
 import TransactionModal from '../components/TransactionModal';
 import FetchWidget from '../containers/FetchWidget';
 import { connect } from '../utils/global-context';
-import { shortenAddress, shortenHash, toBiggestUnit } from '../utils/strings';
+import { shortenAddress, toBiggestUnit } from '../utils/strings';
 import { formatDate } from '../utils/time';
 import { State } from '../utils/types';
 
@@ -22,7 +18,6 @@ const TransactionList = ({
 	activeAccount,
 	setState,
 	i18n,
-	copyWithToast,
 	transactionHistory,
 	tti,
 	unreceived,

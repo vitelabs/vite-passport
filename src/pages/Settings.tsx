@@ -12,7 +12,7 @@ import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
-import { removeKeys } from '../utils/storage';
+import { getValue, removeKeys, StorageFields } from '../utils/storage';
 
 type Props = State;
 
@@ -220,16 +220,9 @@ const Settings = ({
 					<p className="">{i18n.youAreAboutToErase}</p>
 					<button
 						className="round-solid-button"
-						onClick={() => {
-							// NOTE: This should contain all keys of type Storage
-							removeKeys([
-								'encryptedSecrets',
-								'language',
-								'networks',
-								'networkUrl',
-								'currencyConversion',
-								'activeAccountIndex',
-							]);
+						onClick={async () => {
+							const storage = await getValue(null);
+							removeKeys(Object.keys(storage) as StorageFields[]);
 							navigate('/', { replace: true });
 						}}
 					>

@@ -1,10 +1,4 @@
-import {
-	MemoryRouter,
-	Route,
-	Routes,
-	Navigate,
-	useSearchParams,
-} from 'react-router-dom';
+import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -26,7 +20,6 @@ import Settings from '../pages/Settings';
 import Lock from '../pages/Lock';
 import Connect from '../pages/Connect';
 import { ViteAPI, accountBlock } from '@vite/vitejs';
-import { PROD } from '../utils/constants';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
@@ -103,7 +96,7 @@ const Router = ({
 		getVitePrice().then((usd) => {
 			setState({ vitePrice: usd });
 		});
-	}, []);
+	}, [setState]);
 
 	const updateViteBalanceInfo = useCallback(() => {
 		if (activeAccount) {
