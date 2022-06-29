@@ -22,7 +22,6 @@ const Lock = ({
 	const [password, passwordSet] = useState('');
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
-	console.log('navigate:', navigate);
 
 	const attemptUnlock = useCallback(async () => {
 		const valid = validateInputs([passwordRef]);

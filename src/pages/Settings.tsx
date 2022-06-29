@@ -96,7 +96,7 @@ const Settings = ({
 				visible={activeModal === 'currency'}
 				onClose={() => activeModalSet('')}
 			>
-				{currencyConversions.map(([shorthand, label], i) => {
+				{currencyConversions.map((shorthand) => {
 					const active = currencyConversion === shorthand;
 					return (
 						<ModalListItem
@@ -104,7 +104,7 @@ const Settings = ({
 							key={shorthand}
 							active={active}
 							label={shorthand}
-							sublabel={label}
+							sublabel={i18n[shorthand]}
 							onClick={() => {
 								if (!active) {
 									toastSuccess(i18n.currencyChanged);

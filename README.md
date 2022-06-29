@@ -7,4 +7,3 @@
 3. turn on dev mode
 4. `npm start` which generates `dist` folder
 5. drag `dist` folder into extensions tabs or select it in "Load unpacked"
-

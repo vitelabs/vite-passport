@@ -10,7 +10,10 @@ type RecursivePartial<T> = {
 		: T[P];
 };
 
-export type setStateType = (state: RecursivePartial<State>, meta?: { deepMerge?: boolean }) => void;
+export type setStateType = (
+	state: RecursivePartial<State>,
+	meta?: { deepMerge?: boolean }
+) => void;
 
 type HOCProps = {
 	state: Partial<State>;
@@ -26,14 +29,21 @@ type ProviderProps = {
 	onSetState?: setStateType;
 };
 
-export const Provider = ({ children, initialState = {}, onSetState }: ProviderProps) => {
+export const Provider = ({
+	children,
+	initialState = {},
+	onSetState,
+}: ProviderProps) => {
 	const [state, setState] = useState(initialState);
 
 	return (
 		<GlobalContext.Provider
 			value={{
 				state,
-				setState: (stateChanges: object, options: { deepMerge?: boolean } = {}) => {
+				setState: (
+					stateChanges: object,
+					options: { deepMerge?: boolean } = {}
+				) => {
 					setState((prevState) => {
 						const newState = options.deepMerge
 							? deepMerge({ ...prevState }, stateChanges)
@@ -49,7 +59,10 @@ export const Provider = ({ children, initialState = {}, onSetState }: ProviderPr
 	);
 };
 
-export const deepMerge = (target: { [key: string]: any }, source: { [key: string]: any }) => {
+export const deepMerge = (
+	target: { [key: string]: any },
+	source: { [key: string]: any }
+) => {
 	if (target && source) {
 		for (const key in source) {
 			if (
@@ -70,7 +83,9 @@ export const connect = <T,>(Component: React.ComponentType<T>) => {
 	// eslint-disable-next-line
 	return (props: any) => (
 		<GlobalContext.Consumer>
-			{(value: HOCProps) => <Component {...props} {...value.state} setState={value.setState} />}
+			{(value: HOCProps) => (
+				<Component {...props} {...value.state} setState={value.setState} />
+			)}
 		</GlobalContext.Consumer>
 	);
 };

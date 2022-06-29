@@ -1,6 +1,8 @@
-export const encrypt = (plaintext: string, key: string) => aesGcmEncrypt(plaintext, key);
+export const encrypt = (plaintext: string, key: string) =>
+	aesGcmEncrypt(plaintext, key);
 
-export const decrypt = (ciphertext: string, key: string) => aesGcmDecrypt(ciphertext, key);
+export const decrypt = (ciphertext: string, key: string) =>
+	aesGcmDecrypt(ciphertext, key);
 
 // https://stackoverflow.com/a/65548181/13442719
 // https://gist.github.com/chrisveness/43bcda93af9f646d083fad678071b90a
@@ -15,7 +17,9 @@ async function aesGcmEncrypt(plaintext: string, password: string) {
 
 	const alg = { name: 'AES-GCM', iv: iv }; // specify algorithm to use
 
-	const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['encrypt']); // generate key from pw
+	const key = await crypto.subtle.importKey('raw', pwHash, alg, false, [
+		'encrypt',
+	]); // generate key from pw
 
 	const ptUint8 = new TextEncoder().encode(plaintext); // encode plaintext as UTF-8
 	const ctBuffer = await crypto.subtle.encrypt(alg, key, ptUint8); // encrypt plaintext using key
@@ -35,10 +39,14 @@ async function aesGcmDecrypt(ciphertext: string, password: string) {
 
 	const alg = { name: 'AES-GCM', iv: iv }; // specify algorithm to use
 
-	const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['decrypt']); // generate key from pw
+	const key = await crypto.subtle.importKey('raw', pwHash, alg, false, [
+		'decrypt',
+	]); // generate key from pw
 
 	const ctStr = atob(ciphertext).slice(12); // decode base64 ciphertext
-	const ctUint8 = new Uint8Array(Array.from(ctStr).map((ch) => ch.charCodeAt(0))); // ciphertext as Uint8Array
+	const ctUint8 = new Uint8Array(
+		Array.from(ctStr).map((ch) => ch.charCodeAt(0))
+	); // ciphertext as Uint8Array
 	// note: why doesn't ctUint8 = new TextEncoder().encode(ctStr) work?
 
 	try {

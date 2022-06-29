@@ -1,8 +1,16 @@
 const ViteLogo = ({ size = 24, ...rest }) => {
 	return (
 		<svg viewBox="0 0 108 60" width={size} height={size} {...rest}>
-			<g className="stroke-current" strokeWidth="0" fill="none" fillRule="evenodd">
-				<g transform="translate(-375.000000, -21.000000)" className="fill-current	">
+			<g
+				className="stroke-current"
+				strokeWidth="0"
+				fill="none"
+				fillRule="evenodd"
+			>
+				<g
+					transform="translate(-375.000000, -21.000000)"
+					className="fill-current	"
+				>
 					<g transform="translate(375.000000, 21.000000)">
 						<g id="header">
 							<path

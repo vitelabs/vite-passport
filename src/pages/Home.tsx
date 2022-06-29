@@ -213,51 +213,53 @@ const Home = ({
 
 				{assets === null ? (
 					<p className="text-center text-skin-secondary">{i18n.loading}...</p>
-				) : !assets.length ? (
-					<p className="text-center text-skin-secondary">
-						{i18n.yourWalletIsEmpty}
-					</p>
 				) : (
 					<>
-						{assets.map(({ balance, tokenInfo }) => {
-							const biggestUnit = toBiggestUnit(balance, tokenInfo.decimals);
-							return (
-								<button
-									key={tokenInfo.tokenId}
-									className="fx rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
-									onClick={() => selectedTokenInfoSet(tokenInfo)}
-								>
-									<img
-										src={getTokenImage(
-											tokenInfo.tokenSymbol,
-											tokenInfo.tokenId
-										)}
-										alt={tokenInfo.tokenSymbol}
-										className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-									/>
-									<div className="flex-1 flex">
-										<div className="flex flex-col flex-1 items-start">
-											<p className="text-lg">{tokenInfo.tokenSymbol}</p>
-											{/* <button
+						{!assets.length ? (
+							<p className="text-center text-skin-secondary">
+								{i18n.yourWalletIsEmpty}
+							</p>
+						) : (
+							assets.map(({ balance, tokenInfo }) => {
+								const biggestUnit = toBiggestUnit(balance, tokenInfo.decimals);
+								return (
+									<button
+										key={tokenInfo.tokenId}
+										className="fx rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
+										onClick={() => selectedTokenInfoSet(tokenInfo)}
+									>
+										<img
+											src={getTokenImage(
+												tokenInfo.tokenSymbol,
+												tokenInfo.tokenId
+											)}
+											alt={tokenInfo.tokenSymbol}
+											className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+										/>
+										<div className="flex-1 flex">
+											<div className="flex flex-col flex-1 items-start">
+												<p className="text-lg">{tokenInfo.tokenSymbol}</p>
+												{/* <button
 										className="text-xs text-skin-muted darker-brightness-button"
 										onClick={() => copyWithToast(tokenInfo.tokenId)}
 									>
 										{shortenTti(tokenInfo.tokenId)}
 									</button> */}
-											<p className="text-xs text-skin-muted">
-												{shortenTti(tokenInfo.tokenId)}
-											</p>
+												<p className="text-xs text-skin-muted">
+													{shortenTti(tokenInfo.tokenId)}
+												</p>
+											</div>
+											<div className="flex flex-col items-end mr-1.5">
+												<p className="text-lg">{biggestUnit}</p>
+												<p className="text-xs text-skin-secondary">
+													{calculatePrice(biggestUnit, vitePrice)}
+												</p>
+											</div>
 										</div>
-										<div className="flex flex-col items-end mr-1.5">
-											<p className="text-lg">{biggestUnit}</p>
-											<p className="text-xs text-skin-secondary">
-												{calculatePrice(biggestUnit, vitePrice)}
-											</p>
-										</div>
-									</div>
-								</button>
-							);
-						})}
+									</button>
+								);
+							})
+						)}
 						<button
 							className="mx-auto block text-skin-highlight brightness-button"
 							onClick={() => {

@@ -8,7 +8,10 @@ type Props = {
 
 const PendingDots = ({ bigWhite }: Props) => {
 	const className = useMemo(
-		() => `animate-pulse rounded-full ${bigWhite ? 'bg-white h-2 w-2' : 'bg-skin-pending-green h-1 w-1'}`,
+		() =>
+			`animate-pulse rounded-full ${
+				bigWhite ? 'bg-white h-2 w-2' : 'bg-skin-pending-green h-1 w-1'
+			}`,
 		[bigWhite]
 	);
 	return (
