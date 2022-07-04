@@ -48,10 +48,6 @@ export const toQueryString = (params: { [key: string]: any }) =>
 		)
 		.join('&');
 
-export const getTokenImage = (symbol: string, tti: string) => {
-	return `https://github.com/vitelabs/crypto-info/blob/master/tokens/${symbol.toLowerCase()}/${tti}.png?raw=true`;
-};
-
 export const getHostname = (url = '') => {
 	if (!url.startsWith('http')) {
 		return '';
@@ -75,4 +71,16 @@ export const parseQueryString = (
 			}
 			return obj;
 		}, {});
+};
+
+export const addIndexToTokenSymbol = (symbol: string, index: null | number) => {
+	if (
+		symbol === 'VITE' ||
+		symbol === 'VX' ||
+		symbol === 'VCP' ||
+		index == null
+	) {
+		return symbol;
+	}
+	return `${symbol}-${('' + index).padStart(3, '0')}`;
 };

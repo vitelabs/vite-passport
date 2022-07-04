@@ -78,8 +78,9 @@ const Modal = ({
 		};
 	}, []);
 
-	return mounted
-		? ReactDOM.createPortal(
+	return !mounted
+		? null
+		: ReactDOM.createPortal(
 				<div
 					ref={modalRef}
 					className={`z-10 h-full w-full fixed inset-0 bg-black overflow-scroll flex flex-col transition duration-500 ${
@@ -150,8 +151,7 @@ const Modal = ({
 					)}
 				</div>,
 				modalParent!
-		  )
-		: null;
+		  );
 };
 
 export default Modal;

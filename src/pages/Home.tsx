@@ -1,41 +1,29 @@
-/* eslint-disable */
-
 import {
 	CreditCardIcon,
 	DuplicateIcon,
 	PencilIcon,
-	LockClosedIcon,
-	SortAscendingIcon,
+	// LockClosedIcon,
+	// SortAscendingIcon,
 	XIcon,
 } from '@heroicons/react/outline';
-import { accountBlock, constant, wallet } from '@vite/vitejs';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Checkbox from '../components/Checkbox';
+import { wallet } from '@vite/vitejs';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import Modal from '../components/Modal';
-import QR from '../components/QR';
 import ModalListItem from '../components/ModalListItem';
 import TabContainer from '../components/TabContainer';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
-import TransactionList from '../containers/TransactionList';
 import { connect } from '../utils/global-context';
-import { calculatePrice, validateInputs } from '../utils/misc';
+import { validateInputs } from '../utils/misc';
 import {
-	getTokenImage,
 	shortenAddress,
-	shortenTti,
-	toBiggestUnit,
-	toQueryString,
-	toSmallestUnit,
 	validateHttpUrl,
 	validateWsUrl,
 } from '../utils/strings';
-import { State, TokenInfo } from '../utils/types';
+import { State } from '../utils/types';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 import { setValue } from '../utils/storage';
 import { _Buffer } from '@vite/vitejs/distSrc/utils';
-import TransactionModal from '../components/TransactionModal';
-import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
-import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
+import WalletContents from '../containers/WalletContents';
 
 type Props = State;
 
@@ -45,7 +33,6 @@ type Props = State;
 const Home = ({
 	i18n,
 	setState,
-	viteBalanceInfo,
 	secrets,
 	activeAccountIndex,
 	activeAccount,
@@ -54,19 +41,14 @@ const Home = ({
 	networkUrl,
 	accountList,
 	contacts,
-	viteApi,
 	toastSuccess,
-	vitePrice,
 }: Props) => {
-	const quotaBeneficiaryRef = useRef<TextInputRefObject>();
-	const lockedAmountRef = useRef<TextInputRefObject>();
+	// const quotaBeneficiaryRef = useRef<TextInputRefObject>();
+	// const lockedAmountRef = useRef<TextInputRefObject>();
 	const networkNameRef = useRef<TextInputRefObject>();
 	const rpcUrlRef = useRef<TextInputRefObject>();
 	const blockExplorerUrlRef = useRef<TextInputRefObject>();
-	const toAddressRef = useRef<TextInputRefObject>();
-	const amountRef = useRef<TextInputRefObject>();
-	const commentRef = useRef<TextInputRefObject>();
-	const [pickingNetwork, pickingNetworkSet] = useState(false);
+	const [editingNetwork, editingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
 	const [editingAccountName, editingAccountNameSet] = useState(false);
@@ -75,38 +57,17 @@ const Home = ({
 	);
 	const [networkName, networkNameSet] = useState('');
 	const [rpcUrl, rpcUrlSet] = useState('');
+	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
 	// const [votingModalOpen, votingModalOpenSet] = useState(false);
 	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
-	const [editingTokenList, editingTokenListSet] = useState(false);
-	const [tokenQuery, tokenQuerySet] = useState('');
-	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
-	const [displayedTokenDraft, displayedTokenDraftSet] = useState<{
-		[key: string]: boolean;
-	}>({});
-	const [tokenOrderDraft, tokenOrderDraftSet] = useState<string[]>([]);
-	const [selectedTokenInfo, selectedTokenInfoSet] = useState<TokenInfo | null>(
-		null
-	);
-	const [receivingFunds, receivingFundsSet] = useState(false);
-	const [sendingFunds, sendingFundsSet] = useState(false);
-	const [toAddress, toAddressSet] = useState('');
-	const [amount, amountSet] = useState('');
-	const [comment, commentSet] = useState('');
-	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
-	const [sentTx, sentTxSet] = useState<Transaction | null>(null);
 	// const [quotaBeneficiary, quotaBeneficiarySet] = useState('');
 	// const [lockedAmount, lockedAmountSet] = useState('');
-
-	useEffect(() => {
-		// if (changingActiveAccount)
-		// TODO: get derivedAccounts elegantly somehow - this is a slow function that freezes the UI
-	}, [changingActiveAccount]);
 
 	const activeAddress = useMemo(() => {
 		accountNameSet(
 			contacts[activeAccount.address] || `${i18n.account} ${activeAccountIndex}`
 		);
-		return activeAccount?.address || '';
+		return activeAccount.address;
 	}, [activeAccount]);
 
 	const saveAccountName = useCallback(() => {
@@ -117,16 +78,6 @@ const Home = ({
 		setValue(data);
 		setState(data);
 	}, []);
-	const balanceInfoMap = useMemo(
-		() => viteBalanceInfo?.balance?.balanceInfoMap,
-		[viteBalanceInfo]
-	);
-	const assets = useMemo(() => {
-		if (viteBalanceInfo) {
-			return Object.values(balanceInfoMap || {});
-		}
-		return null;
-	}, [viteBalanceInfo]);
 
 	return (
 		<TabContainer>
@@ -134,7 +85,7 @@ const Home = ({
 				<div className="fx justify-between">
 					<button
 						className="border-2 px-2 rounded-full border-skin-alt text-sm bg-skin-middleground text-skin-secondary hover:shadow-md active:shadow brightness-button"
-						onClick={() => pickingNetworkSet(true)}
+						onClick={() => editingNetworkSet(true)}
 					>
 						{networks[networkUrl]}
 					</button>
@@ -210,74 +161,7 @@ const Home = ({
 						<p>{i18n.quota}</p>
 					</button>
 				</div> */}
-
-				{assets === null ? (
-					<p className="text-center text-skin-secondary">{i18n.loading}...</p>
-				) : (
-					<>
-						{!assets.length ? (
-							<p className="text-center text-skin-secondary">
-								{i18n.yourWalletIsEmpty}
-							</p>
-						) : (
-							assets.map(({ balance, tokenInfo }) => {
-								const biggestUnit = toBiggestUnit(balance, tokenInfo.decimals);
-								return (
-									<button
-										key={tokenInfo.tokenId}
-										className="fx rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
-										onClick={() => selectedTokenInfoSet(tokenInfo)}
-									>
-										<img
-											src={getTokenImage(
-												tokenInfo.tokenSymbol,
-												tokenInfo.tokenId
-											)}
-											alt={tokenInfo.tokenSymbol}
-											className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-										/>
-										<div className="flex-1 flex">
-											<div className="flex flex-col flex-1 items-start">
-												<p className="text-lg">{tokenInfo.tokenSymbol}</p>
-												{/* <button
-										className="text-xs text-skin-muted darker-brightness-button"
-										onClick={() => copyWithToast(tokenInfo.tokenId)}
-									>
-										{shortenTti(tokenInfo.tokenId)}
-									</button> */}
-												<p className="text-xs text-skin-muted">
-													{shortenTti(tokenInfo.tokenId)}
-												</p>
-											</div>
-											<div className="flex flex-col items-end mr-1.5">
-												<p className="text-lg">{biggestUnit}</p>
-												<p className="text-xs text-skin-secondary">
-													{calculatePrice(biggestUnit, vitePrice)}
-												</p>
-											</div>
-										</div>
-									</button>
-								);
-							})
-						)}
-						<button
-							className="mx-auto block text-skin-highlight brightness-button"
-							onClick={() => {
-								editingTokenListSet(true);
-								const displayedTokenDraft: { [key: string]: boolean } = {};
-								const tokenOrderDraft: string[] = [];
-								// assets.forEach(({ tti }) => {
-								// 	displayedTokenDraft[tti] = true;
-								// 	tokenOrderDraft.push(tti);
-								// });
-								displayedTokenDraftSet(displayedTokenDraft);
-								tokenOrderDraftSet(tokenOrderDraft);
-							}}
-						>
-							{i18n.editTokenList}
-						</button>
-					</>
-				)}
+				<WalletContents />
 			</div>
 			{/* <Modal
 				visible={votingModalOpen}
@@ -305,9 +189,9 @@ const Home = ({
 				/>
 			</Modal> */}
 			<Modal
-				visible={pickingNetwork}
+				visible={editingNetwork}
 				fromLeft={addingNetwork}
-				onClose={() => pickingNetworkSet(false)}
+				onClose={() => editingNetworkSet(false)}
 				heading={i18n.networks}
 			>
 				{Object.entries(networks).map(([url, label]) => {
@@ -325,7 +209,7 @@ const Home = ({
 									setState({ networkUrl: url, viteBalanceInfo: undefined });
 									setValue({ networkUrl: url });
 								}
-								pickingNetworkSet(false);
+								editingNetworkSet(false);
 							}}
 						/>
 					);
@@ -333,7 +217,7 @@ const Home = ({
 				<ModalListBottomButton
 					label={i18n.addNetwork}
 					onClick={() => {
-						pickingNetworkSet(false);
+						editingNetworkSet(false);
 						addingNetworkSet(true);
 					}}
 				/>
@@ -343,7 +227,7 @@ const Home = ({
 				heading={i18n.addNetwork}
 				visible={addingNetwork}
 				onStartClose={() => {
-					pickingNetworkSet(true);
+					editingNetworkSet(true);
 					setTimeout(() => addingNetworkSet(false), 0);
 				}}
 				onClose={() => {
@@ -481,331 +365,6 @@ const Home = ({
 					}}
 				/>
 			</Modal>
-			<Modal
-				fullscreen
-				heading={i18n.editTokenList}
-				visible={editingTokenList}
-				onClose={() => editingTokenListSet(false)}
-				className="flex flex-col"
-			>
-				<input
-					placeholder="Search tokens by symbol or tti"
-					value={tokenQuery}
-					className="p-2 shadow z-10 w-full bg-skin-middleground"
-					onChange={(e) => tokenQuerySet(e.target.value)}
-				/>
-				<div className="flex-1 overflow-scroll">
-					{!assets
-						? null
-						: assets.map(({ tokenInfo }) => {
-								const tti = tokenInfo.tokenId;
-								const symbol = tokenInfo.tokenSymbol;
-								console.log(
-									'getTokenImage(symbol, tti):',
-									getTokenImage(symbol, tti)
-								);
-								return (
-									<div
-										key={tti}
-										className="fx rounded py-1 px-2 bg-skin-middleground"
-										onMouseDown={() => {
-											// TODO: drag to sort
-										}}
-									>
-										<img
-											src={getTokenImage(symbol, tti)}
-											alt={symbol}
-											className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-										/>
-										<div className="flex-1 fx">
-											<div className="flex flex-col flex-1 items-start">
-												<p className="text-lg">{symbol}</p>
-												<button
-													className="group fx darker-brightness-button"
-													onClick={() => copyWithToast(tti)}
-												>
-													<p className="text-xs text-skin-secondary">
-														{shortenTti(tti)}
-													</p>
-													<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-												</button>
-											</div>
-											<Checkbox
-												checked={displayedTokenDraft[tti]}
-												onUserInput={(checked) => {
-													displayedTokenDraft[tti] = checked;
-													displayedTokenDraftSet({ ...displayedTokenDraft });
-												}}
-											/>
-										</div>
-									</div>
-								);
-						  })}
-				</div>
-				<div className="flex gap-2 p-2 shadow z-50">
-					<button
-						className="p-0 round-outline-button"
-						onClick={() => {
-							editingTokenListSet(false);
-						}}
-					>
-						{i18n.cancel}
-					</button>
-					<button
-						className="p-0 round-solid-button"
-						onClick={() => {
-							// TODO: replace token list with token list draft
-						}}
-					>
-						{i18n.confirm}
-					</button>
-				</div>
-			</Modal>
-			<Modal
-				fullscreen
-				visible={!!selectedTokenInfo}
-				onClose={() => selectedTokenInfoSet(null)}
-				className="flex flex-col"
-				headerComponent={
-					selectedTokenInfo && (
-						<>
-							<div className="flex-1 fy">
-								<p className="text-xl leading-4 mt-1">
-									{selectedTokenInfo?.tokenSymbol}
-								</p>
-								<button
-									className="group fx darker-brightness-button"
-									onClick={() => copyWithToast(activeAddress)}
-								>
-									<p className="ml-5 leading-3 text-xs text-skin-secondary">
-										{shortenTti(selectedTokenInfo?.tokenId!)}
-									</p>
-									<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-								</button>
-							</div>
-							<div className="w-10 p-1">
-								<img
-									src={getTokenImage(
-										selectedTokenInfo?.tokenSymbol,
-										selectedTokenInfo?.tokenId
-									)}
-									alt={selectedTokenInfo?.tokenSymbol}
-									className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-								/>
-							</div>
-						</>
-					)
-				}
-			>
-				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
-					{selectedTokenInfo && (
-						<TransactionList tti={selectedTokenInfo?.tokenId} />
-					)}
-				</div>
-				<div className="fx p-2 gap-2 shadow">
-					<button
-						className="round-outline-button p-0"
-						onClick={() => receivingFundsSet(true)}
-					>
-						Receive
-					</button>
-					<button
-						className="round-outline-button p-0"
-						onClick={() => sendingFundsSet(true)}
-					>
-						{i18n.send}
-					</button>
-				</div>
-			</Modal>
-			<Modal
-				visible={receivingFunds}
-				onClose={() => receivingFundsSet(false)}
-				className="flex flex-col"
-				heading={`${i18n.receive} ${selectedTokenInfo?.tokenSymbol}`}
-				subheading={selectedTokenInfo?.tokenId}
-			>
-				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
-					{/* https://docs.vite.org/vite-docs/vep/vep-6.html */}
-					<QR
-						data={`vite:${activeAddress}${toQueryString({
-							amount,
-							tti: selectedTokenInfo?.tokenId,
-							// data: _Buffer.from(comment).toString('base64'),
-							data: btoa(comment).replace(/=+$/, ''),
-						})}`}
-						className="h-40 w-40 mx-auto"
-					/>
-					<TextInput
-						optional
-						numeric
-						label="Amount"
-						value={amount}
-						onUserInput={(v) => amountSet(v)}
-					/>
-					<TextInput
-						optional
-						textarea
-						label="Comment"
-						value={comment}
-						onUserInput={(v) => {
-							console.log(v, _Buffer.from(v).toString('base64'));
-							commentSet(v);
-						}}
-					/>
-				</div>
-			</Modal>
-			<Modal
-				visible={sendingFunds}
-				onClose={() => {
-					sendingFundsSet(false);
-					if (!confirmingTransaction) {
-						toAddressSet('');
-						amountSet('');
-						commentSet('');
-					}
-				}}
-				fromLeft={confirmingTransaction}
-				className="flex flex-col"
-				heading={`${i18n.send} ${selectedTokenInfo?.tokenSymbol}`}
-				subheading={selectedTokenInfo?.tokenId}
-			>
-				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
-					<div className="">
-						<p className="leading-5 text-skin-secondary">{i18n.from}</p>
-						<p className="break-words text-sm">{accountName}</p>
-						<p className="break-words text-sm">{activeAddress}</p>
-					</div>
-					<div className="">
-						<p className="leading-5 text-skin-secondary">{i18n.balance}</p>
-						<p className="">
-							{balanceInfoMap?.[selectedTokenInfo?.tokenId!]?.balance &&
-								toBiggestUnit(
-									balanceInfoMap[selectedTokenInfo?.tokenId!]?.balance,
-									balanceInfoMap[selectedTokenInfo?.tokenId!]?.tokenInfo
-										?.decimals
-								)}
-						</p>
-					</div>
-					{/* <div className="">
-						<p className="leading-5 text-skin-secondary">
-							{i18n.quotaAvailable} / {i18n.quotaLimit}
-						</p>
-						<p className="">
-							{10} / {10} Quota
-						</p>
-					</div> */}
-					<TextInput
-						_ref={toAddressRef}
-						label="To Address"
-						value={toAddress}
-						onUserInput={(v) => toAddressSet(v)}
-						getIssue={(v) => {
-							if (!wallet.isValidAddress(v)) {
-								return i18n.invalidAddress;
-							}
-						}}
-					/>
-					<TextInput
-						numeric
-						_ref={amountRef}
-						label="Amount"
-						value={amount}
-						onUserInput={(v) => amountSet(v)}
-						getIssue={(v) => {
-							console.log('v:', v);
-							// if (+toBiggestUnit(v, balances[selectedTokenInfo].decimals) > +balances[selectedTokenInfo].balance) {
-							// 	return i18n.insufficientFunds;
-							// }
-						}}
-					/>
-					<TextInput
-						optional
-						textarea
-						_ref={commentRef}
-						label="Comment"
-						value={comment}
-						onUserInput={(v) => commentSet(v)}
-					/>
-					<button
-						className="round-solid-button"
-						onClick={() => {
-							const valid = validateInputs([
-								toAddressRef,
-								amountRef,
-								commentRef,
-							]);
-							if (valid) {
-								confirmingTransactionSet(true);
-								setTimeout(() => sendingFundsSet(false), 0);
-							}
-						}}
-					>
-						{i18n.next}
-					</button>
-				</div>
-			</Modal>
-			<Modal
-				fromRight={sendingFunds}
-				visible={confirmingTransaction}
-				onStartClose={() => {
-					sendingFundsSet(true);
-					setTimeout(() => confirmingTransactionSet(false), 0);
-				}}
-				heading={i18n.confirmTransaction}
-			>
-				<div className="p-2 space-y-2">
-					<div className="">
-						<p className="leading-5 text-skin-secondary">{i18n.toAddress}</p>
-						<p className="break-words text-sm">{toAddress}</p>
-					</div>
-					<div className="">
-						<p className="leading-5 text-skin-secondary">{i18n.amount}</p>
-						<p className="">{amount}</p>
-					</div>
-					{comment && (
-						<div className="">
-							<p className="leading-5 text-skin-secondary">{i18n.comment}</p>
-							<p className="">{comment}</p>
-						</div>
-					)}
-					<button
-						className="round-solid-button"
-						onClick={async () => {
-							const block = accountBlock.createAccountBlock('send', {
-								address: activeAddress,
-								toAddress: toAddress.trim(),
-								tokenId: selectedTokenInfo?.tokenId,
-								amount: toSmallestUnit(
-									amount,
-									balanceInfoMap![selectedTokenInfo?.tokenId!]?.tokenInfo
-										?.decimals
-								),
-							});
-							block.setProvider(viteApi);
-							block.setPrivateKey(activeAccount.privateKey);
-							await block.autoSetPreviousAccountBlock();
-							block.sign(activeAccount.privateKey);
-							const res: Transaction = await block.autoSendByPoW();
-							res.fromAddress = activeAddress;
-							res.timestamp = '' + Math.round(Date.now() / 1000);
-							sentTxSet(res);
-						}}
-					>
-						{i18n.confirm}
-					</button>
-				</div>
-			</Modal>
-			<TransactionModal
-				visible={!!sentTx}
-				fromRight
-				heading={i18n.transactionSent}
-				onClose={() => {
-					sendingFundsSet(false);
-					confirmingTransactionSet(false);
-					setTimeout(() => sentTxSet(null), 0);
-				}}
-				transaction={sentTx}
-			/>
 		</TabContainer>
 	);
 };

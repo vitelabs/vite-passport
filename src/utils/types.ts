@@ -15,6 +15,7 @@ export type Storage = {
 	currencyConversion: CurrencyConversions;
 	activeAccountIndex: number;
 	contacts: { [address: string]: string };
+	displayedTokenIds: string[];
 	connectedDomains: {
 		[domain: string]: {
 			[contractAddress: string]: boolean;
@@ -107,4 +108,70 @@ export type NewAccountBlock = {
 	height: number;
 	heightStr: string;
 	removed: boolean;
+};
+
+export type TokenApiInfo = {
+	symbol: string;
+	name: string;
+	tokenCode: string;
+	platform: string;
+	tokenAddress: string;
+	standard: string | null;
+	url: string | null;
+	tokenIndex: number | null;
+	icon: string;
+	decimal: number;
+	gatewayInfo: null | {
+		name: string;
+		icon: string | null;
+		policy: {
+			en: string;
+		};
+		overview: {
+			[language: string]: string;
+		};
+		links: {
+			website?: string[];
+			github?: string[];
+			twitter?: string[];
+			discord?: string[];
+			whitepaper?: string[];
+			explorer?: string[];
+			reddit?: string[];
+			email?: string[];
+		};
+		support: string;
+		serviceSupport: string;
+		isOfficial: boolean;
+		level: number;
+		website: string;
+		mappedToken: {
+			symbol: string;
+			name: string | null;
+			tokenCode: string;
+			platform: string;
+			tokenAddress: string | null;
+			standard: string;
+			url: string;
+			tokenIndex: number | null;
+			icon: string;
+			decimal: number;
+			mappedTokenExtras:
+				| null
+				| {
+						symbol: string;
+						name: string | null;
+						tokenCode: string;
+						platform: string;
+						tokenAddress: string;
+						standard: string;
+						url: string;
+						tokenIndex: number | null;
+						icon: string;
+						decimal: number;
+						mappedTokenExtras: null;
+				  }[];
+		};
+		url: string;
+	};
 };
