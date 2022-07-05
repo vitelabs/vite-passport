@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import { connect } from '../utils/global-context';
 import { State, TokenApiInfo, TokenInfo } from '../utils/types';
 import FetchWidget from './FetchWidget';
@@ -22,6 +22,7 @@ import TransactionList from './TransactionList';
 import Modal from '../components/Modal';
 import { DuplicateIcon } from '@heroicons/react/outline';
 import { _Buffer } from '@vite/vitejs/distSrc/utils';
+import { setValue } from '../utils/storage';
 
 type Props = State & {};
 
@@ -58,21 +59,47 @@ const WalletContents = ({
 	const [availableTokens, availableTokensSet] =
 		useState<TokenApiInfo[]>(defaultTokenList);
 	const balanceInfoMap = useMemo(
-		() => viteBalanceInfo?.balance?.balanceInfoMap,
+		() =>
+			viteBalanceInfo
+				? viteBalanceInfo?.balance?.balanceInfoMap || {}
+				: undefined,
 		[viteBalanceInfo]
 	);
 	const activeAddress = useMemo(() => activeAccount.address, [activeAccount]);
+	const getPromise = useCallback(() => {
+		console.log('get prom');
+		return getTokenApiInfo(displayedTokenIds);
+	}, [displayedTokenIds]);
+	const onResolve = useCallback(
+		(res: { msg: string; code: number; data: TokenApiInfo[] }) => {
+			console.log('res:', res);
+			displayedTokensSet(
+				res.data.sort((a, b) =>
+					a.symbol === 'VITE'
+						? -1
+						: b.symbol === 'VITE'
+						? 1
+						: a.symbol < b.symbol
+						? -1
+						: 1
+				)
+			);
+		},
+		[]
+	);
 
 	return (
 		<>
 			<FetchWidget
-				shouldFetch={displayedTokens === null}
-				getPromise={() => {
-					return getTokenApiInfo(displayedTokenIds);
-				}}
-				onResolve={(list: TokenApiInfo[]) => {
-					displayedTokensSet(list);
-				}}
+				shouldFetch={
+					displayedTokens === null ||
+					displayedTokens.length !== displayedTokenIds.length ||
+					!displayedTokens.every((token) =>
+						displayedTokenIds.includes(token.tokenAddress)
+					) // used `includes` instead of just checking index cuz getTokenApiInfo API doesn't return token info in order of displayedTokenIds
+				}
+				getPromise={getPromise}
+				onResolve={onResolve}
 			>
 				{displayedTokens === null ? (
 					<p className="text-center text-skin-secondary">{i18n.loading}...</p>
@@ -93,10 +120,10 @@ const WalletContents = ({
 									decimal,
 									gatewayInfo,
 								} = tokenApiInfo;
-								const balance = balanceInfoMap?.[tti]?.balance;
+								const balance = balanceInfoMap?.[tti]?.balance || '0';
 								const biggestUnit = !balanceInfoMap
 									? null
-									: toBiggestUnit(balance!, decimal);
+									: toBiggestUnit(balance, decimal);
 								return (
 									<button
 										key={tti}
@@ -123,12 +150,12 @@ const WalletContents = ({
 											</div>
 											<div className="flex flex-col items-end mr-1.5">
 												<p className="text-lg">
-													{biggestUnit ? '...' : biggestUnit}
+													{biggestUnit === undefined ? '...' : biggestUnit}
 												</p>
 												<p className="text-xs text-skin-secondary">
-													{!biggestUnit
+													{biggestUnit === undefined
 														? '...'
-														: calculatePrice(biggestUnit, vitePrice)}
+														: calculatePrice(biggestUnit!, vitePrice)}
 												</p>
 											</div>
 										</div>
@@ -225,11 +252,13 @@ const WalletContents = ({
 					<button
 						className="p-0 round-solid-button"
 						onClick={() => {
-							setState({
+							const data = {
 								displayedTokenIds: Object.entries(displayedTokenDraft)
 									.filter(([_, checked]) => checked)
 									.map(([tti]) => tti),
-							});
+							};
+							setState(data);
+							setValue(data);
 							editingTokenListSet(false);
 						}}
 					>

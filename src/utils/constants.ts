@@ -880,13 +880,3 @@ export const defaultTokenList: TokenApiInfo[] = [
 		},
 	},
 ];
-// .sort((a, b) =>
-// 	a.symbol === 'VITE'
-// 		? -1
-// 		: b.symbol === 'VITE'
-// 		? 1
-// 		: a.symbol < b.symbol
-// 		? -1
-// 		: 1
-// );
-console.log('defaultTokenList:', defaultTokenList);

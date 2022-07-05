@@ -122,7 +122,7 @@ const Router = ({
 					// Error: CONNECTION ERROR: Couldn't connect to node wss://buidl.vite.net/gvite/ws.
 				});
 		}
-	}, [setState, viteApi, activeAccount]);
+	}, [viteApi, activeAccount]); // eslint-disable-line
 
 	useEffect(updateViteBalanceInfo, [activeAccount, networkUrl]); // eslint-disable-line
 
@@ -146,7 +146,7 @@ const Router = ({
 				});
 		}
 		return () => viteApi.unsubscribeAll();
-	}, [activeAccount, setState, viteApi, updateViteBalanceInfo]);
+	}, [activeAccount, viteApi, updateViteBalanceInfo]); // eslint-disable-line
 
 	useEffect(() => {
 		setState({

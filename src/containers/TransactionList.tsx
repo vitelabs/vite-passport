@@ -65,7 +65,7 @@ const TransactionList = ({
 				setState(
 					{
 						transactionHistory: {
-							[txListKey]: list,
+							[txListKey]: list || [],
 						},
 					},
 					{ deepMerge: true }

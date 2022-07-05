@@ -39,6 +39,7 @@ const FetchWidget = ({
 
 	useEffect(() => {
 		if (shouldFetch) {
+			console.log('oops');
 			fetchData();
 		}
 	}, [shouldFetch, fetchData]);

@@ -27,3 +27,13 @@ export const calculatePrice = (
 ) => {
 	return `${label}${(+units * price).toFixed(decimals)}`;
 };
+
+// https://www.30secondsofcode.org/js/s/debounce
+export const debounce = (fn: Function, ms = 0) => {
+	let timeoutId: NodeJS.Timeout;
+	return function (...args: any[]) {
+		clearTimeout(timeoutId);
+		// @ts-ignore
+		timeoutId = setTimeout(() => fn.apply(this, args), ms);
+	};
+};

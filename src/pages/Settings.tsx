@@ -12,7 +12,7 @@ import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
-import { getValue, removeKeys, StorageFields } from '../utils/storage';
+import ResetWalletModal from '../containers/ResetWalletModal';
 
 type Props = State;
 
@@ -211,25 +211,11 @@ const Settings = ({
 			>
 				<Secrets {...secrets} />
 			</Modal>
-			<Modal
+			<ResetWalletModal
 				visible={activeModal === 'reset'}
 				onClose={() => activeModalSet('')}
 				heading={i18n.resetWallet}
-			>
-				<div className="p-2 space-y-2">
-					<p className="">{i18n.youAreAboutToErase}</p>
-					<button
-						className="round-solid-button"
-						onClick={async () => {
-							const storage = await getValue(null);
-							removeKeys(Object.keys(storage) as StorageFields[]);
-							navigate('/', { replace: true });
-						}}
-					>
-						{i18n.confirm}
-					</button>
-				</div>
-			</Modal>
+			/>
 		</TabContainer>
 	);
 };

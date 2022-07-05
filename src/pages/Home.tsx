@@ -24,6 +24,8 @@ import ModalListBottomButton from '../components/ModalListBottomButton';
 import { setValue } from '../utils/storage';
 import { _Buffer } from '@vite/vitejs/distSrc/utils';
 import WalletContents from '../containers/WalletContents';
+import { ExternalLinkIcon } from '@heroicons/react/solid';
+import A from '../components/A';
 
 type Props = State;
 
@@ -133,15 +135,26 @@ const Home = ({
 							<PencilIcon className="ml-1.5 w-5 opacity-0 duration-200 group-hover:opacity-100" />
 						</button>
 					)}
-					<button
-						className="ml-6 group fx darker-brightness-button"
-						onClick={() => copyWithToast(activeAddress)}
-					>
-						<p className="text-skin-secondary">
-							{shortenAddress(activeAddress)}
-						</p>
-						<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-					</button>
+					<div className="flex group">
+						<button
+							className="ml-12 fx darker-brightness-button"
+							onClick={() => copyWithToast(activeAddress)}
+						>
+							<p className="text-skin-secondary">
+								{shortenAddress(activeAddress)}
+							</p>
+							<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+						</button>
+						<A
+							className="ml-0.5 darker-brightness-button"
+							// OPTIMIZE: Make this URL more flexible for different network URLs
+							href={`https://${
+								networkUrl === 'wss://buidl.vite.net/gvite/ws' ? 'test.' : ''
+							}vitescan.io/address/${activeAddress}`}
+						>
+							<ExternalLinkIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+						</A>
+					</div>
 				</div>
 			</div>
 			<div className="flex-1 p-2 space-y-2 overflow-scroll">
@@ -251,7 +264,7 @@ const Home = ({
 							onUserInput={(v) => rpcUrlSet(v)}
 							getIssue={(v) => {
 								if (!validateWsUrl(v) || !validateHttpUrl(v)) {
-									// return i18n.urlMustStartWithWsWssHttpOrHttps;
+									return i18n.urlMustStartWithWsWssHttpOrHttps;
 								}
 							}}
 						/>

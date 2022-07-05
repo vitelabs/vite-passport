@@ -2,6 +2,7 @@ import { wallet } from '@vite/vitejs';
 import { useCallback, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import TextInput, { TextInputRefObject } from '../components/TextInput';
+import ResetWalletModal from '../containers/ResetWalletModal';
 import { decrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
@@ -19,6 +20,7 @@ const Lock = ({
 	encryptedSecrets,
 }: Props) => {
 	const passwordRef = useRef<TextInputRefObject>();
+	const [resettingWallet, resettingWalletSet] = useState(false);
 	const [password, passwordSet] = useState('');
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
@@ -80,6 +82,17 @@ const Lock = ({
 			<button className="mt-2 round-solid-button" onClick={attemptUnlock}>
 				{i18n.unlock}
 			</button>
+			<button
+				className="mt-1 text-skin-highlight"
+				onClick={() => resettingWalletSet(true)}
+			>
+				{i18n.resetWallet}
+			</button>
+			<ResetWalletModal
+				visible={resettingWallet}
+				onClose={() => resettingWalletSet(false)}
+				heading={i18n.resetWallet}
+			/>
 		</div>
 	);
 };
