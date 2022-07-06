@@ -2,15 +2,17 @@ import { AccountBlockType } from '@vite/vitejs/distSrc/accountBlock/type';
 import { AddressObj } from '@vite/vitejs/distSrc/utils/type';
 
 const injectedObject: {
-	signBlock?: () => Promise<AccountBlockType>;
-	getConnectedAccount?: () => Promise<AddressObj>;
+	getConnectedAccount?: () => Promise<AddressObj | null>;
+	connectWallet?: () => Promise<boolean>;
 	getNetwork?: () => Promise<string>;
+	signBlock?: () => Promise<AccountBlockType>;
 } = {};
 
 const methods = [
 	'signBlock',
 	'getConnectedAccount',
 	'getNetwork',
+	'isConnected',
 	// 'getAccountBalance',
 	// 'methodName',
 ] as const;

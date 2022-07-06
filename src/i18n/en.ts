@@ -130,6 +130,9 @@ const en = {
 		'Do you want to connect Vite Passport to this domain?',
 	notAtThisTime: 'Not at this time',
 	no: 'No',
+	nothingFound: 'Nothing Found',
+	viewOnViteScan: 'View on ViteScan',
+	passwordChanged: 'Password changed',
 	test: 'test',
 	'': '',
 };

@@ -29,7 +29,7 @@ export const calculatePrice = (
 };
 
 // https://www.30secondsofcode.org/js/s/debounce
-export const debounce = (fn: Function, ms = 0) => {
+export const debounce = (fn: (...args: any) => any, ms = 0) => {
 	let timeoutId: NodeJS.Timeout;
 	return function (...args: any[]) {
 		clearTimeout(timeoutId);

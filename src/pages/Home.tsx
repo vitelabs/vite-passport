@@ -22,7 +22,6 @@ import {
 import { State } from '../utils/types';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 import { setValue } from '../utils/storage';
-import { _Buffer } from '@vite/vitejs/distSrc/utils';
 import WalletContents from '../containers/WalletContents';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import A from '../components/A';
@@ -70,7 +69,7 @@ const Home = ({
 			contacts[activeAccount.address] || `${i18n.account} ${activeAccountIndex}`
 		);
 		return activeAccount.address;
-	}, [activeAccount]);
+	}, [activeAccount, activeAccountIndex, contacts, i18n.account]);
 
 	const saveAccountName = useCallback(() => {
 		accountNameSet(accountName);
@@ -79,7 +78,7 @@ const Home = ({
 		};
 		setValue(data);
 		setState(data);
-	}, []);
+	}, [accountName, activeAddress, contacts, setState]);
 
 	return (
 		<TabContainer>
@@ -100,32 +99,27 @@ const Home = ({
 				</div>
 				<div className="fy xy">
 					{editingAccountName ? (
-						<form
-							className="w-full"
-							onSubmit={(e) => {
-								e.preventDefault();
+						<input
+							autoFocus
+							className="text-xl text-center px-2 w-full bg-skin-base rounded"
+							value={accountName}
+							placeholder={accountName}
+							onChange={(e) => accountNameSet(e.target.value)}
+							onBlur={() => {
+								// TODO: set account name
 								saveAccountName();
+								editingAccountNameSet(false);
 							}}
-						>
-							<input
-								autoFocus
-								className="text-xl text-center px-2 w-full bg-skin-base rounded"
-								value={accountName}
-								placeholder={accountName}
-								onChange={(e) => accountNameSet(e.target.value)}
-								onBlur={() => {
-									// TODO: set account name
+							onKeyDown={(e) => {
+								if (e.key === 'Escape') {
 									editingAccountNameSet(false);
+									accountNameSet(contacts[activeAccount.address]);
+								} else if (e.key === 'Enter') {
 									saveAccountName();
-								}}
-								onKeyDown={(e) => {
-									if (e.key === 'Escape') {
-										editingAccountNameSet(false);
-										accountNameSet(contacts[activeAccount.address]);
-									}
-								}}
-							/>
-						</form>
+									editingAccountNameSet(false);
+								}
+							}}
+						/>
 					) : (
 						<button
 							className="group ml-[1.625rem] fx darker-brightness-button"

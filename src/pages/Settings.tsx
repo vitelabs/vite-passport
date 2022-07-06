@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Modal from '../components/Modal';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 import ModalListItem from '../components/ModalListItem';
@@ -13,6 +13,9 @@ import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
 import ResetWalletModal from '../containers/ResetWalletModal';
+import { validateInputs } from '../utils/misc';
+import { decrypt, encrypt } from '../utils/encryption';
+import { setValue } from '../utils/storage';
 
 type Props = State;
 
@@ -38,6 +41,7 @@ const Settings = ({
 	postPortMessage,
 	setState,
 	currencyConversion,
+	encryptedSecrets,
 	secrets,
 	i18n,
 	language,
@@ -49,10 +53,36 @@ const Settings = ({
 	const [activeModal, activeModalSet] = useState<
 		'currency' | 'language' | 'contacts' | 'password' | 'secrets' | 'reset' | ''
 	>();
+	const [showSecrets, showSecretsSet] = useState(false);
 	const [oldPassword, oldPasswordSet] = useState('');
 	const [newPassword, newPasswordSet] = useState('');
+	const passwordRef = useRef<TextInputRefObject>();
+	const [password, passwordSet] = useState('');
 
-	// TODO: show prices
+	// TODO: toggle show prices
+
+	const verifyPassword = useCallback(
+		async (str: string) => {
+			try {
+				await decrypt(encryptedSecrets, str);
+				return true;
+			} catch {
+				passwordRef.current?.issueSet(i18n.incorrectPassword);
+				return false;
+			}
+		},
+		[password, encryptedSecrets, i18n.incorrectPassword]
+	);
+
+	const attemptToShowPassword = useCallback(async () => {
+		const valid = validateInputs([passwordRef]);
+		if (valid) {
+			const passwordIsCorrect = await verifyPassword(password);
+			if (passwordIsCorrect) {
+				showSecretsSet(true);
+			}
+		}
+	}, [verifyPassword, password]);
 
 	return (
 		<TabContainer heading={i18n.settings}>
@@ -174,7 +204,6 @@ const Settings = ({
 				heading={i18n.changePassword}
 				visible={activeModal === 'password'}
 				onClose={() => {
-					activeModalSet('');
 					oldPasswordSet('');
 					newPasswordSet('');
 				}}
@@ -196,8 +225,20 @@ const Settings = ({
 					/>
 					<button
 						className="round-solid-button"
-						onClick={() => {
-							// TODO
+						onClick={async () => {
+							const valid = validateInputs([oldPasswordRef]);
+							if (valid) {
+								const passwordIsCorrect = await verifyPassword(oldPassword);
+								if (passwordIsCorrect) {
+									const encryptedSecrets = await encrypt(
+										JSON.stringify(secrets),
+										newPassword
+									);
+									setValue({ encryptedSecrets });
+									activeModalSet('');
+									toastSuccess(i18n.passwordChanged);
+								}
+							}
 						}}
 					>
 						{i18n.confirm}
@@ -206,10 +247,40 @@ const Settings = ({
 			</Modal>
 			<Modal
 				visible={activeModal === 'secrets'}
-				onClose={() => activeModalSet('')}
+				onClose={() => {
+					activeModalSet('');
+					passwordSet('');
+					showSecretsSet(false);
+				}}
 				heading={i18n.secrets}
 			>
-				<Secrets {...secrets} />
+				{showSecrets ? (
+					<Secrets {...secrets} />
+				) : (
+					<div className="p-2">
+						<TextInput
+							password
+							autoFocus
+							_ref={passwordRef}
+							label={i18n.password}
+							value={password}
+							onUserInput={(v) => passwordSet(v)}
+							onKeyDown={(key) => {
+								if (key === 'Enter') {
+									attemptToShowPassword();
+								}
+							}}
+						/>
+						<button
+							className="round-solid-button mt-2"
+							onClick={() => {
+								attemptToShowPassword();
+							}}
+						>
+							{i18n.next}
+						</button>
+					</div>
+				)}
 			</Modal>
 			<ResetWalletModal
 				visible={activeModal === 'reset'}

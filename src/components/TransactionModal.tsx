@@ -21,6 +21,7 @@ const TransactionModal = ({
 	transaction,
 	fromRight,
 	copyWithToast,
+	networkUrl,
 	heading,
 	onClose,
 }: Props) => {
@@ -63,10 +64,15 @@ const TransactionModal = ({
 					})}
 					<A
 						className="px-1 py-2 fx w-full bg-skin-middleground brightness-button"
-						// href={`${explorerURL}`}
+						// OPTIMIZE: Make this URL more flexible for different network URLs
+						href={`https://${
+							networkUrl === 'wss://buidl.vite.net/gvite/ws' ? 'test.' : ''
+						}vitescan.io/tx/${transaction.hash}`}
 					>
 						<ExternalLinkIcon className="w-6 ml-1 mr-2 text-skin-secondary" />
-						<p className="text-left text-skin-secondary">View on ViteScan</p>
+						<p className="text-left text-skin-secondary">
+							{i18n.viewOnViteScan}
+						</p>
 					</A>
 				</div>
 			)}

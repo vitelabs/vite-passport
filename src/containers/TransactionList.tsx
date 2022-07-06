@@ -70,7 +70,6 @@ const TransactionList = ({
 					},
 					{ deepMerge: true }
 				);
-				console.log('list:', list);
 			}}
 		>
 			{!transactions ? null : !transactions.length ? (

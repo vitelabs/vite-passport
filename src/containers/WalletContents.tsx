@@ -1,4 +1,10 @@
-import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import React, {
+	useMemo,
+	useRef,
+	useState,
+	useEffect,
+	useCallback,
+} from 'react';
 import { connect } from '../utils/global-context';
 import { State, TokenApiInfo, TokenInfo } from '../utils/types';
 import FetchWidget from './FetchWidget';
@@ -6,7 +12,7 @@ import TransactionModal from '../components/TransactionModal';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import { defaultTokenList, getTokenApiInfo } from '../utils/constants';
-import { calculatePrice, validateInputs } from '../utils/misc';
+import { calculatePrice, debounce, validateInputs } from '../utils/misc';
 import {
 	addIndexToTokenSymbol,
 	shortenTti,
@@ -24,7 +30,21 @@ import { DuplicateIcon } from '@heroicons/react/outline';
 import { _Buffer } from '@vite/vitejs/distSrc/utils';
 import { setValue } from '../utils/storage';
 
-type Props = State & {};
+const searchTokenApiInfo = debounce(
+	(query: string, callback: (list: TokenApiInfo[]) => void) => {
+		return fetch(
+			`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`
+		)
+			.then((res) => res.json())
+			.then((data: { data: { VITE: TokenApiInfo[] } }) => {
+				console.log('data:', data);
+				callback(data?.data?.VITE || []);
+			});
+	},
+	300
+);
+
+type Props = State;
 
 const WalletContents = ({
 	i18n,
@@ -41,8 +61,8 @@ const WalletContents = ({
 	const amountRef = useRef<TextInputRefObject>();
 	const commentRef = useRef<TextInputRefObject>();
 	const [tokenQuery, tokenQuerySet] = useState('');
-	const [displayedTokenDraft, displayedTokenDraftSet] = useState<{
-		[key: string]: boolean;
+	const [checkedTokens, checkedTokensSet] = useState<{
+		[tti: string]: boolean;
 	}>({});
 	const [selectedToken, selectedTokenSet] = useState<TokenApiInfo | null>(null);
 	const [editingTokenList, editingTokenListSet] = useState(false);
@@ -53,11 +73,13 @@ const WalletContents = ({
 	const [comment, commentSet] = useState('');
 	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
 	const [sentTx, sentTxSet] = useState<Transaction | null>(null);
+	const [newlyAddedTokens, newlyAddedTokensSet] = useState<TokenApiInfo[]>([]);
 	const [displayedTokens, displayedTokensSet] = useState<TokenApiInfo[] | null>(
 		null
 	);
-	const [availableTokens, availableTokensSet] =
-		useState<TokenApiInfo[]>(defaultTokenList);
+	const [availableTokens, availableTokensSet] = useState<null | TokenApiInfo[]>(
+		null
+	);
 	const balanceInfoMap = useMemo(
 		() =>
 			viteBalanceInfo
@@ -87,6 +109,9 @@ const WalletContents = ({
 		},
 		[]
 	);
+	// const resetAvailableTokens = useCallback(() => {
+	// 	//
+	// }, [displayedTokens, checkedTokens]);
 
 	return (
 		<>
@@ -132,28 +157,24 @@ const WalletContents = ({
 									>
 										<img
 											src={icon}
-											alt={symbol}
+											alt={addIndexToTokenSymbol(symbol, tokenIndex)}
 											className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
 										/>
 										<div className="flex-1 flex">
 											<div className="flex flex-col flex-1 items-start">
-												<p className="text-lg">{symbol}</p>
-												{/* <button
-										className="text-xs text-skin-muted darker-brightness-button"
-										onClick={() => copyWithToast(tti)}
-									>
-										{shortenTti(tti)}
-									</button> */}
+												<p className="text-lg">
+													{addIndexToTokenSymbol(symbol, tokenIndex)}
+												</p>
 												<p className="text-xs text-skin-muted">
 													{shortenTti(tti)}
 												</p>
 											</div>
 											<div className="flex flex-col items-end mr-1.5">
 												<p className="text-lg">
-													{biggestUnit === undefined ? '...' : biggestUnit}
+													{biggestUnit === null ? '...' : biggestUnit}
 												</p>
 												<p className="text-xs text-skin-secondary">
-													{biggestUnit === undefined
+													{biggestUnit === null
 														? '...'
 														: calculatePrice(biggestUnit!, vitePrice)}
 												</p>
@@ -166,12 +187,17 @@ const WalletContents = ({
 						<button
 							className="mx-auto block text-skin-highlight brightness-button"
 							onClick={() => {
-								const displayedTokenDraft: { [key: string]: boolean } = {};
+								const checkedTokens: { [tti: string]: boolean } = {};
 								displayedTokenIds.forEach((tti) => {
-									displayedTokenDraft[tti] = true;
+									checkedTokens[tti] = true;
 								});
-								displayedTokenDraftSet(displayedTokenDraft);
-								availableTokensSet(defaultTokenList);
+								checkedTokensSet(checkedTokens);
+								availableTokensSet([
+									...displayedTokens!,
+									...defaultTokenList.filter(
+										({ tokenAddress }) => !checkedTokens[tokenAddress]
+									),
+								]);
 								editingTokenListSet(true);
 							}}
 						>
@@ -184,63 +210,100 @@ const WalletContents = ({
 				fullscreen
 				heading={i18n.editTokenList}
 				visible={editingTokenList}
-				onClose={() => editingTokenListSet(false)}
+				onClose={() => {
+					editingTokenListSet(false);
+					tokenQuerySet('');
+				}}
 				className="flex flex-col"
 			>
 				<input
 					placeholder="Search tokens by symbol or tti"
 					value={tokenQuery}
 					className="p-2 shadow z-10 w-full bg-skin-middleground"
-					onChange={(e) => tokenQuerySet(e.target.value)}
+					onChange={(e) => {
+						tokenQuerySet(e.target.value);
+						if (availableTokens !== null) {
+							availableTokensSet(null);
+						}
+						if (!e.target.value) {
+							availableTokensSet([
+								...displayedTokens!,
+								...defaultTokenList.filter(
+									({ tokenAddress }) => !checkedTokens[tokenAddress]
+								),
+							]);
+							return;
+						}
+						searchTokenApiInfo(e.target.value, (list: TokenApiInfo[]) => {
+							// console.log('list:', list);
+							availableTokensSet(list);
+						});
+					}}
 				/>
 				<div className="flex-1 overflow-scroll">
-					{availableTokens.map((tokenApiInfo) => {
-						const {
-							symbol,
-							name,
-							tokenAddress: tti,
-							tokenIndex,
-							icon,
-							decimal,
-							gatewayInfo,
-						} = tokenApiInfo;
-
-						return (
-							<div
-								key={tti}
-								className="fx rounded py-1 px-2 bg-skin-middleground"
-							>
-								<img
-									src={icon}
-									alt={addIndexToTokenSymbol(symbol, tokenIndex)}
-									className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-								/>
-								<div className="flex-1 fx">
-									<div className="flex flex-col flex-1 items-start">
-										<p className="text-lg">
-											{addIndexToTokenSymbol(symbol, tokenIndex)}
-										</p>
-										<button
-											className="group fx darker-brightness-button"
-											onClick={() => copyWithToast(tti)}
-										>
-											<p className="text-xs text-skin-secondary">
-												{shortenTti(tti)}
-											</p>
-											<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-										</button>
+					{availableTokens === null ? (
+						<div className="xy min-h-8">
+							<p className="text-skin-secondary text-center">
+								{i18n.loading}...
+							</p>
+						</div>
+					) : !availableTokens.length ? (
+						<div className="xy min-h-8">
+							<p className="text-skin-secondary text-center">
+								{i18n.nothingFound}
+							</p>
+						</div>
+					) : (
+						availableTokens.map((tokenApiInfo, i) => {
+							const {
+								symbol,
+								name,
+								tokenAddress: tti,
+								tokenIndex,
+								icon,
+								decimal,
+								gatewayInfo,
+							} = tokenApiInfo;
+							// newlyAddedTokens
+							return (
+								<React.Fragment key={tti}>
+									{i === displayedTokenIds.length && (
+										<div className="h-0.5 bg-skin-alt mt-2"></div>
+									)}
+									<div className="fx rounded py-1 px-2 bg-skin-middleground">
+										<img
+											src={icon}
+											alt={addIndexToTokenSymbol(symbol, tokenIndex)}
+											className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+										/>
+										<div className="flex-1 fx">
+											<div className="flex flex-col flex-1 items-start">
+												<p className="text-lg">
+													{addIndexToTokenSymbol(symbol, tokenIndex)}
+												</p>
+												<button
+													className="group fx darker-brightness-button"
+													onClick={() => copyWithToast(tti)}
+												>
+													<p className="text-xs text-skin-secondary">
+														{shortenTti(tti)}
+													</p>
+													<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+												</button>
+											</div>
+											<Checkbox
+												checked={checkedTokens[tti]}
+												onUserInput={(checked) => {
+													checkedTokens[tti] = checked;
+													checkedTokensSet({ ...checkedTokens });
+												}}
+											/>
+										</div>
 									</div>
-									<Checkbox
-										checked={displayedTokenDraft[tti]}
-										onUserInput={(checked) => {
-											displayedTokenDraft[tti] = checked;
-											displayedTokenDraftSet({ ...displayedTokenDraft });
-										}}
-									/>
-								</div>
-							</div>
-						);
-					})}
+								</React.Fragment>
+							);
+						})
+					)}
 				</div>
 				<div className="flex gap-2 p-2 shadow z-50">
 					<button
@@ -253,7 +316,7 @@ const WalletContents = ({
 						className="p-0 round-solid-button"
 						onClick={() => {
 							const data = {
-								displayedTokenIds: Object.entries(displayedTokenDraft)
+								displayedTokenIds: Object.entries(checkedTokens)
 									.filter(([_, checked]) => checked)
 									.map(([tti]) => tti),
 							};
@@ -290,7 +353,7 @@ const WalletContents = ({
 								<img
 									src={selectedToken.icon}
 									alt={selectedToken.symbol}
-									className="h-8 w-8 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+									className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
 								/>
 							</div>
 						</>

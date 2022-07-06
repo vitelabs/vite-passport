@@ -28,6 +28,7 @@ type Props = HTMLProps<HTMLInputElement> & {
 	_ref?:
 		| React.MutableRefObject<TextInputRefObject | undefined>
 		| ((ref: TextInputRefObject) => void);
+	onKeyDown?: (key: string) => void;
 };
 
 let lastKeyDown = '';
@@ -68,6 +69,7 @@ const TextInput = ({
 	maxLength,
 	getIssue = () => '',
 	_ref,
+	onKeyDown,
 }: Props) => {
 	const input = useRef<HTMLInputElement | HTMLTextAreaElement | null>();
 	const [issue, issueSet] = useState('');
@@ -97,7 +99,7 @@ const TextInput = ({
 						focused ? 'text-skin-highlight' : 'text-skin-muted'
 					}`}
 					onMouseDown={(e) => e.preventDefault()}
-					onClick={() => {
+					onClick={(e) => {
 						if (lastKeyDown !== 'Enter') {
 							visibleSet(!visible);
 							setTimeout(() => {
@@ -125,6 +127,7 @@ const TextInput = ({
 					// Prevents onClick from being triggered when TextInput is placed in a form
 					// https://stackoverflow.com/questions/33166871/javascript-why-onclick-getting-called-by-enter-key
 					lastKeyDown = event.key;
+					onKeyDown && onKeyDown(event.key);
 				}}
 				className={`px-2 pt-4 w-full text-lg block bg-skin-middleground transition duration-200 border-2 rounded ${
 					password ? 'pr-10' : ''
@@ -172,6 +175,7 @@ const TextInput = ({
 						const refObject = {
 							tag,
 							issueSet,
+							value,
 							get isValid() {
 								// NOTE: all text inputs should be trimmed before using
 								const trimmedValue = value.trim();

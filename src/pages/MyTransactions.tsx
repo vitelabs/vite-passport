@@ -12,7 +12,7 @@ const MyTransactions = ({ i18n }: Props) => {
 	return (
 		<TabContainer heading={i18n.myTransactions}>
 			<div className="flex-1 overflow-scroll p-2 space-y-2">
-				<div className="flex bg-skin-middleground shadow rounded overflow-hidden">
+				{/* <div className="flex bg-skin-middleground shadow rounded overflow-hidden">
 					<button
 						className={`flex-1 brightness-button px-2 py-0.5 text-sm ${
 							!showUnreceived ? 'bg-skin-foreground' : 'bg-skin-middleground'
@@ -29,7 +29,7 @@ const MyTransactions = ({ i18n }: Props) => {
 					>
 						{i18n.unreceived}
 					</button>
-				</div>
+				</div> */}
 				<TransactionList unreceived={showUnreceived} />
 			</div>
 		</TabContainer>

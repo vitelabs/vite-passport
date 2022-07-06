@@ -48,7 +48,8 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 			lockTimer = setTimeout(() => {
 				secrets = undefined;
 				// }, 3000) // for testing
-			}, 5 * MINUTE); // TODO: make this time adjustable
+				// }, 5 * MINUTE); // TODO: make this time adjustable
+			}, 60 * MINUTE);
 		}
 		dispatchEvent(new CustomEvent('vitePassportChromePortDisconnect'));
 	});

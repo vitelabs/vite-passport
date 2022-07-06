@@ -63,27 +63,24 @@ const Lock = ({
 					Vite Passport
 				</p>
 			</div>
-			<form
-				className="w-full"
-				onSubmit={(e) => {
-					e.preventDefault();
-					attemptUnlock();
+			<TextInput
+				password
+				autoFocus
+				_ref={passwordRef}
+				label={i18n.password}
+				value={password}
+				onUserInput={(v) => passwordSet(v)}
+				onKeyDown={(key) => {
+					if (key === 'Enter') {
+						attemptUnlock();
+					}
 				}}
-			>
-				<TextInput
-					password
-					autoFocus
-					_ref={passwordRef}
-					label={i18n.password}
-					value={password}
-					onUserInput={(v) => passwordSet(v)}
-				/>
-			</form>
+			/>
 			<button className="mt-2 round-solid-button" onClick={attemptUnlock}>
 				{i18n.unlock}
 			</button>
 			<button
-				className="mt-1 text-skin-highlight"
+				className="mt-1 text-skin-highlight self-center"
 				onClick={() => resettingWalletSet(true)}
 			>
 				{i18n.resetWallet}
