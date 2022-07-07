@@ -80,10 +80,10 @@ export const deepMerge = (
 
 // https://stackoverflow.com/a/56989122/13442719
 export const connect = <T,>(Component: React.ComponentType<T>) => {
-	// eslint-disable-next-line
-	return (props: any) => (
+	return (props: Omit<T, keyof State>) => (
 		<GlobalContext.Consumer>
 			{(value: HOCProps) => (
+				// @ts-ignore
 				<Component {...props} {...value.state} setState={value.setState} />
 			)}
 		</GlobalContext.Consumer>

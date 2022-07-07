@@ -2,7 +2,7 @@ import { wallet } from '@vite/vitejs';
 import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
-import TextInput, { TextInputRefObject } from '../components/TextInput';
+import TextInput, { TextInputRefObject } from '../containers/TextInput';
 import { defaultStorage } from '../utils/constants';
 import { encrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';

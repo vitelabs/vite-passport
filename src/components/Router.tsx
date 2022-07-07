@@ -45,6 +45,7 @@ const Router = ({
 	networkUrl,
 	encryptedSecrets,
 	secrets,
+	toastInfo,
 }: Props) => {
 	const initialEntries = useMemo(() => {
 		if (window.location.pathname === '/src/confirmation.html') {
@@ -99,12 +100,18 @@ const Router = ({
 	}, []); // eslint-disable-line
 
 	const updateViteBalanceInfo = useCallback(() => {
+		// Check if tti is listed on ViteX
+		// viteApi
+		// 	.request('dex_getTokenInfo', 'tti_5649544220544f4b454e6e40')
+		// 	.then((data) => {
+		// 		console.log('data:', data);
+		// 	});
 		if (activeAccount) {
 			viteApi
 				.getBalanceInfo(activeAccount.address)
 				// @ts-ignore getBalanceInfo needs a more descriptive return type
 				.then((res: ViteBalanceInfo) => {
-					// console.log('res:', res);
+					console.log('res:', res);
 					setState({ viteBalanceInfo: res });
 					if (res.unreceived.blockCount !== '0') {
 						const receiveTask = new accountBlock.ReceiveAccountBlockTask({
@@ -129,12 +136,16 @@ const Router = ({
 	useEffect(() => {
 		if (activeAccount) {
 			viteApi
-				.subscribe('newAccountBlocksByAddr', activeAccount.address)
+				// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
+				// .subscribe('newAccountBlockByAddress', activeAccount.address)
+				.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
 				.then(
 					(event: {
 						on: (callback: (result: NewAccountBlock) => void) => void;
 					}) => {
-						event.on(() => {
+						event.on((e) => {
+							console.log('e:', e);
+							toastInfo(i18n.newUnreceivedAccountBlock);
 							// TODO: throttle updateViteBalanceInfo()
 							updateViteBalanceInfo();
 						});
@@ -146,7 +157,7 @@ const Router = ({
 				});
 		}
 		return () => viteApi.unsubscribeAll();
-	}, [activeAccount, viteApi, updateViteBalanceInfo]); // eslint-disable-line
+	}, [activeAccount, toastInfo, viteApi, updateViteBalanceInfo]); // eslint-disable-line
 
 	useEffect(() => {
 		setState({

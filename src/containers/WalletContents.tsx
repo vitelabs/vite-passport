@@ -20,7 +20,7 @@ import {
 	toQueryString,
 	toSmallestUnit,
 } from '../utils/strings';
-import TextInput, { TextInputRefObject } from '../components/TextInput';
+import TextInput, { TextInputRefObject } from './TextInput';
 import { accountBlock, constant, wallet } from '@vite/vitejs';
 import Checkbox from '../components/Checkbox';
 import QR from '../components/QR';
@@ -87,14 +87,22 @@ const WalletContents = ({
 				: undefined,
 		[viteBalanceInfo]
 	);
+	const selectedTokenBalance = useMemo(() => {
+		return !selectedToken
+			? null
+			: balanceInfoMap?.[selectedToken.tokenAddress]?.balance
+			? toBiggestUnit(
+					balanceInfoMap[selectedToken.tokenAddress]?.balance,
+					balanceInfoMap[selectedToken.tokenAddress]?.tokenInfo?.decimals
+			  )
+			: '0';
+	}, [balanceInfoMap, selectedToken]);
 	const activeAddress = useMemo(() => activeAccount.address, [activeAccount]);
 	const getPromise = useCallback(() => {
-		console.log('get prom');
 		return getTokenApiInfo(displayedTokenIds);
 	}, [displayedTokenIds]);
 	const onResolve = useCallback(
 		(res: { msg: string; code: number; data: TokenApiInfo[] }) => {
-			console.log('res:', res);
 			displayedTokensSet(
 				res.data.sort((a, b) =>
 					a.symbol === 'VITE'
@@ -109,9 +117,6 @@ const WalletContents = ({
 		},
 		[]
 	);
-	// const resetAvailableTokens = useCallback(() => {
-	// 	//
-	// }, [displayedTokens, checkedTokens]);
 
 	return (
 		<>
@@ -185,7 +190,7 @@ const WalletContents = ({
 							})
 						)}
 						<button
-							className="mx-auto block text-skin-highlight brightness-button"
+							className="mx-auto block text-skin-highlight brightness-button leading-3"
 							onClick={() => {
 								const checkedTokens: { [tti: string]: boolean } = {};
 								displayedTokenIds.forEach((tti) => {
@@ -394,7 +399,6 @@ const WalletContents = ({
 							data={`vite:${activeAddress}${toQueryString({
 								amount,
 								tti: selectedToken.tokenAddress,
-								// data: _Buffer.from(comment).toString('base64'),
 								data: btoa(comment).replace(/=+$/, ''),
 							})}`}
 							className="h-40 w-40 mx-auto"
@@ -411,15 +415,13 @@ const WalletContents = ({
 							textarea
 							label="Comment"
 							value={comment}
-							onUserInput={(v) => {
-								console.log(v, _Buffer.from(v).toString('base64'));
-								commentSet(v);
-							}}
+							onUserInput={(v) => commentSet(v)}
 						/>
 					</div>
 				)}
 			</Modal>
 			<Modal
+				fullscreen
 				visible={sendingFunds}
 				onClose={() => {
 					sendingFundsSet(false);
@@ -431,11 +433,18 @@ const WalletContents = ({
 				}}
 				fromLeft={confirmingTransaction}
 				className="flex flex-col"
-				heading={`${i18n.send} ${selectedToken?.symbol}`}
-				subheading={selectedToken?.tokenAddress}
+				heading={
+					!selectedToken
+						? ''
+						: `${i18n.send} ${addIndexToTokenSymbol(
+								selectedToken!.symbol,
+								selectedToken!.tokenIndex
+						  )}`
+				}
+				// subheading={selectedToken?.tokenAddress}
 			>
 				{!!selectedToken && (
-					<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
+					<div className="flex-1 p-4 space-y-2 overflow-scroll bg-skin-base">
 						<div className="">
 							<p className="leading-5 text-skin-secondary">{i18n.from}</p>
 							<p className="break-words text-sm">{contacts[activeAddress]}</p>
@@ -443,14 +452,7 @@ const WalletContents = ({
 						</div>
 						<div className="">
 							<p className="leading-5 text-skin-secondary">{i18n.balance}</p>
-							<p className="">
-								{balanceInfoMap?.[selectedToken.tokenAddress]?.balance &&
-									toBiggestUnit(
-										balanceInfoMap[selectedToken.tokenAddress]?.balance,
-										balanceInfoMap[selectedToken.tokenAddress]?.tokenInfo
-											?.decimals
-									)}
-							</p>
+							<p className="">{selectedTokenBalance}</p>
 						</div>
 						{/* <div className="">
 						<p className="leading-5 text-skin-secondary">
@@ -479,9 +481,9 @@ const WalletContents = ({
 							onUserInput={(v) => amountSet(v)}
 							getIssue={(v) => {
 								console.log('v:', v);
-								// if (+toBiggestUnit(v, balances[selectedToken].decimals) > +balances[selectedToken].balance) {
-								// 	return i18n.insufficientFunds;
-								// }
+								if (+v > +selectedTokenBalance!) {
+									return i18n.insufficientFunds;
+								}
 							}}
 						/>
 						<TextInput

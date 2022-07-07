@@ -10,7 +10,8 @@ import A from './A';
 import Modal from './Modal';
 
 type Props = State & {
-	transaction: Transaction;
+	visible?: boolean;
+	transaction: null | Transaction;
 	onClose: () => void;
 	fromRight?: boolean;
 	heading?: string;
@@ -20,6 +21,7 @@ const TransactionModal = ({
 	i18n,
 	transaction,
 	fromRight,
+	visible,
 	copyWithToast,
 	networkUrl,
 	heading,
@@ -29,7 +31,7 @@ const TransactionModal = ({
 		<Modal
 			fromRight={fromRight}
 			heading={heading || i18n.transaction}
-			visible={!!transaction}
+			visible={visible}
 			onClose={onClose}
 		>
 			{!!transaction && (

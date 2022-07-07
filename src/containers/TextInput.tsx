@@ -1,5 +1,7 @@
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import React, { useRef, useMemo, useState, HTMLProps } from 'react';
+import { connect } from '../utils/global-context';
+import { State } from '../utils/types';
 
 export type TextInputRefObject = {
 	tag: HTMLElement | null;
@@ -7,29 +9,30 @@ export type TextInputRefObject = {
 	readonly isValid: boolean;
 };
 
-type Props = HTMLProps<HTMLInputElement> & {
-	label: string;
-	value: string;
-	onUserInput: (value: string) => void;
-	containerClassName?: string;
-	inputClassName?: string;
-	textarea?: boolean;
-	autoFocus?: boolean;
-	numeric?: boolean;
-	password?: boolean;
-	resizable?: boolean;
-	maxDecimals?: number;
-	disabled?: boolean;
-	placeholder?: string;
-	optional?: boolean;
-	maxLength?: number;
-	type?: string;
-	getIssue?: (text: string) => string | void;
-	_ref?:
-		| React.MutableRefObject<TextInputRefObject | undefined>
-		| ((ref: TextInputRefObject) => void);
-	onKeyDown?: (key: string) => void;
-};
+type Props = State &
+	HTMLProps<HTMLInputElement> & {
+		label: string;
+		value: string;
+		onUserInput: (value: string) => void;
+		containerClassName?: string;
+		inputClassName?: string;
+		textarea?: boolean;
+		autoFocus?: boolean;
+		numeric?: boolean;
+		password?: boolean;
+		resizable?: boolean;
+		maxDecimals?: number;
+		disabled?: boolean;
+		placeholder?: string;
+		optional?: boolean;
+		maxLength?: number;
+		type?: string;
+		getIssue?: (text: string) => string | void;
+		_ref?:
+			| React.MutableRefObject<TextInputRefObject | undefined>
+			| ((ref: TextInputRefObject) => void);
+		onKeyDown?: (key: string) => void;
+	};
 
 let lastKeyDown = '';
 
@@ -70,6 +73,7 @@ const TextInput = ({
 	getIssue = () => '',
 	_ref,
 	onKeyDown,
+	i18n,
 }: Props) => {
 	const input = useRef<HTMLInputElement | HTMLTextAreaElement | null>();
 	const [issue, issueSet] = useState('');
@@ -180,7 +184,7 @@ const TextInput = ({
 								// NOTE: all text inputs should be trimmed before using
 								const trimmedValue = value.trim();
 								if (!optional && !trimmedValue) {
-									issueSet(`This field cannot be blank`);
+									issueSet(i18n.thisFieldCannotBeBlank);
 									return false;
 								} else if (trimmedValue && getIssue) {
 									const newIssue = getIssue(trimmedValue) || '';
@@ -209,4 +213,4 @@ const TextInput = ({
 	);
 };
 
-export default TextInput;
+export default connect(TextInput);

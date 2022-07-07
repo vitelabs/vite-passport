@@ -3,7 +3,7 @@ import { validateMnemonics } from '@vite/vitejs/distSrc/wallet/hdKey';
 import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
-import TextInput, { TextInputRefObject } from '../components/TextInput';
+import TextInput, { TextInputRefObject } from '../containers/TextInput';
 import { defaultStorage } from '../utils/constants';
 import { encrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
@@ -38,7 +38,7 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 				inputClassName="h-44"
 				getIssue={(v) => {
 					if (!validateMnemonics(v)) {
-						return 'Invalid mnemonic phrase';
+						return i18n.invalidMnemonicPhrase;
 					}
 				}}
 			/>

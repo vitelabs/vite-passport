@@ -11,7 +11,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import Modal from '../components/Modal';
 import ModalListItem from '../components/ModalListItem';
 import TabContainer from '../components/TabContainer';
-import TextInput, { TextInputRefObject } from '../components/TextInput';
+import TextInput, { TextInputRefObject } from '../containers/TextInput';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import {

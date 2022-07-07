@@ -6,7 +6,7 @@ import ModalListBottomButton from '../components/ModalListBottomButton';
 import ModalListItem from '../components/ModalListItem';
 import Secrets from '../containers/Secrets';
 import TabContainer from '../components/TabContainer';
-import TextInput, { TextInputRefObject } from '../components/TextInput';
+import TextInput, { TextInputRefObject } from '../containers/TextInput';
 import { currencyConversions, i18nDict, languages } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
@@ -285,7 +285,6 @@ const Settings = ({
 			<ResetWalletModal
 				visible={activeModal === 'reset'}
 				onClose={() => activeModalSet('')}
-				heading={i18n.resetWallet}
 			/>
 		</TabContainer>
 	);

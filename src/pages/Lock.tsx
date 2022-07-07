@@ -1,7 +1,7 @@
 import { wallet } from '@vite/vitejs';
 import { useCallback, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import TextInput, { TextInputRefObject } from '../components/TextInput';
+import TextInput, { TextInputRefObject } from '../containers/TextInput';
 import ResetWalletModal from '../containers/ResetWalletModal';
 import { decrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
@@ -88,7 +88,6 @@ const Lock = ({
 			<ResetWalletModal
 				visible={resettingWallet}
 				onClose={() => resettingWalletSet(false)}
-				heading={i18n.resetWallet}
 			/>
 		</div>
 	);

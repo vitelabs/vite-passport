@@ -27,8 +27,11 @@ const FetchWidget = ({
 		getPromise()
 			.then((result) => onResolve && onResolve(result))
 			.catch((err) => {
-				console.log('err:', err.constructor, err);
-				const errorString = err.toString();
+				console.log('err:', typeof err, err.constructor, err);
+				const errorString =
+					err.toString() === '[object Object]'
+						? JSON.stringify(err)
+						: err.toString();
 				if (onCatch) {
 					onCatch(errorString);
 				}
@@ -39,7 +42,6 @@ const FetchWidget = ({
 
 	useEffect(() => {
 		if (shouldFetch) {
-			console.log('oops');
 			fetchData();
 		}
 	}, [shouldFetch, fetchData]);

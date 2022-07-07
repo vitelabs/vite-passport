@@ -45,9 +45,9 @@ export type State = Storage & {
 	toast: [string, 'success' | 'warning' | 'error' | 'info'];
 	viteBalanceInfo: ViteBalanceInfo;
 	transactionHistory: {
-		all: Transaction[];
+		received: Transaction[];
 		unreceived: Transaction[];
-		[tti: string]: Transaction[];
+		[tti: string]: Transaction[]; // assume these only show received txs
 	};
 };
 

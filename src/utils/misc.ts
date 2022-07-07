@@ -1,4 +1,4 @@
-import { TextInputRefObject } from '../components/TextInput';
+import { TextInputRefObject } from '../containers/TextInput';
 
 export const isDarkMode = () =>
 	document.documentElement.classList.contains('dark');

@@ -74,7 +74,6 @@ const en = {
 	confirmTransaction: 'Confirm Transaction',
 	toAddress: 'To Address',
 	comment: 'Comment',
-	insufficientFunds: 'Insufficient Funds',
 	accounts: 'Accounts',
 	transaction: 'Transaction',
 	deriveAddress: 'Derive Address',
@@ -100,14 +99,21 @@ const en = {
 	mnemonicPhrase: 'Mnemonic Phrase',
 	bip39Passphrase: 'BIP-39 Passphrase',
 	unlock: 'Unlock',
-	incorrectPassword: 'Incorrect Password',
-	invalidAddress: 'Invalid Address',
-	youAreAboutToErase:
-		"You are about to erase all settings and secrets from your wallet. If you don't have your mnemonic phrase and BIP-39 passphrase saved somewhere else, your funds will be lost forever.",
-	whatsTheDifference: `What's the difference?`,
+
+	// TextInput `getIssue` errors
+	incorrectPassword: 'Incorrect password',
+	invalidAddress: 'Invalid address',
+	invalidMnemonicPhrase: 'Invalid mnemonic phrase',
+	thisFieldCannotBeBlank: 'This field cannot be blank',
 	urlMustStartWithWsWssHttpOrHttps:
 		'URL must start with ws://, wss://, http://, or https://',
 	urlMustStartWithHttpOrHttps: 'URL must start with http:// or https://',
+	insufficientFunds: 'Insufficient funds',
+
+	//
+	youAreAboutToErase:
+		"You are about to erase all settings and secrets from your wallet. If you don't have your mnemonic phrase and BIP-39 passphrase saved somewhere else, your funds will be lost forever.",
+	whatsTheDifference: `What's the difference?`,
 	loading: 'Loading',
 	retry: 'Retry',
 	error: 'Error',
@@ -133,6 +139,8 @@ const en = {
 	nothingFound: 'Nothing Found',
 	viewOnViteScan: 'View on ViteScan',
 	passwordChanged: 'Password changed',
+	newUnreceivedAccountBlock: 'New unreceived account block',
+	loadMore: 'Load More',
 	test: 'test',
 	'': '',
 };
