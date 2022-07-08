@@ -1,3 +1,4 @@
+import { accountBlock } from '@vite/vitejs';
 import { VitePassportMethodCall, BackgroundResponse } from './injectedScript';
 import { getValue } from './utils/storage';
 import { getHostname, toQueryString } from './utils/strings';
@@ -8,6 +9,23 @@ import { PortMessage, Secrets } from './utils/types';
 
 let secrets: Secrets | undefined;
 let lockTimer: NodeJS.Timeout | undefined;
+
+// Have to make a replacement for `dispatch(Custom Event(...))` and `addEventListener` cuz
+// https://stackoverflow.com/questions/41266567/service-worker-warning-in-google-chrome
+let eventListeners: { [event: string]: ((data?: any) => void)[] } = {};
+const pushEventListener = (event: string, listener: (data?: any) => void) => {
+	if (!Array.isArray(eventListeners[event])) {
+		eventListeners[event] = [];
+	}
+	eventListeners[event].push(listener);
+};
+const runAndClearEventListener = (event: string, ...args: any) => {
+	(eventListeners[event] || []).forEach((listener) => listener(...args));
+	delete eventListeners[event];
+};
+const clearEventListeners = () => {
+	eventListeners = {};
+};
 
 // Below are messages from within the extension
 chrome.runtime.onConnect.addListener((chromePort) => {
@@ -25,11 +43,8 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 				secrets = message.secrets;
 				break;
 			case 'connectDomain':
-				dispatchEvent(
-					new CustomEvent('vitePassportConnectDomain', {
-						detail: { domain: message.domain },
-					})
-				);
+				// message.domain isn't used for anything rn, but it may come in handy later
+				runAndClearEventListener('vitePassportConnectDomain', { domain: message.domain });
 				break;
 			case 'lock':
 				secrets = undefined;
@@ -51,9 +66,12 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 				// }, 5 * MINUTE); // TODO: make this time adjustable
 			}, 60 * MINUTE);
 		}
-		dispatchEvent(new CustomEvent('vitePassportChromePortDisconnect'));
+		runAndClearEventListener('vitePassportChromePortDisconnect');
 	});
 });
+
+// addEventListener('vitePassportNetworkChange', )
+// addEventListener('vitePassportAccountChange', )
 
 // Below are messages from the injected vitePassport object
 chrome.runtime.onMessage.addListener(
@@ -70,90 +88,114 @@ chrome.runtime.onMessage.addListener(
 			if (!sender.origin) {
 				throw new Error('sender.origin does not exist');
 			}
-			const { connectedDomains } = await getValue('connectedDomains');
+			// The above ensures that only the focused tab can send messages to Vite Passport
 			const hostname = getHostname(sender.origin);
-			if (!connectedDomains?.[hostname]) {
-				openPopup('/connect' + toQueryString({ hostname }));
-				try {
-					await new Promise((resolve, reject) => {
-						const connectListener = () => {
-							resolve(true);
-							removeListeners();
-						};
-						const disconnectListener = () => {
-							reject();
-							reply({
-								error: 'Vite Passport closed before user approved domain',
-							});
-							removeListeners();
-						};
-						const removeListeners = () => {
-							removeEventListener('vitePassportConnectDomain', connectListener);
-							removeEventListener(
-								'vitePassportChromePortDisconnect',
-								disconnectListener
-							);
-						};
-						addEventListener('vitePassportConnectDomain', connectListener);
-						addEventListener(
-							'vitePassportChromePortDisconnect',
-							disconnectListener
-						);
-					});
-				} catch (e) {
-					return;
-				}
-			}
-			// The above ensures that only the focused tab can send messages to Vite Passport and the user has approved the URL
-			// respond back to contentScript.ts
+			const { connectedDomains } = await getValue('connectedDomains');
+			const domainConnected = !!connectedDomains?.[hostname];
+
+			// Calling `reply` responds back to contentScript.ts
+			const connectError = () => {
+				reply({
+					error: 'Wallet must connect via `vitePassport.connectWallet()` first',
+				});
+			};
+
+			console.log('message:', message);
 			switch (message.method) {
-				case 'signBlock':
-					// TODO: only allow active tab to call this
-					reply({ result: { sig: 'signed block' } });
-					break;
 				case 'getConnectedAccount':
+					if (!domainConnected) return connectError();
 					const { accountList, activeAccountIndex } = await getValue([
 						'accountList',
 						'activeAccountIndex',
 					]);
-					if (accountList) {
-						reply({ result: accountList[activeAccountIndex!] });
-					} else {
-						reply({ result: 'account not yet created' });
-						// I don't think this will ever be called cuz the user needs to create an account to do anything
-					}
+					reply({ result: accountList![activeAccountIndex!].address });
+					break;
+				case 'connectWallet':
+					openPopup('/connect' + toQueryString({ hostname }));
+					const connectListener = () => {
+						reply({ result: true });
+						clearEventListeners();
+					};
+					const disconnectListener = () => {
+						reply({ error: 'Vite Passport closed before user approved domain' });
+						clearEventListeners();
+					};
+					pushEventListener('vitePassportConnectDomain', connectListener);
+					pushEventListener('vitePassportChromePortDisconnect', disconnectListener);
 					break;
 				case 'getNetwork':
+					if (!domainConnected) return connectError();
 					const { networkUrl } = await getValue(['networkUrl']);
 					reply({ result: networkUrl });
 					break;
+				case 'createAndSendAccountBlock':
+					if (!domainConnected) return connectError();
+					// if (!secrets) {
+					// 	reply({ error: 'Vite Passport secrets not loaded' });
+					// 	// I'm not sure when this will be called, but it shouldn't
+					// }
+
+					console.log('message.args:', message.args);
+					// try {
+					// 	const thing = accountBlock.createAccountBlock(...message.args);
+					// 	console.log('thing:', thing);
+					// } catch (error) {
+					// 	console.log('error:', error);
+					// 	// throw error;
+					// }
+
+					openPopup(
+						'/sign-tx' + toQueryString({ methodName: message.args[0], params: message.args[1] })
+					);
+					// message.args
+					console.log('message.args:', message.args);
+					reply({ result: { sig: 'signed block' } });
+					break;
+				// case 'on':
+				// 	if (!domainConnected) return connectError();
+				// 	// message.args
+				// 	// console.log('message.args:', message.args);
+				// 	break;
+				// case 'onAccountChange':
+				// 	if (!domainConnected) return connectError();
+				// 	//
+				// 	break;
+				// case 'onNetworkChange':
+				// 	if (!domainConnected) return connectError();
+				// 	//
+				// 	break;
 				default:
 					break;
 			}
 		})();
 
+		// https://stackoverflow.com/questions/44056271/chrome-runtime-onmessage-response-with-async-await
+		// must return true to indicate asynchronous response otherwise you get this error:
+		// "Unchecked runtime.lastError: The message port closed before a response was received."
 		return true;
 	}
 );
 
 const host = chrome.runtime.getURL('src/confirmation.html');
-const openPopup = async (route: string) => {
-	// route is specified in the params cuz frontend routing doesn't work here (popup window would loost for a file under host+route)
+const openPopup = async (routeAfterUnlock: string) => {
+	// routeAfterUnlock is specified in the params cuz frontend routing doesn't work here (popup window would loost for a file under host+routeAfterUnlock)
 	const lastFocused = await chrome.windows.getCurrent();
+	// const {id} = await chrome.windows.create({
+	// OPTIMIZE: if a previous window is open, focus that instead of opening a new window
+
 	chrome.windows.create({
-		url: host + toQueryString({ route }),
+		url: host + toQueryString({ routeAfterUnlock }),
 		type: 'popup',
 		width: (9 / 16) * 35 * 16, // w-[calc(9/16*35rem)
 		height: 35 * 16 + 22, // h-[35rem] + frame header height (22px on macOS?)
 		top: lastFocused.top,
 		left: lastFocused.left! + (lastFocused.width! - 18 * 16),
 	});
+	// console.log('id:', id);
 };
 
 const getFocusedTabId = () => {
 	return new Promise((resolve) => {
-		chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) =>
-			resolve(tab.id)
-		);
+		chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) => resolve(tab.id));
 	});
 };

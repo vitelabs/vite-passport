@@ -10,9 +10,7 @@ import { validateInputs } from '../utils/misc';
 import { setValue } from '../utils/storage';
 import { State } from '../utils/types';
 
-type Props = State;
-
-const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
+const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 	const navigate = useNavigate();
 	const {
 		state: { mnemonics, routeAfterUnlock },
@@ -48,12 +46,12 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 				className=""
 				// TODO: i18n for these sentences
 			>
-				Your <span className="font-bold">BIP-39 passphrase</span> is like an
-				additional word to your mnemonic phrase for extra security.
+				Your <span className="font-bold">BIP-39 passphrase</span> is like an additional word to your
+				mnemonic phrase for extra security.
 			</p>
 			<p className="">
-				Your <span className="font-bold">password</span> is used for encrypting
-				your mnemonic phrase and BIP-39 passphrase on your computer.
+				Your <span className="font-bold">password</span> is used for encrypting your mnemonic phrase
+				and BIP-39 passphrase on your computer.
 			</p>
 			<div className="flex-1"></div>
 			<button
@@ -63,22 +61,21 @@ const Create2 = ({ i18n, postPortMessage, setState }: Props) => {
 					if (valid) {
 						const secrets = { mnemonics, passphrase };
 						postPortMessage({ secrets, type: 'updateSecrets' });
-						const encryptedSecrets = await encrypt(
-							JSON.stringify(secrets),
-							password
-						);
+						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
 						const accountList = [
 							wallet.deriveAddress({
 								...secrets,
 								index: 0,
 							}),
 						];
-						setValue({ ...defaultStorage, encryptedSecrets, accountList });
+						const contacts = { [accountList[0].address]: 'Account 0' };
+						setValue({ ...defaultStorage, encryptedSecrets, accountList, contacts });
 						setState({
 							...defaultStorage,
 							secrets,
 							encryptedSecrets,
 							accountList,
+							contacts,
 							activeAccount: accountList[0],
 						});
 						navigate(routeAfterUnlock || '/home', { replace: true });

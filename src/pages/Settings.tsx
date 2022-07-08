@@ -17,8 +17,6 @@ import { validateInputs } from '../utils/misc';
 import { decrypt, encrypt } from '../utils/encryption';
 import { setValue } from '../utils/storage';
 
-type Props = State;
-
 const ListItem = ({
 	label,
 	value,
@@ -46,7 +44,7 @@ const Settings = ({
 	i18n,
 	language,
 	toastSuccess,
-}: Props) => {
+}: State) => {
 	const navigate = useNavigate();
 	const oldPasswordRef = useRef<TextInputRefObject>();
 	const newPasswordRef = useRef<TextInputRefObject>();
@@ -101,18 +99,9 @@ const Settings = ({
 					onClick={() => activeModalSet('contacts')}
 					label={i18n.contacts}
 				/> */}
-				<ListItem
-					onClick={() => activeModalSet('password')}
-					label={i18n.changePassword}
-				/>
-				<ListItem
-					onClick={() => activeModalSet('secrets')}
-					label={i18n.showSecrets}
-				/>
-				<ListItem
-					onClick={() => activeModalSet('reset')}
-					label={i18n.resetWallet}
-				/>
+				<ListItem onClick={() => activeModalSet('password')} label={i18n.changePassword} />
+				<ListItem onClick={() => activeModalSet('secrets')} label={i18n.showSecrets} />
+				<ListItem onClick={() => activeModalSet('reset')} label={i18n.resetWallet} />
 				<ListItem
 					onClick={() => {
 						postPortMessage({ type: 'lock' });
@@ -230,10 +219,7 @@ const Settings = ({
 							if (valid) {
 								const passwordIsCorrect = await verifyPassword(oldPassword);
 								if (passwordIsCorrect) {
-									const encryptedSecrets = await encrypt(
-										JSON.stringify(secrets),
-										newPassword
-									);
+									const encryptedSecrets = await encrypt(JSON.stringify(secrets), newPassword);
 									setValue({ encryptedSecrets });
 									activeModalSet('');
 									toastSuccess(i18n.passwordChanged);
@@ -282,10 +268,7 @@ const Settings = ({
 					</div>
 				)}
 			</Modal>
-			<ResetWalletModal
-				visible={activeModal === 'reset'}
-				onClose={() => activeModalSet('')}
-			/>
+			<ResetWalletModal visible={activeModal === 'reset'} onClose={() => activeModalSet('')} />
 		</TabContainer>
 	);
 };

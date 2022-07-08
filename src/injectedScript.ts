@@ -1,27 +1,38 @@
 import { AccountBlockType } from '@vite/vitejs/distSrc/accountBlock/type';
-import { AddressObj } from '@vite/vitejs/distSrc/utils/type';
 
 const injectedObject: {
-	getConnectedAccount?: () => Promise<AddressObj | null>;
-	connectWallet?: () => Promise<boolean>;
+	getConnectedAccount?: () => Promise<null | string>;
+	connectWallet?: () => Promise<undefined>;
 	getNetwork?: () => Promise<string>;
-	signBlock?: () => Promise<AccountBlockType>;
+	createAndSendAccountBlock?: (type: string, block: AccountBlockType) => Promise<undefined>;
+	// on?: (event: 'accountChange' | 'networkChange', callback: (data: string) => void) => void;
+	// addListener?: (event: 'accountChange' | 'networkChange', callback: (data: string) => void) => void;
+	// removeListener?: (
+	// 	event: 'accountChange' | 'networkChange',
+	// 	callback: (data: string) => void
+	// ) => void;
 } = {};
 
 const methods = [
-	'signBlock',
 	'getConnectedAccount',
+	'connectWallet',
 	'getNetwork',
-	'isConnected',
-	// 'getAccountBalance',
-	// 'methodName',
+	'createAndSendAccountBlock',
+	// 'on',
+	// 'removeListener',
 ] as const;
 
-export type VitePassportMethodCall = {
-	readonly _messageId: number;
-	method: typeof methods[number];
-	args: number;
-};
+export type VitePassportMethodCall =
+	| {
+			readonly _messageId: number;
+			method: 'createAndSendAccountBlock';
+			args: [string, object];
+	  }
+	| {
+			readonly _messageId: number;
+			method: 'getConnectedAccount' | 'connectWallet' | 'getNetwork';
+			// args: any[];
+	  };
 
 export type BackgroundResponse = {
 	readonly _messageId: number;

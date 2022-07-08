@@ -5,11 +5,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { NewAccountBlock, State, ViteBalanceInfo } from '../utils/types';
 import WS_RPC from '@vite/vitejs-ws';
 import HTTP_RPC from '@vite/vitejs-http';
-import {
-	copyToClipboardAsync,
-	parseQueryString,
-	toQueryString,
-} from '../utils/strings';
+import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
 import Toast from '../containers/Toast';
 import Create from '../pages/Create';
 import Create2 from '../pages/Create2';
@@ -19,6 +15,7 @@ import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 import Lock from '../pages/Lock';
 import Connect from '../pages/Connect';
+import SignTx from '../pages/SignTx';
 import { ViteAPI, accountBlock } from '@vite/vitejs';
 
 // const providerTimeout = 60000;
@@ -51,20 +48,20 @@ const Router = ({
 		if (window.location.pathname === '/src/confirmation.html') {
 			// This pathname is only used for popups (i.e. vitePassport.<methodName> was called from a third party tab)
 			const obj = parseQueryString(window.location.search);
-			if (typeof obj.route === 'string') {
-				if (!obj.route.startsWith('/')) {
-					throw new Error('route param must start with "/"');
+			if (typeof obj.routeAfterUnlock === 'string') {
+				if (!obj.routeAfterUnlock.startsWith('/')) {
+					throw new Error('routeAfterUnlock param must start with "/"');
 				}
 				if (!encryptedSecrets) {
 					// create account
-					return ['/' + toQueryString({ routeAfterUnlock: obj.route })];
+					return ['/' + toQueryString({ routeAfterUnlock: obj.routeAfterUnlock })];
 				}
 				if (secrets) {
-					return [obj.route];
+					return [obj.routeAfterUnlock];
 				}
-				return ['/lock' + toQueryString({ routeAfterUnlock: obj.route })];
+				return ['/lock' + toQueryString({ routeAfterUnlock: obj.routeAfterUnlock })];
 			} else {
-				throw new Error('route param must be provided');
+				throw new Error('routeAfterUnlock param must be provided');
 			}
 		}
 		if (encryptedSecrets) {
@@ -78,10 +75,7 @@ const Router = ({
 	}, []); // eslint-disable-line
 
 	const rpc = useMemo(
-		() =>
-			/^ws/.test(networkUrl)
-				? new WS_RPC(networkUrl)
-				: new HTTP_RPC(networkUrl),
+		() => (/^ws/.test(networkUrl) ? new WS_RPC(networkUrl) : new HTTP_RPC(networkUrl)),
 		[networkUrl]
 	);
 
@@ -139,18 +133,14 @@ const Router = ({
 				// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
 				// .subscribe('newAccountBlockByAddress', activeAccount.address)
 				.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
-				.then(
-					(event: {
-						on: (callback: (result: NewAccountBlock) => void) => void;
-					}) => {
-						event.on((e) => {
-							console.log('e:', e);
-							toastInfo(i18n.newUnreceivedAccountBlock);
-							// TODO: throttle updateViteBalanceInfo()
-							updateViteBalanceInfo();
-						});
-					}
-				)
+				.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
+					event.on((e) => {
+						console.log('e:', e);
+						toastInfo(i18n.newUnreceivedAccountBlock);
+						// TODO: throttle updateViteBalanceInfo()
+						updateViteBalanceInfo();
+					});
+				})
 				.catch((err: any) => {
 					console.log(err);
 					setState({ toast: [JSON.stringify(err), 'error'] });
@@ -188,6 +178,7 @@ const Router = ({
 				<Route path="/settings" element={<Settings />} />
 				<Route path="/lock" element={<Lock />} />
 				<Route path="/connect" element={<Connect />} />
+				<Route path="/sign-tx" element={<SignTx />} />
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
 			<Toast />

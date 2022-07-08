@@ -8,9 +8,7 @@ import Secrets from '../containers/Secrets';
 import { wallet } from '@vite/vitejs';
 import { useLocation } from 'react-router-dom';
 
-type Props = State;
-
-const Create = ({ i18n, copyWithToast }: Props) => {
+const Create = ({ i18n, copyWithToast }: State) => {
 	const [mnemonics, mnemonicsSet] = useState(wallet.createMnemonics());
 	const createMnemonics = useCallback((twelveWords = false) => {
 		mnemonicsSet(wallet.createMnemonics(twelveWords ? 128 : 256));
@@ -28,9 +26,7 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 				<div className="flex bg-skin-middleground shadow rounded overflow-hidden">
 					<button
 						className={`brightness-button px-2 py-0.5 text-sm ${
-							mnemonics.length === 12
-								? 'bg-skin-foreground'
-								: 'bg-skin-middleground'
+							mnemonics.length === 12 ? 'bg-skin-foreground' : 'bg-skin-middleground'
 						}`}
 						onClick={() => createMnemonics(true)}
 					>
@@ -38,9 +34,7 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 					</button>
 					<button
 						className={`brightness-button px-2 py-0.5 text-sm ${
-							mnemonics.length === 24
-								? 'bg-skin-foreground'
-								: 'bg-skin-middleground'
+							mnemonics.length === 24 ? 'bg-skin-foreground' : 'bg-skin-middleground'
 						}`}
 						onClick={() => createMnemonics()}
 					>
@@ -59,11 +53,7 @@ const Create = ({ i18n, copyWithToast }: Props) => {
 				Store these words somewhere safe
 			</p>
 			<div className="flex-1"></div>
-			<A
-				to="/create2"
-				className="round-solid-button"
-				state={{ mnemonics, routeAfterUnlock }}
-			>
+			<A to="/create2" className="round-solid-button" state={{ mnemonics, routeAfterUnlock }}>
 				{i18n.next}
 			</A>
 		</PageContainer>

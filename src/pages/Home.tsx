@@ -14,19 +14,13 @@ import TabContainer from '../components/TabContainer';
 import TextInput, { TextInputRefObject } from '../containers/TextInput';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
-import {
-	shortenAddress,
-	validateHttpUrl,
-	validateWsUrl,
-} from '../utils/strings';
+import { shortenAddress, validateHttpUrl, validateWsUrl } from '../utils/strings';
 import { State } from '../utils/types';
 import ModalListBottomButton from '../components/ModalListBottomButton';
 import { setValue } from '../utils/storage';
 import WalletContents from '../containers/WalletContents';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import A from '../components/A';
-
-type Props = State;
 
 // constant.Contracts.StakeForQuota_V1
 // constant.Contracts.StakeForQuota
@@ -43,7 +37,7 @@ const Home = ({
 	accountList,
 	contacts,
 	toastSuccess,
-}: Props) => {
+}: State) => {
 	// const quotaBeneficiaryRef = useRef<TextInputRefObject>();
 	// const lockedAmountRef = useRef<TextInputRefObject>();
 	const networkNameRef = useRef<TextInputRefObject>();
@@ -53,9 +47,7 @@ const Home = ({
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
 	const [editingAccountName, editingAccountNameSet] = useState(false);
-	const [accountName, accountNameSet] = useState(
-		contacts[activeAccount.address] || `${i18n.account} ${activeAccountIndex}`
-	);
+	const [accountName, accountNameSet] = useState(contacts[activeAccount.address]);
 	const [networkName, networkNameSet] = useState('');
 	const [rpcUrl, rpcUrlSet] = useState('');
 	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
@@ -65,9 +57,7 @@ const Home = ({
 	// const [lockedAmount, lockedAmountSet] = useState('');
 
 	const activeAddress = useMemo(() => {
-		accountNameSet(
-			contacts[activeAccount.address] || `${i18n.account} ${activeAccountIndex}`
-		);
+		accountNameSet(contacts[activeAccount.address]);
 		return activeAccount.address;
 	}, [activeAccount, activeAccountIndex, contacts, i18n.account]);
 
@@ -134,9 +124,7 @@ const Home = ({
 							className="ml-12 fx darker-brightness-button"
 							onClick={() => copyWithToast(activeAddress)}
 						>
-							<p className="text-skin-secondary">
-								{shortenAddress(activeAddress)}
-							</p>
+							<p className="text-skin-secondary">{shortenAddress(activeAddress)}</p>
 							<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 						</button>
 						<A
@@ -278,11 +266,7 @@ const Home = ({
 						<button
 							className="round-solid-button p-1"
 							onClick={() => {
-								const valid = validateInputs([
-									networkNameRef,
-									rpcUrlRef,
-									blockExplorerUrlRef,
-								]);
+								const valid = validateInputs([networkNameRef, rpcUrlRef, blockExplorerUrlRef]);
 								if (valid) {
 									const newNetworks = {
 										...networks,
@@ -312,7 +296,7 @@ const Home = ({
 								radio
 								active={active}
 								className="flex-1"
-								label={contacts[address] || `${i18n.account} ${i}`}
+								label={contacts[address]}
 								sublabel={shortenAddress(address)}
 								// rightJSX={
 								// 	// not that useful a feature for the technical overhead it creates.
@@ -336,16 +320,12 @@ const Home = ({
 								<button
 									className="xy w-8 h-8 mr-2 overflow-hidden rounded-full bg-skin-middleground brightness-button"
 									onClick={() => {
-										const data: Partial<State> = {
-											accountList: [...accountList].slice(
-												0,
-												accountList.length - 1
-											),
+										const data = {
+											accountList: [...accountList].slice(0, accountList.length - 1),
+											activeAccountIndex:
+												activeAccountIndex === accountList.length - 1 ? 0 : activeAccountIndex,
 										};
-										if (activeAccountIndex === data.accountList!.length - 1) {
-											data.activeAccountIndex = 0;
-										}
-										setState(data);
+										setState({ ...data, activeAccount: accountList[data.activeAccountIndex] });
 										setValue(data);
 									}}
 								>
@@ -358,14 +338,18 @@ const Home = ({
 				<ModalListBottomButton
 					label={i18n.deriveAddress}
 					onClick={() => {
+						const newAccount = wallet.deriveAddress({
+							...secrets,
+							index: accountList.length,
+						});
+						const newAccountList = [...accountList, newAccount];
+						const newContacts = {
+							...contacts,
+							[newAccount.address]: `Account ${accountList.length}`,
+						};
 						const data = {
-							accountList: [
-								...accountList,
-								wallet.deriveAddress({
-									...secrets,
-									index: accountList.length,
-								}),
-							],
+							accountList: newAccountList,
+							contacts: newContacts,
 						};
 						setState(data);
 						setValue(data);

@@ -11,9 +11,7 @@ import { validateInputs } from '../utils/misc';
 import { setValue } from '../utils/storage';
 import { State } from '../utils/types';
 
-type Props = State;
-
-const Import = ({ i18n, postPortMessage, setState }: Props) => {
+const Import = ({ i18n, postPortMessage, setState }: State) => {
 	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState('');
 	const [passphrase, passphraseSet] = useState('');
@@ -60,33 +58,28 @@ const Import = ({ i18n, postPortMessage, setState }: Props) => {
 			<button
 				className="mt-4 round-solid-button"
 				onClick={async () => {
-					const valid = validateInputs([
-						mnemonicRef,
-						passphraseRef,
-						passwordRef,
-					]);
+					const valid = validateInputs([mnemonicRef, passphraseRef, passwordRef]);
 					if (valid) {
 						const secrets = {
 							passphrase,
 							mnemonics: mnemonics.trim(),
 						};
 						postPortMessage({ secrets, type: 'updateSecrets' });
-						const encryptedSecrets = await encrypt(
-							JSON.stringify(secrets),
-							password
-						);
+						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
 						const accountList = [
 							wallet.deriveAddress({
 								...secrets,
 								index: 0,
 							}),
 						];
-						setValue({ ...defaultStorage, encryptedSecrets, accountList });
+						const contacts = { [accountList[0].address]: 'Account 0' };
+						setValue({ ...defaultStorage, encryptedSecrets, accountList, contacts });
 						setState({
 							...defaultStorage,
 							secrets,
 							encryptedSecrets,
 							accountList,
+							contacts,
 							activeAccount: accountList[0],
 						});
 						navigate(routeAfterUnlock || '/home', { replace: true });
