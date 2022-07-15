@@ -41,8 +41,7 @@ const en = {
 	reminder: 'Reminder',
 	iHaveReadAndAgreeToThe: 'I have read and agree to the',
 	termsOfUse: 'Terms of Use',
-	pleaseConfirmTransactionOnViteWalletApp:
-		'Please confirm transaction on VITE Wallet App',
+	pleaseConfirmTransactionOnViteWalletApp: 'Please confirm transaction on VITE Wallet App',
 	close: 'Close',
 	cancel: 'Cancel',
 	transactionConfirmationStatus: 'Transaction Confirmation Status',
@@ -97,7 +96,7 @@ const en = {
 	secrets: 'Secrets',
 	languageChanged: 'Language Changed',
 	mnemonicPhrase: 'Mnemonic Phrase',
-	bip39Passphrase: 'BIP-39 Passphrase',
+	// bip39Passphrase: 'BIP-39 Passphrase',
 	unlock: 'Unlock',
 
 	// TextInput `getIssue` errors
@@ -105,8 +104,7 @@ const en = {
 	invalidAddress: 'Invalid address',
 	invalidMnemonicPhrase: 'Invalid mnemonic phrase',
 	thisFieldCannotBeBlank: 'This field cannot be blank',
-	urlMustStartWithWsWssHttpOrHttps:
-		'URL must start with ws://, wss://, http://, or https://',
+	urlMustStartWithWsWssHttpOrHttps: 'URL must start with ws://, wss://, http://, or https://',
 	urlMustStartWithHttpOrHttps: 'URL must start with http:// or https://',
 	insufficientFunds: 'Insufficient funds',
 
@@ -141,6 +139,18 @@ const en = {
 	passwordChanged: 'Password changed',
 	newUnreceivedAccountBlock: 'New unreceived account block',
 	loadMore: 'Load More',
+	signAndSendBlock: 'Sign and Send Block',
+	params: 'Params',
+	data: 'Data',
+	difficulty: 'Difficulty',
+	fee: 'Fee',
+	hash: 'Hash',
+	height: 'Height',
+	nonce: 'Nonce',
+	previousHash: 'PreviousHash',
+	publicKey: 'PublicKey',
+	sendBlockHash: 'SendBlockHash',
+	signature: 'Signature',
 	test: 'test',
 	'': '',
 };

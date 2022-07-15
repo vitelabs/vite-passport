@@ -26,9 +26,7 @@ export const toSmallestUnit = (num: string, decimals = 0) => {
 		return num + '0'.repeat(decimals);
 	}
 	const decimalPlaces = num.length - indexOfDot - 1;
-	return (
-		num.substring(indexOfDot + 1) + '0'.repeat(decimals - decimalPlaces)
-	).replace(/^0+/g, '');
+	return (num.substring(indexOfDot + 1) + '0'.repeat(decimals - decimalPlaces)).replace(/^0+/g, '');
 };
 
 export const roundDownTo6Decimals = (balance: string) =>
@@ -43,9 +41,7 @@ export const toQueryString = (params: { [key: string]: any }) =>
 	'?' +
 	Object.keys(params)
 		.filter((key) => !!params[key])
-		.map(
-			(key) => encodeURIComponent(key) + '=' + encodeURIComponent(params[key])
-		)
+		.map((key) => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
 		.join('&');
 
 export const getHostname = (url = '') => {
@@ -55,9 +51,7 @@ export const getHostname = (url = '') => {
 	return new URL(url).hostname;
 };
 
-export const parseQueryString = (
-	urlSearchParams: string
-): { [key: string]: string } => {
+export const parseQueryString = (urlSearchParams: string): { [key: string]: string } => {
 	if (urlSearchParams[0] !== '?') {
 		throw new Error('urlSearchParams must start with "?"');
 	}
@@ -74,13 +68,14 @@ export const parseQueryString = (
 };
 
 export const addIndexToTokenSymbol = (symbol: string, index: null | number) => {
-	if (
-		symbol === 'VITE' ||
-		symbol === 'VX' ||
-		symbol === 'VCP' ||
-		index == null
-	) {
+	if (symbol === 'VITE' || symbol === 'VX' || symbol === 'VCP' || index == null) {
 		return symbol;
 	}
 	return `${symbol}-${('' + index).padStart(3, '0')}`;
 };
+
+// https://stackoverflow.com/a/4149393/4975090
+// export const reverseCamelCase = (str = '') =>
+// 	str.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => {
+// 		return str.toUpperCase();
+// 	});

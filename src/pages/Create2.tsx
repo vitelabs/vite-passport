@@ -18,14 +18,14 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 		state: { mnemonics: string; routeAfterUnlock?: string };
 	};
 
-	const [passphrase, passphraseSet] = useState('');
+	// const [passphrase, passphraseSet] = useState('');
 	const [password, passwordSet] = useState('');
-	const passphraseRef = useRef<TextInputRefObject>();
+	// const passphraseRef = useRef<TextInputRefObject>();
 	const passwordRef = useRef<TextInputRefObject>();
 
 	return (
 		<PageContainer heading={i18n.createWallet}>
-			<TextInput
+			{/* <TextInput
 				optional
 				password
 				_ref={passphraseRef}
@@ -33,7 +33,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 				onUserInput={(v) => passphraseSet(v)}
 				label={i18n.bip39Passphrase}
 				containerClassName="my-2"
-			/>
+			/> */}
 			<TextInput
 				password
 				_ref={passwordRef}
@@ -41,7 +41,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 				onUserInput={(v) => passwordSet(v)}
 				label="Password"
 			/>
-			<p className="mt-2">{i18n.whatsTheDifference}</p>
+			{/* <p className="mt-2">{i18n.whatsTheDifference}</p>
 			<p
 				className=""
 				// TODO: i18n for these sentences
@@ -52,14 +52,16 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 			<p className="">
 				Your <span className="font-bold">password</span> is used for encrypting your mnemonic phrase
 				and BIP-39 passphrase on your computer.
-			</p>
+			</p> */}
 			<div className="flex-1"></div>
 			<button
 				className="round-solid-button"
 				onClick={async () => {
-					const valid = validateInputs([passwordRef, passphraseRef]);
+					// const valid = validateInputs([passwordRef, passphraseRef]);
+					const valid = validateInputs([passwordRef]);
 					if (valid) {
-						const secrets = { mnemonics, passphrase };
+						// const secrets = { mnemonics, passphrase };
+						const secrets = { mnemonics };
 						postPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
 						const accountList = [

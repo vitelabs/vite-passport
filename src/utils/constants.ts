@@ -6,24 +6,23 @@ export const i18nDict = { en };
 
 export const PROD = process.env.NODE_ENV === 'production';
 
-export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> =
-	{
-		language: 'en',
-		networkUrl: 'wss://node.vite.net/gvite/ws',
-		networks: {
-			// url => label is more extensible than label => url.
-			// e.g. 'wss://node-tokyo.vite.net/ws': 'Mainnet',
-			// URLs are unique, network names are not.
-			'wss://node.vite.net/gvite/ws': 'Mainnet',
-			'wss://buidl.vite.net/gvite/ws': 'Testnet',
-			'ws://localhost:23457': 'Localnet',
-		},
-		currencyConversion: 'USD',
-		activeAccountIndex: 0,
-		contacts: {},
-		displayedTokenIds: ['tti_5649544520544f4b454e6e40'],
-		connectedDomains: {},
-	};
+export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> = {
+	language: 'en',
+	networkUrl: 'wss://node.vite.net/gvite/ws',
+	networks: {
+		// url => label is more extensible than label => url.
+		// e.g. 'wss://node-tokyo.vite.net/ws': 'Mainnet',
+		// URLs are unique, network names are not.
+		'wss://node.vite.net/gvite/ws': 'Mainnet',
+		'wss://buidl.vite.net/gvite/ws': 'Testnet',
+		'ws://localhost:23457': 'Localnet',
+	},
+	currencyConversion: 'USD',
+	activeAccountIndex: 0,
+	contacts: {},
+	displayedTokenIds: ['tti_5649544520544f4b454e6e40'],
+	connectedDomains: {},
+};
 
 export const ExplorerURLs = {
 	vitescan: {
@@ -102,29 +101,6 @@ export const languages: { [key in keyof typeof i18nDict]: string } = {
 // export const testnetTokenList = [
 // 	['VITE', 'tti_5649544520544f4b454e6e40']
 // ]
-
-// getTokenApiInfo to differentiate from the `tokenInfo` returned from `viteApi.getBalanceInfo`
-export const getTokenApiInfo = async (
-	tokenIds: string | string[]
-): Promise<TokenApiInfo[]> => {
-	if (!tokenIds.length) {
-		return [];
-	}
-	const res = await fetch(
-		'https://vitex.vite.net/api/v1/cryptocurrency/info/platform/query',
-		{
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				platformSymbol: 'VITE',
-				tokenAddresses: Array.isArray(tokenIds) ? tokenIds : [tokenIds],
-			}),
-		}
-	);
-	return res.json();
-};
 
 // export const defaultTokenList = [
 // 	['VITE', 'tti_5649544520544f4b454e6e40'],
@@ -531,9 +507,7 @@ export const defaultTokenList: TokenApiInfo[] = [
 				website: ['https://twitter.com/nanogateorg'],
 				github: ['https://github.com/ViNo-community'],
 				twitter: ['https://twitter.com/nanogateorg'],
-				whitepaper: [
-					'https://forum.vite.net/topic/4745/introduction-of-vitex-operator-vino/',
-				],
+				whitepaper: ['https://forum.vite.net/topic/4745/introduction-of-vitex-operator-vino/'],
 				discord: ['https://t.co/lm3GpFXzoZ?amp=1'],
 				explorer: ['https://explorer.vite.net'],
 				reddit: ['https://www.reddit.com/user/ViNo_Community'],

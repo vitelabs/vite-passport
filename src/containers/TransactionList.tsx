@@ -23,26 +23,21 @@ const TransactionList = ({
 	viteBalanceInfo,
 	tti,
 }: Props) => {
-	const [txInfoModalTx, txInfoModalTxSet] = useState<Transaction | null>(null);
+	const [txInfoModalTx, txInfoModalTxSet] = useState<undefined | Transaction>();
 	const transactions = useMemo(() => {
 		if (tti) {
 			return transactionHistory?.[tti];
 		}
 		return transactionHistory?.received && transactionHistory?.unreceived
-			? [...transactionHistory?.received, ...transactionHistory?.unreceived]
+			? [...transactionHistory.received, ...transactionHistory.unreceived]
 			: undefined;
-	}, [transactionHistory]);
-	console.log('transactionHistory:', transactionHistory);
+	}, [transactionHistory, tti]);
 	const allUnreceivedTxsLoaded = useMemo(
-		() =>
-			transactionHistory?.unreceived?.length ===
-			+viteBalanceInfo?.unreceived?.blockCount,
+		() => transactionHistory?.unreceived?.length === +viteBalanceInfo?.unreceived?.blockCount,
 		[transactionHistory, viteBalanceInfo]
 	);
 	const allReceivedTxsLoaded = useMemo(
-		() =>
-			transactionHistory?.received?.length ===
-			+viteBalanceInfo?.balance?.blockCount,
+		() => transactionHistory?.received?.length === +viteBalanceInfo?.balance?.blockCount,
 		[transactionHistory, viteBalanceInfo]
 	);
 
@@ -97,9 +92,7 @@ const TransactionList = ({
 			}}
 		>
 			{!transactions ? null : !transactions.length ? (
-				<p className="text-skin-secondary text-center">
-					{i18n.noTransactionHistory}
-				</p>
+				<p className="text-skin-secondary text-center">{i18n.noTransactionHistory}</p>
 			) : (
 				transactions.map((tx, i) => {
 					return (
@@ -120,17 +113,11 @@ const TransactionList = ({
 													...(await viteApi.request(
 														'ledger_getUnreceivedBlocksByAddress',
 														activeAccount.address,
-														Math.ceil(
-															transactionHistory.unreceived.length /
-																FETCH_AMOUNT
-														),
+														Math.ceil(transactionHistory.unreceived.length / FETCH_AMOUNT),
 														FETCH_AMOUNT
 													)),
 												];
-												setState(
-													{ transactionHistory: { unreceived } },
-													{ deepMerge: true }
-												);
+												setState({ transactionHistory: { unreceived } }, { deepMerge: true });
 											}}
 										>
 											{i18n.loadMore}
@@ -146,7 +133,10 @@ const TransactionList = ({
 							)}
 							<button
 								className="fx text-sm rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
-								onClick={() => txInfoModalTxSet(tx)}
+								onClick={() => {
+									txInfoModalTxSet(tx);
+									console.log('tx:', tx);
+								}}
 							>
 								<div className="ml-2 flex-1 flex justify-between">
 									<div className="flex flex-col items-start">
@@ -170,9 +160,7 @@ const TransactionList = ({
 									</div>
 									<div className="flex flex-col items-end">
 										<p className="">{shortenAddress(tx.address)}</p>
-										<p className="text-skin-secondary">
-											{formatDate(+tx.timestamp!)}
-										</p>
+										<p className="text-skin-secondary">{formatDate(+tx.timestamp!)}</p>
 									</div>
 								</div>
 							</button>
@@ -188,9 +176,7 @@ const TransactionList = ({
 													await viteApi.request(
 														'ledger_getAccountBlocks',
 														activeAccount.address,
-														transactionHistory[tti][
-															transactionHistory[tti].length - 1
-														].hash,
+														transactionHistory[tti][transactionHistory[tti].length - 1].hash,
 														tti,
 														FETCH_AMOUNT + 1
 													)
@@ -203,16 +189,11 @@ const TransactionList = ({
 											...(await viteApi.request(
 												'ledger_getAccountBlocksByAddress',
 												activeAccount.address,
-												Math.ceil(
-													transactionHistory.received.length / FETCH_AMOUNT
-												),
+												Math.ceil(transactionHistory.received.length / FETCH_AMOUNT),
 												FETCH_AMOUNT
 											)),
 										];
-										setState(
-											{ transactionHistory: { received } },
-											{ deepMerge: true }
-										);
+										setState({ transactionHistory: { received } }, { deepMerge: true });
 									}}
 								>
 									{i18n.loadMore}
@@ -222,10 +203,7 @@ const TransactionList = ({
 					);
 				})
 			)}
-			<TransactionModal
-				transaction={txInfoModalTx}
-				onClose={() => txInfoModalTxSet(null)}
-			/>
+			<TransactionModal transaction={txInfoModalTx} onClose={() => txInfoModalTxSet(undefined)} />
 		</FetchWidget>
 	);
 };

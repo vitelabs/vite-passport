@@ -37,6 +37,7 @@ const Home = ({
 	accountList,
 	contacts,
 	toastSuccess,
+	postPortMessage,
 }: State) => {
 	// const quotaBeneficiaryRef = useRef<TextInputRefObject>();
 	// const lockedAmountRef = useRef<TextInputRefObject>();
@@ -59,7 +60,7 @@ const Home = ({
 	const activeAddress = useMemo(() => {
 		accountNameSet(contacts[activeAccount.address]);
 		return activeAccount.address;
-	}, [activeAccount, activeAccountIndex, contacts, i18n.account]);
+	}, [activeAccount, contacts]);
 
 	const saveAccountName = useCallback(() => {
 		accountNameSet(accountName);
@@ -203,6 +204,11 @@ const Home = ({
 									toastSuccess(i18n.networkChanged);
 									setState({ networkUrl: url, viteBalanceInfo: undefined });
 									setValue({ networkUrl: url });
+									postPortMessage({ type: 'networkChange', network: url });
+									chrome.tabs.query({ currentWindow: true, active: true }, (tabs) => {
+										const activeTab = tabs[0];
+										chrome.tabs.sendMessage(activeTab.id!, { message: 'start' });
+									});
 								}
 								editingNetworkSet(false);
 							}}
@@ -316,7 +322,7 @@ const Home = ({
 									changingActiveAccountSet(false);
 								}}
 							/>
-							{i + 1 === accountList.length && (
+							{i + 1 === accountList.length && i !== 0 && (
 								<button
 									className="xy w-8 h-8 mr-2 overflow-hidden rounded-full bg-skin-middleground brightness-button"
 									onClick={() => {

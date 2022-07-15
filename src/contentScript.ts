@@ -25,4 +25,25 @@ window.addEventListener('vitePassportMethodCalled', ((
 	);
 }) as EventListener); // https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
 
+// addEventListener('message', (e) => {
+// 	console.log('e:', e);
+// });
+
+// const chromePort = chrome.runtime.connect();
+// chrome.runtime.onConnect.addListener((chromePort) => {
+// 	console.log('chromePort:', chromePort);
+// });
+// console.log('chromePort:', chromePort);
+
+// chrome.runtime.onMessage.addListener(
+// 	(
+// 		message: VitePassportMethodCall,
+// 		sender,
+// 		reply: (res: Omit<BackgroundResponse, '_messageId'>) => void
+// 	) => {
+// 		//
+// 		console.log('message:', message);
+// 	}
+// );
+
 export {};

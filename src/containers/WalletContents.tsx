@@ -1,17 +1,12 @@
-import React, {
-	useMemo,
-	useRef,
-	useState,
-	useEffect,
-	useCallback,
-} from 'react';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { connect } from '../utils/global-context';
-import { State, TokenApiInfo, TokenInfo } from '../utils/types';
+import { State, TokenApiInfo } from '../utils/types';
 import FetchWidget from './FetchWidget';
 import TransactionModal from '../components/TransactionModal';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
-import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
-import { defaultTokenList, getTokenApiInfo } from '../utils/constants';
+// import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
+import { defaultTokenList } from '../utils/constants';
+import { getTokenApiInfo } from '../utils/misc';
 import { calculatePrice, debounce, validateInputs } from '../utils/misc';
 import {
 	addIndexToTokenSymbol,
@@ -21,28 +16,23 @@ import {
 	toSmallestUnit,
 } from '../utils/strings';
 import TextInput, { TextInputRefObject } from './TextInput';
-import { accountBlock, constant, wallet } from '@vite/vitejs';
+import { accountBlock, wallet } from '@vite/vitejs';
 import Checkbox from '../components/Checkbox';
 import QR from '../components/QR';
 import TransactionList from './TransactionList';
 import Modal from '../components/Modal';
 import { DuplicateIcon } from '@heroicons/react/outline';
-import { _Buffer } from '@vite/vitejs/distSrc/utils';
 import { setValue } from '../utils/storage';
+import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 
-const searchTokenApiInfo = debounce(
-	(query: string, callback: (list: TokenApiInfo[]) => void) => {
-		return fetch(
-			`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`
-		)
-			.then((res) => res.json())
-			.then((data: { data: { VITE: TokenApiInfo[] } }) => {
-				console.log('data:', data);
-				callback(data?.data?.VITE || []);
-			});
-	},
-	300
-);
+const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
+	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
+		.then((res) => res.json())
+		.then((data: { data: { VITE: TokenApiInfo[] } }) => {
+			console.log('data:', data);
+			callback(data?.data?.VITE || []);
+		});
+}, 300);
 
 type Props = State;
 
@@ -64,7 +54,7 @@ const WalletContents = ({
 	const [checkedTokens, checkedTokensSet] = useState<{
 		[tti: string]: boolean;
 	}>({});
-	const [selectedToken, selectedTokenSet] = useState<TokenApiInfo | null>(null);
+	const [selectedToken, selectedTokenSet] = useState<undefined | TokenApiInfo>();
 	const [editingTokenList, editingTokenListSet] = useState(false);
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
@@ -72,19 +62,11 @@ const WalletContents = ({
 	const [amount, amountSet] = useState('');
 	const [comment, commentSet] = useState('');
 	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
-	const [sentTx, sentTxSet] = useState<Transaction | null>(null);
-	const [newlyAddedTokens, newlyAddedTokensSet] = useState<TokenApiInfo[]>([]);
-	const [displayedTokens, displayedTokensSet] = useState<TokenApiInfo[] | null>(
-		null
-	);
-	const [availableTokens, availableTokensSet] = useState<null | TokenApiInfo[]>(
-		null
-	);
+	const [sentTx, sentTxSet] = useState<undefined | AccountBlockBlock>();
+	const [displayedTokens, displayedTokensSet] = useState<undefined | TokenApiInfo[]>();
+	const [availableTokens, availableTokensSet] = useState<undefined | TokenApiInfo[]>();
 	const balanceInfoMap = useMemo(
-		() =>
-			viteBalanceInfo
-				? viteBalanceInfo?.balance?.balanceInfoMap || {}
-				: undefined,
+		() => (viteBalanceInfo ? viteBalanceInfo?.balance?.balanceInfoMap || {} : undefined),
 		[viteBalanceInfo]
 	);
 	const selectedTokenBalance = useMemo(() => {
@@ -101,59 +83,44 @@ const WalletContents = ({
 	const getPromise = useCallback(() => {
 		return getTokenApiInfo(displayedTokenIds);
 	}, [displayedTokenIds]);
-	const onResolve = useCallback(
-		(res: { msg: string; code: number; data: TokenApiInfo[] }) => {
-			displayedTokensSet(
-				res.data.sort((a, b) =>
-					a.symbol === 'VITE'
-						? -1
-						: b.symbol === 'VITE'
-						? 1
-						: a.symbol < b.symbol
-						? -1
-						: 1
-				)
-			);
-		},
-		[]
-	);
+	const onResolve = useCallback((list: TokenApiInfo[]) => {
+		displayedTokensSet(
+			list.sort((a, b) =>
+				a.symbol === 'VITE' ? -1 : b.symbol === 'VITE' ? 1 : a.symbol < b.symbol ? -1 : 1
+			)
+		);
+	}, []);
 
 	return (
 		<>
 			<FetchWidget
 				shouldFetch={
-					displayedTokens === null ||
+					!displayedTokens ||
 					displayedTokens.length !== displayedTokenIds.length ||
-					!displayedTokens.every((token) =>
-						displayedTokenIds.includes(token.tokenAddress)
-					) // used `includes` instead of just checking index cuz getTokenApiInfo API doesn't return token info in order of displayedTokenIds
+					!displayedTokens.every((token) => displayedTokenIds.includes(token.tokenAddress)) // used `includes` instead of just checking index cuz getTokenApiInfo API doesn't return token info in order of displayedTokenIds
 				}
 				getPromise={getPromise}
 				onResolve={onResolve}
 			>
-				{displayedTokens === null ? (
+				{!displayedTokens ? (
 					<p className="text-center text-skin-secondary">{i18n.loading}...</p>
 				) : (
 					<>
 						{!displayedTokens.length ? (
-							<p className="text-center text-skin-secondary">
-								{i18n.yourWalletIsEmpty}
-							</p>
+							<p className="text-center text-skin-secondary">{i18n.yourWalletIsEmpty}</p>
 						) : (
 							displayedTokens.map((tokenApiInfo) => {
 								const {
 									symbol,
-									name,
+									// name,
 									tokenAddress: tti,
 									tokenIndex,
 									icon,
 									decimal,
-									gatewayInfo,
+									// gatewayInfo,
 								} = tokenApiInfo;
 								const balance = balanceInfoMap?.[tti]?.balance || '0';
-								const biggestUnit = !balanceInfoMap
-									? null
-									: toBiggestUnit(balance, decimal);
+								const biggestUnit = !balanceInfoMap ? null : toBiggestUnit(balance, decimal);
 								return (
 									<button
 										key={tti}
@@ -167,21 +134,13 @@ const WalletContents = ({
 										/>
 										<div className="flex-1 flex">
 											<div className="flex flex-col flex-1 items-start">
-												<p className="text-lg">
-													{addIndexToTokenSymbol(symbol, tokenIndex)}
-												</p>
-												<p className="text-xs text-skin-muted">
-													{shortenTti(tti)}
-												</p>
+												<p className="text-lg">{addIndexToTokenSymbol(symbol, tokenIndex)}</p>
+												<p className="text-xs text-skin-muted">{shortenTti(tti)}</p>
 											</div>
 											<div className="flex flex-col items-end mr-1.5">
-												<p className="text-lg">
-													{biggestUnit === null ? '...' : biggestUnit}
-												</p>
+												<p className="text-lg">{biggestUnit === null ? '...' : biggestUnit}</p>
 												<p className="text-xs text-skin-secondary">
-													{biggestUnit === null
-														? '...'
-														: calculatePrice(biggestUnit!, vitePrice)}
+													{biggestUnit === null ? '...' : calculatePrice(biggestUnit!, vitePrice)}
 												</p>
 											</div>
 										</div>
@@ -199,9 +158,7 @@ const WalletContents = ({
 								checkedTokensSet(checkedTokens);
 								availableTokensSet([
 									...displayedTokens!,
-									...defaultTokenList.filter(
-										({ tokenAddress }) => !checkedTokens[tokenAddress]
-									),
+									...defaultTokenList.filter(({ tokenAddress }) => !checkedTokens[tokenAddress]),
 								]);
 								editingTokenListSet(true);
 							}}
@@ -228,14 +185,12 @@ const WalletContents = ({
 					onChange={(e) => {
 						tokenQuerySet(e.target.value);
 						if (availableTokens !== null) {
-							availableTokensSet(null);
+							availableTokensSet(undefined);
 						}
 						if (!e.target.value) {
 							availableTokensSet([
 								...displayedTokens!,
-								...defaultTokenList.filter(
-									({ tokenAddress }) => !checkedTokens[tokenAddress]
-								),
+								...defaultTokenList.filter(({ tokenAddress }) => !checkedTokens[tokenAddress]),
 							]);
 							return;
 						}
@@ -246,53 +201,44 @@ const WalletContents = ({
 					}}
 				/>
 				<div className="flex-1 overflow-scroll">
-					{availableTokens === null ? (
+					{!availableTokens ? (
 						<div className="xy min-h-8">
-							<p className="text-skin-secondary text-center">
-								{i18n.loading}...
-							</p>
+							<p className="text-skin-secondary text-center">{i18n.loading}...</p>
 						</div>
 					) : !availableTokens.length ? (
 						<div className="xy min-h-8">
-							<p className="text-skin-secondary text-center">
-								{i18n.nothingFound}
-							</p>
+							<p className="text-skin-secondary text-center">{i18n.nothingFound}</p>
 						</div>
 					) : (
 						availableTokens.map((tokenApiInfo, i) => {
 							const {
 								symbol,
-								name,
+								// name,
 								tokenAddress: tti,
 								tokenIndex,
 								icon,
-								decimal,
-								gatewayInfo,
+								// decimal,
+								// gatewayInfo,
 							} = tokenApiInfo;
 							// newlyAddedTokens
+							const tokenName = addIndexToTokenSymbol(symbol, tokenIndex);
 							return (
 								<React.Fragment key={tti}>
-									{i === displayedTokenIds.length && (
-										<div className="h-0.5 bg-skin-alt mt-2"></div>
-									)}
+									{i === displayedTokenIds.length && <div className="h-0.5 bg-skin-alt mt-2"></div>}
 									<div className="fx rounded py-1 px-2 bg-skin-middleground">
 										<img
 											src={icon}
-											alt={addIndexToTokenSymbol(symbol, tokenIndex)}
+											alt={tokenName}
 											className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
 										/>
 										<div className="flex-1 fx">
 											<div className="flex flex-col flex-1 items-start">
-												<p className="text-lg">
-													{addIndexToTokenSymbol(symbol, tokenIndex)}
-												</p>
+												<p className="text-lg">{tokenName}</p>
 												<button
 													className="group fx darker-brightness-button"
 													onClick={() => copyWithToast(tti)}
 												>
-													<p className="text-xs text-skin-secondary">
-														{shortenTti(tti)}
-													</p>
+													<p className="text-xs text-skin-secondary">{shortenTti(tti)}</p>
 													<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 												</button>
 											</div>
@@ -311,10 +257,7 @@ const WalletContents = ({
 					)}
 				</div>
 				<div className="flex gap-2 p-2 shadow z-50">
-					<button
-						className="p-0 round-outline-button"
-						onClick={() => editingTokenListSet(false)}
-					>
+					<button className="p-0 round-outline-button" onClick={() => editingTokenListSet(false)}>
 						{i18n.cancel}
 					</button>
 					<button
@@ -322,7 +265,7 @@ const WalletContents = ({
 						onClick={() => {
 							const data = {
 								displayedTokenIds: Object.entries(checkedTokens)
-									.filter(([_, checked]) => checked)
+									.filter(([, checked]) => checked)
 									.map(([tti]) => tti),
 							};
 							setState(data);
@@ -337,7 +280,7 @@ const WalletContents = ({
 			<Modal
 				fullscreen
 				visible={!!selectedToken}
-				onClose={() => selectedTokenSet(null)}
+				onClose={() => selectedTokenSet(undefined)}
 				className="flex flex-col"
 				headerComponent={
 					selectedToken && (
@@ -366,21 +309,13 @@ const WalletContents = ({
 				}
 			>
 				<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
-					{selectedToken && (
-						<TransactionList tti={selectedToken.tokenAddress} />
-					)}
+					{selectedToken && <TransactionList tti={selectedToken.tokenAddress} />}
 				</div>
 				<div className="fx p-2 gap-2 shadow">
-					<button
-						className="round-outline-button p-0"
-						onClick={() => receivingFundsSet(true)}
-					>
+					<button className="round-outline-button p-0" onClick={() => receivingFundsSet(true)}>
 						Receive
 					</button>
-					<button
-						className="round-outline-button p-0"
-						onClick={() => sendingFundsSet(true)}
-					>
+					<button className="round-outline-button p-0" onClick={() => sendingFundsSet(true)}>
 						{i18n.send}
 					</button>
 				</div>
@@ -497,11 +432,7 @@ const WalletContents = ({
 						<button
 							className="round-solid-button"
 							onClick={() => {
-								const valid = validateInputs([
-									toAddressRef,
-									amountRef,
-									commentRef,
-								]);
+								const valid = validateInputs([toAddressRef, amountRef, commentRef]);
 								if (valid) {
 									confirmingTransactionSet(true);
 									setTimeout(() => sendingFundsSet(false), 0);
@@ -540,23 +471,26 @@ const WalletContents = ({
 					<button
 						className="round-solid-button"
 						onClick={async () => {
-							const block = accountBlock.createAccountBlock('send', {
+							const block: AccountBlockClass = accountBlock.createAccountBlock('send', {
 								address: activeAddress,
 								toAddress: toAddress.trim(),
 								tokenId: selectedToken!.tokenAddress,
 								amount: toSmallestUnit(
 									amount,
-									balanceInfoMap![selectedToken!.tokenAddress]?.tokenInfo
-										?.decimals
+									balanceInfoMap![selectedToken!.tokenAddress]?.tokenInfo?.decimals
 								),
 							});
+							// await vitePassport.writeAccountBlock('send', {
+							// address: 'vite_2daedeee8d0a41085dee136e36052f48d8e6122b9fec075639',
+							// toAddress: 'vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99',
+							// tokenId: 'tti_5649544520544f4b454e6e40',
+							// amount: 1 + '0'.repeat(17), // 0.1 VITE
+							// });
 							block.setProvider(viteApi);
 							block.setPrivateKey(activeAccount.privateKey);
 							await block.autoSetPreviousAccountBlock();
 							block.sign(activeAccount.privateKey);
-							const res: Transaction = await block.autoSendByPoW();
-							res.fromAddress = activeAddress;
-							res.timestamp = '' + Math.round(Date.now() / 1000);
+							const res: AccountBlockBlock = await block.autoSendByPoW();
 							sentTxSet(res);
 						}}
 					>
@@ -565,13 +499,12 @@ const WalletContents = ({
 				</div>
 			</Modal>
 			<TransactionModal
-				visible={!!sentTx}
 				fromRight
 				heading={i18n.transactionSent}
 				onClose={() => {
 					sendingFundsSet(false);
 					confirmingTransactionSet(false);
-					setTimeout(() => sentTxSet(null), 0);
+					setTimeout(() => sentTxSet(undefined), 0);
 				}}
 				transaction={sentTx}
 			/>

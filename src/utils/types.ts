@@ -62,6 +62,14 @@ export type PortMessage =
 	| {
 			type: 'connectDomain';
 			domain: string;
+	  }
+	| {
+			type: 'writeAccountBlock';
+			block: object;
+	  }
+	| {
+			type: 'networkChange';
+			network: string;
 	  };
 
 export type ViteBalanceInfo = {
@@ -174,4 +182,58 @@ export type TokenApiInfo = {
 		};
 		url: string;
 	};
+};
+
+// Not sure which ones could be null. Nbd, just need to display the values in `TransactionInfo`
+export type RpcTx = {
+	blockType: number; //2;
+	height: string; // '13';
+	hash: string; // '0608cfb70c8fa35ca361f285742fd38306bafdfbba0fae6e17389828b069cf2a';
+	prevHash: string; // 'db9ee8e72a4b4a1112bf8756837d4ed14325baafd41240a5a57838f1dc06f744';
+	previousHash: string; // 'db9ee8e72a4b4a1112bf8756837d4ed14325baafd41240a5a57838f1dc06f744';
+	accountAddress: string; // 'vite_4f06034504efae85deb8a1ce77f38447005a430c3a893e8515';
+	address: string; // 'vite_4f06034504efae85deb8a1ce77f38447005a430c3a893e8515';
+	publicKey: string; // 'g7prYYXjyUiIpooRI5Mk+qczP6DNZ7KCkg3Ck39GCHg=';
+	producer: string; // 'vite_4f06034504efae85deb8a1ce77f38447005a430c3a893e8515';
+	fromAddress: string; // 'vite_4f06034504efae85deb8a1ce77f38447005a430c3a893e8515';
+	toAddress: string; // 'vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99';
+	fromBlockHash: string; // '0000000000000000000000000000000000000000000000000000000000000000';
+	sendBlockHash: string; // '0000000000000000000000000000000000000000000000000000000000000000';
+	tokenId: string; // 'tti_5649544520544f4b454e6e40';
+	amount: string; // '100000000000000';
+	fee: string; // '0';
+	data: null;
+	difficulty: string; // '67108863';
+	nonce: string; // 'rWcxPuHE/J8=';
+	signature: string; // '/tZ8f9ecZTZ5NyIYk+kH21DUxG93HBNmFWRoKVG4GnQim6ec/fwfNaGLncYbDwUGwRvYj4Kxaq1umRTOdt1CCg==';
+	quota: string; // '0';
+	quotaByStake: string; // '0';
+	quotaUsed: string; // '21000';
+	totalQuota: string; // '21000';
+	utUsed: string; // '1';
+	logHash: null;
+	vmLogHash: null;
+	sendBlockList: null;
+	triggeredSendBlockList: null;
+	tokenInfo: {
+		tokenName: string; // 'VITE';
+		tokenSymbol: string; // 'VITE';
+		totalSupply: string; // '1043304425488202606515701342';
+		decimals: number; // 18;
+		owner: string; // 'vite_0000000000000000000000000000000000000004d28108e76b';
+		tokenId: string; // 'tti_5649544520544f4b454e6e40';
+		maxSupply: string; // '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+		ownerBurnOnly: boolean;
+		isReIssuable: boolean;
+		index: number; // 0;
+		isOwnerBurnOnly: boolean;
+	};
+	confirmedTimes: string; // '39846';
+	confirmations: string; // '39846';
+	confirmedHash: string; // 'c7b3b58834054362657891d408116a445ae737d3b348a61d35c3abeb46b9298d';
+	firstSnapshotHash: string; // 'c7b3b58834054362657891d408116a445ae737d3b348a61d35c3abeb46b9298d';
+	firstSnapshotHeight: string; // '97178152';
+	receiveBlockHeight: null;
+	receiveBlockHash: null;
+	timestamp: number; // 1657815577;
 };

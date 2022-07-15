@@ -1,4 +1,3 @@
-import { accountBlock } from '@vite/vitejs';
 import { VitePassportMethodCall, BackgroundResponse } from './injectedScript';
 import { getValue } from './utils/storage';
 import { getHostname, toQueryString } from './utils/strings';
@@ -13,14 +12,14 @@ let lockTimer: NodeJS.Timeout | undefined;
 // Have to make a replacement for `dispatch(Custom Event(...))` and `addEventListener` cuz
 // https://stackoverflow.com/questions/41266567/service-worker-warning-in-google-chrome
 let eventListeners: { [event: string]: ((data?: any) => void)[] } = {};
-const pushEventListener = (event: string, listener: (data?: any) => void) => {
+const pushEventListener = (event: string, listener: (data?: object) => void) => {
 	if (!Array.isArray(eventListeners[event])) {
 		eventListeners[event] = [];
 	}
 	eventListeners[event].push(listener);
 };
-const runAndClearEventListener = (event: string, ...args: any) => {
-	(eventListeners[event] || []).forEach((listener) => listener(...args));
+const runAndClearEventListener = (event: string, data?: object) => {
+	(eventListeners[event] || []).forEach((listener) => listener(data));
 	delete eventListeners[event];
 };
 const clearEventListeners = () => {
@@ -46,6 +45,15 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 				// message.domain isn't used for anything rn, but it may come in handy later
 				runAndClearEventListener('vitePassportConnectDomain', { domain: message.domain });
 				break;
+			case 'networkChange':
+				console.log('networkChange');
+				// message.domain isn't used for anything rn, but it may come in handy later
+				runAndClearEventListener('vitePassportNetworkChange', { network: message.network });
+				break;
+			case 'writeAccountBlock':
+				// message.domain isn't used for anything rn, but it may come in handy later
+				runAndClearEventListener('vitePassportWriteAccountBlock', { block: message.block });
+				break;
 			case 'lock':
 				secrets = undefined;
 				break;
@@ -62,16 +70,11 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 			}
 			lockTimer = setTimeout(() => {
 				secrets = undefined;
-				// }, 3000) // for testing
-				// }, 5 * MINUTE); // TODO: make this time adjustable
-			}, 60 * MINUTE);
+			}, 30 * MINUTE); // TODO: make this time adjustable
 		}
 		runAndClearEventListener('vitePassportChromePortDisconnect');
 	});
 });
-
-// addEventListener('vitePassportNetworkChange', )
-// addEventListener('vitePassportAccountChange', )
 
 // Below are messages from the injected vitePassport object
 chrome.runtime.onMessage.addListener(
@@ -81,6 +84,18 @@ chrome.runtime.onMessage.addListener(
 		reply: (res: Omit<BackgroundResponse, '_messageId'>) => void
 	) => {
 		// console.log('message:', message);
+		const replyOnEvent = (event: string, cb: (data?: object) => any) => {
+			const connectListener = (data?: object) => {
+				reply(cb(data));
+				clearEventListeners();
+			};
+			const disconnectListener = () => {
+				reply({ error: 'Vite Passport closed before user approved domain' });
+				clearEventListeners();
+			};
+			pushEventListener(event, connectListener);
+			pushEventListener('vitePassportChromePortDisconnect', disconnectListener);
+		};
 		(async () => {
 			if ((await getFocusedTabId()) !== sender.tab?.id) {
 				throw new Error('sender.tab?.id does not match focused tab Id');
@@ -100,7 +115,6 @@ chrome.runtime.onMessage.addListener(
 				});
 			};
 
-			console.log('message:', message);
 			switch (message.method) {
 				case 'getConnectedAccount':
 					if (!domainConnected) return connectError();
@@ -112,44 +126,26 @@ chrome.runtime.onMessage.addListener(
 					break;
 				case 'connectWallet':
 					openPopup('/connect' + toQueryString({ hostname }));
-					const connectListener = () => {
-						reply({ result: true });
-						clearEventListeners();
-					};
-					const disconnectListener = () => {
-						reply({ error: 'Vite Passport closed before user approved domain' });
-						clearEventListeners();
-					};
-					pushEventListener('vitePassportConnectDomain', connectListener);
-					pushEventListener('vitePassportChromePortDisconnect', disconnectListener);
+					replyOnEvent('vitePassportConnectDomain', () => ({ result: true }));
 					break;
 				case 'getNetwork':
 					if (!domainConnected) return connectError();
 					const { networkUrl } = await getValue(['networkUrl']);
 					reply({ result: networkUrl });
 					break;
-				case 'createAndSendAccountBlock':
+				case 'writeAccountBlock':
 					if (!domainConnected) return connectError();
-					// if (!secrets) {
-					// 	reply({ error: 'Vite Passport secrets not loaded' });
-					// 	// I'm not sure when this will be called, but it shouldn't
-					// }
-
-					console.log('message.args:', message.args);
-					// try {
-					// 	const thing = accountBlock.createAccountBlock(...message.args);
-					// 	console.log('thing:', thing);
-					// } catch (error) {
-					// 	console.log('error:', error);
-					// 	// throw error;
-					// }
-
 					openPopup(
-						'/sign-tx' + toQueryString({ methodName: message.args[0], params: message.args[1] })
+						'/sign-tx' +
+							toQueryString({
+								methodName: message.args[0],
+								params: JSON.stringify(message.args[1]),
+							})
 					);
-					// message.args
-					console.log('message.args:', message.args);
-					reply({ result: { sig: 'signed block' } });
+					replyOnEvent('vitePassportWriteAccountBlock', (data: any) => {
+						console.log('data:', data);
+						return { result: data.block };
+					});
 					break;
 				// case 'on':
 				// 	if (!domainConnected) return connectError();
@@ -178,7 +174,7 @@ chrome.runtime.onMessage.addListener(
 
 const host = chrome.runtime.getURL('src/confirmation.html');
 const openPopup = async (routeAfterUnlock: string) => {
-	// routeAfterUnlock is specified in the params cuz frontend routing doesn't work here (popup window would loost for a file under host+routeAfterUnlock)
+	// routeAfterUnlock is specified in the params cuz frontend routing doesn't work here (popup window would look for a file under host+routeAfterUnlock)
 	const lastFocused = await chrome.windows.getCurrent();
 	// const {id} = await chrome.windows.create({
 	// OPTIMIZE: if a previous window is open, focus that instead of opening a new window

@@ -195,6 +195,7 @@ const Settings = ({
 				onClose={() => {
 					oldPasswordSet('');
 					newPasswordSet('');
+					activeModalSet('');
 				}}
 			>
 				<div className="p-2 space-y-2">

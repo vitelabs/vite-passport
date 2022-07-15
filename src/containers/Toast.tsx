@@ -28,7 +28,7 @@ let mountTimer: NodeJS.Timeout;
 let unmountTimer: NodeJS.Timeout;
 let enterDate = 0;
 let exiting = false;
-const minShowTime = 1300;
+const minShowTime = 2000;
 const toastParent = document.getElementById('toast');
 
 const Toast = ({ setState, toast }: Props) => {
@@ -74,8 +74,7 @@ const Toast = ({ setState, toast }: Props) => {
 								enterDate = Date.now();
 							}}
 							onMouseLeave={(e) => {
-								const aboveToast =
-									e.clientY < e.currentTarget.getBoundingClientRect().top;
+								const aboveToast = e.clientY < e.currentTarget.getBoundingClientRect().top;
 								unmountTimer = setTimeout(
 									() => {
 										exiting = true;
@@ -85,9 +84,7 @@ const Toast = ({ setState, toast }: Props) => {
 											animationStageSet(0);
 										}, 300);
 									},
-									aboveToast
-										? 0
-										: Math.max(0, minShowTime - (Date.now() - enterDate))
+									aboveToast ? 0 : Math.max(0, minShowTime - (Date.now() - enterDate))
 								);
 							}}
 							className={`shadow-md w-full fx pointer-events-auto backdrop-blur bg-skin-foreground dark:bg-skin-base relative pl-3 pr-3 py-2 rounded overflow-hidden transition-all duration-300 ${
@@ -106,10 +103,7 @@ const Toast = ({ setState, toast }: Props) => {
 								className="absolute top-0 left-0 h-full w-1"
 								style={{ background: colors[colorKey] }}
 							/>
-							<Icon
-								className="w-[1.5rem] min-w-[1.5rem]"
-								style={{ fill: colors[colorKey] }}
-							/>
+							<Icon className="w-[1.5rem] min-w-[1.5rem]" style={{ fill: colors[colorKey] }} />
 							<p className="mx-1.5 z-10">{toast[0]}</p>
 						</div>
 					)}

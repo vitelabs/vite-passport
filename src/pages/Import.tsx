@@ -14,10 +14,10 @@ import { State } from '../utils/types';
 const Import = ({ i18n, postPortMessage, setState }: State) => {
 	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState('');
-	const [passphrase, passphraseSet] = useState('');
+	// const [passphrase, passphraseSet] = useState('');
 	const [password, passwordSet] = useState('');
 	const mnemonicRef = useRef<TextInputRefObject>();
-	const passphraseRef = useRef<TextInputRefObject>();
+	// const passphraseRef = useRef<TextInputRefObject>();
 	const passwordRef = useRef<TextInputRefObject>();
 	const {
 		state: { routeAfterUnlock },
@@ -40,13 +40,13 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 					}
 				}}
 			/>
-			<TextInput
+			{/* <TextInput
 				optional
 				_ref={passphraseRef}
 				value={passphrase}
 				onUserInput={(v) => passphraseSet(v)}
 				label={i18n.bip39Passphrase}
-			/>
+			/> */}
 			<TextInput
 				password
 				_ref={passwordRef}
@@ -58,10 +58,11 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 			<button
 				className="mt-4 round-solid-button"
 				onClick={async () => {
-					const valid = validateInputs([mnemonicRef, passphraseRef, passwordRef]);
+					// const valid = validateInputs([mnemonicRef, passphraseRef, passwordRef]);
+					const valid = validateInputs([mnemonicRef, passwordRef]);
 					if (valid) {
 						const secrets = {
-							passphrase,
+							// passphrase,
 							mnemonics: mnemonics.trim(),
 						};
 						postPortMessage({ secrets, type: 'updateSecrets' });
