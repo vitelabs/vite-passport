@@ -89,12 +89,12 @@ const Settings = ({
 					onClick={() => activeModalSet('currency')}
 					label={i18n.currencyConversion}
 					value={currencyConversion}
-				/>
+				/> */}
 				<ListItem
 					onClick={() => activeModalSet('language')}
 					label={i18n.language}
 					value={languages[language]}
-				/> */}
+				/>
 				{/* <ListItem
 					onClick={() => activeModalSet('contacts')}
 					label={i18n.contacts}
