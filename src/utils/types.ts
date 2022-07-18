@@ -5,14 +5,19 @@ import { currencyConversions, i18nDict } from '../utils/constants';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 
 export type CurrencyConversions = typeof currencyConversions[number];
+type Network = {
+	name: string;
+	rpcUrl: string;
+	explorerUrl?: string;
+};
 
 export type Storage = {
 	encryptedSecrets: string;
-	accountList: AddressObj[];
 	language: keyof typeof i18nDict;
-	networkUrl: string;
-	networks: { [url: string]: string };
 	currencyConversion: CurrencyConversions;
+	networkList: Network[];
+	activeNetworkIndex: number;
+	accountList: AddressObj[];
 	activeAccountIndex: number;
 	contacts: { [address: string]: string };
 	displayedTokenIds: string[];
@@ -32,8 +37,9 @@ export type State = Storage & {
 	chromePort: chrome.runtime.Port;
 	postPortMessage: (message: PortMessage) => void;
 	setState: setStateType;
-	secrets: Secrets;
-	vitePrice: number;
+	secrets?: Secrets;
+	vitePrice?: number;
+	activeNetwork: Network;
 	activeAccount: AddressObj; // caching cuz wallet.deriveAddress is very slow
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
@@ -42,12 +48,12 @@ export type State = Storage & {
 	toastInfo: (text: string) => void;
 	i18n: typeof en;
 	viteApi: ViteAPI;
-	toast: [string, 'success' | 'warning' | 'error' | 'info'];
-	viteBalanceInfo: ViteBalanceInfo;
-	transactionHistory: {
-		received: Transaction[];
-		unreceived: Transaction[];
-		[tti: string]: Transaction[]; // assume these only show received txs
+	toast?: [string, 'success' | 'warning' | 'error' | 'info'];
+	viteBalanceInfo?: ViteBalanceInfo;
+	transactionHistory?: {
+		received?: Transaction[];
+		unreceived?: Transaction[];
+		[tti: string]: undefined | Transaction[]; // assume these only show received txs
 	};
 };
 

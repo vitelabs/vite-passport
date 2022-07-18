@@ -79,3 +79,6 @@ export const addIndexToTokenSymbol = (symbol: string, index: null | number) => {
 // 	str.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => {
 // 		return str.toUpperCase();
 // 	});
+
+export const parseError = (err: any) =>
+	err.toString() === '[object Object]' ? JSON.stringify(err) : err.toString();

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, ReactNode } from 'react';
 import { connect } from '../utils/global-context';
+import { parseError } from '../utils/strings';
 import { State } from '../utils/types';
 
 type Props = State & {
@@ -10,14 +11,7 @@ type Props = State & {
 	onCatch?: (err: string) => void;
 };
 
-const FetchWidget = ({
-	i18n,
-	children,
-	shouldFetch,
-	getPromise,
-	onResolve,
-	onCatch,
-}: Props) => {
+const FetchWidget = ({ i18n, children, shouldFetch, getPromise, onResolve, onCatch }: Props) => {
 	const [error, errorSet] = useState('');
 	const [fetching, fetchingSet] = useState(false);
 
@@ -28,10 +22,7 @@ const FetchWidget = ({
 			.then((result) => onResolve && onResolve(result))
 			.catch((err) => {
 				console.log('err:', typeof err, err.constructor, err);
-				const errorString =
-					err.toString() === '[object Object]'
-						? JSON.stringify(err)
-						: err.toString();
+				const errorString = parseError(err);
 				if (onCatch) {
 					onCatch(errorString);
 				}
@@ -49,9 +40,7 @@ const FetchWidget = ({
 	return error ? (
 		<div className="xy flex-col min-h-8">
 			<p className="text-skin-secondary text-center">{i18n.error}</p>
-			<p className="text-skin-secondary text-center text-sm mt-0.5">
-				"{error}"
-			</p>
+			<p className="text-skin-secondary text-center text-sm mt-0.5">"{error}"</p>
 			<button className="mt-2 text-skin-highlight" onClick={fetchData}>
 				{i18n.retry}
 			</button>

@@ -24,12 +24,14 @@ import Modal from '../components/Modal';
 import { DuplicateIcon } from '@heroicons/react/outline';
 import { setValue } from '../utils/storage';
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
+import DeterministicIcon from '../components/DeterministicIcon';
+import TransactionInfo from './TransactionInfo';
 
 const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
 	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
 		.then((res) => res.json())
 		.then((data: { data: { VITE: TokenApiInfo[] } }) => {
-			console.log('data:', data);
+			// console.log('data:', data);
 			callback(data?.data?.VITE || []);
 		});
 }, 300);
@@ -38,6 +40,7 @@ type Props = State;
 
 const WalletContents = ({
 	i18n,
+	toastError,
 	viteBalanceInfo,
 	displayedTokenIds,
 	viteApi,
@@ -50,6 +53,7 @@ const WalletContents = ({
 	const toAddressRef = useRef<TextInputRefObject>();
 	const amountRef = useRef<TextInputRefObject>();
 	const commentRef = useRef<TextInputRefObject>();
+	const [sendingTx, sendingTxSet] = useState(false);
 	const [tokenQuery, tokenQuerySet] = useState('');
 	const [checkedTokens, checkedTokensSet] = useState<{
 		[tti: string]: boolean;
@@ -58,9 +62,14 @@ const WalletContents = ({
 	const [editingTokenList, editingTokenListSet] = useState(false);
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
-	const [toAddress, toAddressSet] = useState('');
-	const [amount, amountSet] = useState('');
-	const [comment, commentSet] = useState('');
+	// const [toAddress, toAddressSet] = useState('');
+	const [toAddress, toAddressSet] = useState(
+		'vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99'
+	);
+	// const [amount, amountSet] = useState('');
+	const [amount, amountSet] = useState('0.002');
+	// const [comment, commentSet] = useState('');
+	const [comment, commentSet] = useState('test');
 	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
 	const [sentTx, sentTxSet] = useState<undefined | AccountBlockBlock>();
 	const [displayedTokens, displayedTokensSet] = useState<undefined | TokenApiInfo[]>();
@@ -90,6 +99,29 @@ const WalletContents = ({
 			)
 		);
 	}, []);
+
+	const unsentBlock = useMemo<AccountBlockClass>(() => {
+		if (confirmingTransaction && balanceInfoMap && selectedToken) {
+			return accountBlock.createAccountBlock('send', {
+				address: activeAddress,
+				toAddress: toAddress.trim(),
+				tokenId: selectedToken.tokenAddress,
+				amount: toSmallestUnit(
+					amount,
+					balanceInfoMap![selectedToken.tokenAddress]?.tokenInfo?.decimals
+				),
+				data: btoa(comment),
+			});
+		}
+	}, [
+		confirmingTransaction,
+		activeAddress,
+		amount,
+		balanceInfoMap,
+		selectedToken,
+		toAddress,
+		comment,
+	]);
 
 	return (
 		<>
@@ -127,11 +159,15 @@ const WalletContents = ({
 										className="fx rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
 										onClick={() => selectedTokenSet(tokenApiInfo)}
 									>
-										<img
-											src={icon}
-											alt={addIndexToTokenSymbol(symbol, tokenIndex)}
-											className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-										/>
+										{!icon ? (
+											<DeterministicIcon tti={tti} className="h-10 w-10 rounded-full mr-2" />
+										) : (
+											<img
+												src={icon}
+												alt={addIndexToTokenSymbol(symbol, tokenIndex)}
+												className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+											/>
+										)}
 										<div className="flex-1 flex">
 											<div className="flex flex-col flex-1 items-start">
 												<p className="text-lg">{addIndexToTokenSymbol(symbol, tokenIndex)}</p>
@@ -140,7 +176,9 @@ const WalletContents = ({
 											<div className="flex flex-col items-end mr-1.5">
 												<p className="text-lg">{biggestUnit === null ? '...' : biggestUnit}</p>
 												<p className="text-xs text-skin-secondary">
-													{biggestUnit === null ? '...' : calculatePrice(biggestUnit!, vitePrice)}
+													{!vitePrice || biggestUnit === null
+														? '...'
+														: calculatePrice(biggestUnit!, vitePrice)}
 												</p>
 											</div>
 										</div>
@@ -226,11 +264,15 @@ const WalletContents = ({
 								<React.Fragment key={tti}>
 									{i === displayedTokenIds.length && <div className="h-0.5 bg-skin-alt mt-2"></div>}
 									<div className="fx rounded py-1 px-2 bg-skin-middleground">
-										<img
-											src={icon}
-											alt={tokenName}
-											className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-										/>
+										{!icon ? (
+											<DeterministicIcon tti={tti} className="h-8 w-8 rounded-full mr-2" />
+										) : (
+											<img
+												src={icon}
+												alt={tokenName}
+												className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+											/>
+										)}
 										<div className="flex-1 fx">
 											<div className="flex flex-col flex-1 items-start">
 												<p className="text-lg">{tokenName}</p>
@@ -298,11 +340,18 @@ const WalletContents = ({
 								</button>
 							</div>
 							<div className="w-10 p-1">
-								<img
-									src={selectedToken.icon}
-									alt={selectedToken.symbol}
-									className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-								/>
+								{!selectedToken.icon ? (
+									<DeterministicIcon
+										tti={selectedToken.tokenAddress}
+										className="h-8 w-8 rounded-full mr-2"
+									/>
+								) : (
+									<img
+										src={selectedToken.icon}
+										alt={selectedToken.symbol}
+										className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+									/>
+								)}
 							</div>
 						</>
 					)
@@ -435,7 +484,7 @@ const WalletContents = ({
 								const valid = validateInputs([toAddressRef, amountRef, commentRef]);
 								if (valid) {
 									confirmingTransactionSet(true);
-									setTimeout(() => sendingFundsSet(false), 0);
+									// setTimeout(() => sendingFundsSet(false), 0);
 								}
 							}}
 						>
@@ -445,16 +494,14 @@ const WalletContents = ({
 				)}
 			</Modal>
 			<Modal
-				fromRight={sendingFunds}
+				heading={i18n.confirmTransaction}
 				visible={confirmingTransaction}
 				onStartClose={() => {
-					sendingFundsSet(true);
-					setTimeout(() => confirmingTransactionSet(false), 0);
+					confirmingTransactionSet(false);
 				}}
-				heading={i18n.confirmTransaction}
 			>
 				<div className="p-2 space-y-2">
-					<div className="">
+					{/* <div className="">
 						<p className="leading-5 text-skin-secondary">{i18n.toAddress}</p>
 						<p className="break-words text-sm">{toAddress}</p>
 					</div>
@@ -467,39 +514,38 @@ const WalletContents = ({
 							<p className="leading-5 text-skin-secondary">{i18n.comment}</p>
 							<p className="">{comment}</p>
 						</div>
-					)}
+					)} */}
+					{unsentBlock && <TransactionInfo {...unsentBlock} />}
 					<button
+						disabled={sendingTx}
 						className="round-solid-button"
 						onClick={async () => {
-							const block: AccountBlockClass = accountBlock.createAccountBlock('send', {
-								address: activeAddress,
-								toAddress: toAddress.trim(),
-								tokenId: selectedToken!.tokenAddress,
-								amount: toSmallestUnit(
-									amount,
-									balanceInfoMap![selectedToken!.tokenAddress]?.tokenInfo?.decimals
-								),
-							});
-							// await vitePassport.writeAccountBlock('send', {
-							// address: 'vite_2daedeee8d0a41085dee136e36052f48d8e6122b9fec075639',
-							// toAddress: 'vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99',
-							// tokenId: 'tti_5649544520544f4b454e6e40',
-							// amount: 1 + '0'.repeat(17), // 0.1 VITE
-							// });
-							block.setProvider(viteApi);
-							block.setPrivateKey(activeAccount.privateKey);
-							await block.autoSetPreviousAccountBlock();
-							block.sign(activeAccount.privateKey);
-							const res: AccountBlockBlock = await block.autoSendByPoW();
-							sentTxSet(res);
+							try {
+								sendingTxSet(true);
+								// await vitePassport.writeAccountBlock('send', {
+								// address: 'vite_2daedeee8d0a41085dee136e36052f48d8e6122b9fec075639',
+								// toAddress: 'vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99',
+								// tokenId: 'tti_5649544520544f4b454e6e40',
+								// amount: 1 + '0'.repeat(17), // 0.1 VITE
+								// });
+								unsentBlock.setProvider(viteApi);
+								unsentBlock.setPrivateKey(activeAccount.privateKey);
+								await unsentBlock.autoSetPreviousAccountBlock();
+								unsentBlock.sign(activeAccount.privateKey);
+								const res: AccountBlockBlock = await unsentBlock.autoSendByPoW();
+								sentTxSet(res);
+							} catch (e) {
+								console.log('error:', e);
+								toastError(JSON.stringify(e));
+								sendingTxSet(false);
+							}
 						}}
 					>
-						{i18n.confirm}
+						{i18n.signAndSendBlock}
 					</button>
 				</div>
 			</Modal>
 			<TransactionModal
-				fromRight
 				heading={i18n.transactionSent}
 				onClose={() => {
 					sendingFundsSet(false);

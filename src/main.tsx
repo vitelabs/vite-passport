@@ -19,15 +19,13 @@ const listen = async (message: PortMessage) => {
 		chromePort.onMessage.removeListener(listen);
 		const storage = await getValue(null);
 
-		(Object.keys(defaultStorage) as (keyof typeof defaultStorage)[]).forEach(
-			(key) => {
-				if (storage[key] === undefined) {
-					// @ts-ignore
-					storage[key] = defaultStorage[key];
-					setValue({ [key]: defaultStorage[key] });
-				}
+		(Object.keys(defaultStorage) as (keyof typeof defaultStorage)[]).forEach((key) => {
+			if (storage[key] === undefined) {
+				// @ts-ignore
+				storage[key] = defaultStorage[key];
+				setValue({ [key]: defaultStorage[key] });
 			}
-		);
+		});
 
 		const state: Partial<State> = {
 			...storage,
@@ -36,6 +34,7 @@ const listen = async (message: PortMessage) => {
 				chromePort.postMessage(message);
 			},
 			i18n: i18nDict[storage.language!],
+			activeNetwork: storage.networkList![storage.activeNetworkIndex!],
 		};
 		if (message.secrets) {
 			state.activeAccount = wallet.deriveAddress({

@@ -11,14 +11,14 @@ import { State, TokenApiInfo } from '../utils/types';
 
 const SignTx = ({
 	viteApi,
-	contacts,
+	toastError,
 	activeAccount,
 	viteBalanceInfo,
 	i18n,
 	postPortMessage,
 }: State) => {
 	const [searchParams] = useSearchParams();
-	const [sending, sendingSet] = useState(false);
+	const [sendingTx, sendingTxSet] = useState(false);
 	const [error, errorSet] = useState('');
 	const [sentBlock, sentBlockSet] = useState<undefined | AccountBlockBlock>();
 	const [tokenApiInfo, tokenApiInfoSet] = useState<undefined | null | TokenApiInfo>(undefined);
@@ -84,11 +84,11 @@ const SignTx = ({
 		<div className="flex-1 p-4 space-y-2 overflow-scroll bg-skin-base">
 			<TransactionInfo {...block} contractFuncParams={contractFuncParams} />
 			<button
-				disabled={insufficientFunds || sending}
+				disabled={insufficientFunds || sendingTx}
 				className="mt-2 round-solid-button"
 				onClick={async () => {
 					try {
-						sendingSet(true);
+						sendingTxSet(true);
 						block.setProvider(viteApi);
 						block.setPrivateKey(activeAccount.privateKey);
 						await block.autoSetPreviousAccountBlock();
@@ -120,7 +120,8 @@ const SignTx = ({
 						console.log('sanitizedBlock:', sanitizedBlock);
 						// window.close();
 					} catch (e) {
-						errorSet(JSON.stringify(e));
+						sendingTxSet(false);
+						toastError(JSON.stringify(e));
 						// let err = {
 						// 	jsonrpc: '2.0',
 						// 	id: 12,

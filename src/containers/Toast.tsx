@@ -7,6 +7,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from '../utils/global-context';
+import { parseError } from '../utils/strings';
 import { State } from '../utils/types';
 
 type Props = State;
@@ -51,13 +52,14 @@ const Toast = ({ setState, toast }: Props) => {
 
 	const Icon = useMemo(
 		() =>
-			toast &&
-			{
-				success: CheckCircleIcon,
-				warning: ExclamationCircleIcon,
-				error: XCircleIcon,
-				info: InformationCircleIcon,
-			}[toast[1]],
+			!toast
+				? XCircleIcon // just to fix ts error
+				: {
+						success: CheckCircleIcon,
+						warning: ExclamationCircleIcon,
+						error: XCircleIcon,
+						info: InformationCircleIcon,
+				  }[toast[1]],
 		[toast]
 	);
 
@@ -104,7 +106,7 @@ const Toast = ({ setState, toast }: Props) => {
 								style={{ background: colors[colorKey] }}
 							/>
 							<Icon className="w-[1.5rem] min-w-[1.5rem]" style={{ fill: colors[colorKey] }} />
-							<p className="mx-1.5 z-10">{toast[0]}</p>
+							<p className="mx-1.5 z-10">{parseError(toast[0])}</p>
 						</div>
 					)}
 				</div>,

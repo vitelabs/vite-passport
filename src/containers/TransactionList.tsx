@@ -12,7 +12,7 @@ type Props = State & {
 	tti?: string;
 };
 
-const FETCH_AMOUNT = 3;
+const FETCH_AMOUNT = 10;
 
 const TransactionList = ({
 	viteApi,
@@ -24,6 +24,7 @@ const TransactionList = ({
 	tti,
 }: Props) => {
 	const [txInfoModalTx, txInfoModalTxSet] = useState<undefined | Transaction>();
+	const [ttiEndReached, ttiEndReachedSet] = useState(false);
 	const transactions = useMemo(() => {
 		if (tti) {
 			return transactionHistory?.[tti];
@@ -33,12 +34,18 @@ const TransactionList = ({
 			: undefined;
 	}, [transactionHistory, tti]);
 	const allUnreceivedTxsLoaded = useMemo(
-		() => transactionHistory?.unreceived?.length === +viteBalanceInfo?.unreceived?.blockCount,
-		[transactionHistory, viteBalanceInfo]
+		() =>
+			ttiEndReached ||
+			(viteBalanceInfo &&
+				transactionHistory?.unreceived?.length === +viteBalanceInfo?.unreceived?.blockCount),
+		[ttiEndReached, transactionHistory, viteBalanceInfo]
 	);
 	const allReceivedTxsLoaded = useMemo(
-		() => transactionHistory?.received?.length === +viteBalanceInfo?.balance?.blockCount,
-		[transactionHistory, viteBalanceInfo]
+		() =>
+			ttiEndReached ||
+			(viteBalanceInfo &&
+				transactionHistory?.received?.length === +viteBalanceInfo?.balance?.blockCount),
+		[ttiEndReached, transactionHistory, viteBalanceInfo]
 	);
 
 	return (
@@ -75,7 +82,7 @@ const TransactionList = ({
 				// );
 			}}
 			onResolve={(data: any) => {
-				console.log('data:', data);
+				// console.log('data:', data);
 				setState(
 					{
 						transactionHistory: tti
@@ -97,26 +104,24 @@ const TransactionList = ({
 				transactions.map((tx, i) => {
 					return (
 						<React.Fragment key={tx.hash}>
-							{!!transactionHistory.unreceived?.length && i === 0 && (
+							{!!transactionHistory?.unreceived?.length && i === 0 && (
 								<p className="text-center text-skin-secondary">
-									{viteBalanceInfo.unreceived.blockCount} {i18n.unreceived}
+									{viteBalanceInfo!.unreceived.blockCount} {i18n.unreceived}
 								</p>
 							)}
-							{i === transactionHistory.unreceived?.length && (
+							{i === transactionHistory?.unreceived?.length && (
 								<>
 									{!allUnreceivedTxsLoaded && (
 										<button
 											className="mx-auto block text-skin-highlight brightness-button leading-3"
 											onClick={async () => {
-												const unreceived = [
-													...transactionHistory.unreceived,
-													...(await viteApi.request(
-														'ledger_getUnreceivedBlocksByAddress',
-														activeAccount.address,
-														Math.ceil(transactionHistory.unreceived.length / FETCH_AMOUNT),
-														FETCH_AMOUNT
-													)),
-												];
+												const additionalTxs = await viteApi.request(
+													'ledger_getUnreceivedBlocksByAddress',
+													activeAccount.address,
+													Math.ceil(transactionHistory.unreceived!.length / FETCH_AMOUNT),
+													FETCH_AMOUNT
+												);
+												const unreceived = [...transactionHistory.unreceived!, ...additionalTxs];
 												setState({ transactionHistory: { unreceived } }, { deepMerge: true });
 											}}
 										>
@@ -127,7 +132,7 @@ const TransactionList = ({
 										<div className="h-0.5 bg-skin-alt mt-2"></div>
 									)}
 									<p className="text-center text-skin-secondary">
-										{viteBalanceInfo.balance.blockCount} {i18n.received}
+										{viteBalanceInfo!.balance.blockCount} {i18n.received}
 									</p>
 								</>
 							)}
@@ -135,7 +140,6 @@ const TransactionList = ({
 								className="fx text-sm rounded w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
 								onClick={() => {
 									txInfoModalTxSet(tx);
-									console.log('tx:', tx);
 								}}
 							>
 								<div className="ml-2 flex-1 flex justify-between">
@@ -169,27 +173,33 @@ const TransactionList = ({
 									className="mx-auto block text-skin-highlight brightness-button leading-3"
 									onClick={async () => {
 										if (tti) {
-											// OPTIMIZE: hide load more button when all tti txs have loaded
-											const list = [
-												...transactionHistory[tti],
-												...(
-													await viteApi.request(
-														'ledger_getAccountBlocks',
-														activeAccount.address,
-														transactionHistory[tti][transactionHistory[tti].length - 1].hash,
-														tti,
-														FETCH_AMOUNT + 1
-													)
-												).slice(1),
-											];
-											return setState({ transactionHistory: { [tti]: list } });
+											const currentList = transactionHistory?.[tti];
+											if (!currentList) return;
+											const additionalTxs = (
+												await viteApi.request(
+													'ledger_getAccountBlocks',
+													activeAccount.address,
+													currentList[currentList.length - 1].hash,
+													tti,
+													FETCH_AMOUNT + 1
+												)
+											).slice(1);
+											const list = [...currentList, ...additionalTxs];
+											console.log('additionalTxs:', additionalTxs);
+											if (additionalTxs.length === 0) {
+												// OPTIMIZE: save this globally so it doesn't reset on component mount
+												ttiEndReachedSet(true);
+											}
+											return setState({ transactionHistory: { [tti]: list } }, { deepMerge: true });
 										}
+										const currentList = transactionHistory?.received;
+										if (!currentList) return;
 										const received = [
-											...transactionHistory.received,
+											...currentList,
 											...(await viteApi.request(
 												'ledger_getAccountBlocksByAddress',
 												activeAccount.address,
-												Math.ceil(transactionHistory.received.length / FETCH_AMOUNT),
+												Math.ceil(currentList.length / FETCH_AMOUNT),
 												FETCH_AMOUNT
 											)),
 										];

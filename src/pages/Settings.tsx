@@ -85,7 +85,7 @@ const Settings = ({
 	return (
 		<TabContainer heading={i18n.settings}>
 			<div className="flex-1 overflow-scroll">
-				<ListItem
+				{/* <ListItem
 					onClick={() => activeModalSet('currency')}
 					label={i18n.currencyConversion}
 					value={currencyConversion}
@@ -94,7 +94,7 @@ const Settings = ({
 					onClick={() => activeModalSet('language')}
 					label={i18n.language}
 					value={languages[language]}
-				/>
+				/> */}
 				{/* <ListItem
 					onClick={() => activeModalSet('contacts')}
 					label={i18n.contacts}
@@ -140,7 +140,7 @@ const Settings = ({
 				onClose={() => activeModalSet('')}
 			>
 				{Object.entries(languages).map(([shorthand, label]) => {
-					const active = currencyConversion === shorthand;
+					const active = language === shorthand;
 					return (
 						<ModalListItem
 							radio
@@ -242,7 +242,7 @@ const Settings = ({
 				heading={i18n.secrets}
 			>
 				{showSecrets ? (
-					<Secrets {...secrets} />
+					<Secrets {...secrets!} />
 				) : (
 					<div className="p-2">
 						<TextInput

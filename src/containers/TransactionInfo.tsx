@@ -2,6 +2,7 @@ import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { useEffect, useMemo, useState } from 'react';
 import A from '../components/A';
+import DeterministicIcon from '../components/DeterministicIcon';
 import { connect } from '../utils/global-context';
 import { getTokenApiInfo } from '../utils/misc';
 import { addIndexToTokenSymbol, toBiggestUnit } from '../utils/strings';
@@ -15,10 +16,10 @@ type Props = State &
 
 const TransactionInfo = ({
 	i18n,
-	networkUrl,
 	viteBalanceInfo,
 	contacts,
 	contractFuncParams,
+	activeNetwork,
 	// Below are AccountBlockBlock params
 	address,
 	amount,
@@ -88,12 +89,16 @@ const TransactionInfo = ({
 			) : (
 				<div className="">
 					<div className="fx">
-						<img
-							src={tokenApiInfo?.icon}
-							// alt={tokenApiInfo.symbol}
-							alt={tokenName}
-							className="h-10 w-10 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
-						/>
+						{!tokenApiInfo?.icon ? (
+							<DeterministicIcon tti={tokenId!} className="h-10 w-10 rounded-full mr-2" />
+						) : (
+							<img
+								src={tokenApiInfo?.icon}
+								// alt={tokenApiInfo.symbol}
+								alt={tokenName}
+								className="h-10 w-10 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+							/>
+						)}
 						<p className="">{tokenName}</p>
 					</div>
 					<p className="">{tokenId}</p>
@@ -155,9 +160,7 @@ const TransactionInfo = ({
 				<A
 					className="fx brightness-button mr-auto"
 					// OPTIMIZE: Make this URL more flexible for different network URLs
-					href={`https://${
-						networkUrl === 'wss://buidl.vite.net/gvite/ws' ? 'test.' : ''
-					}vitescan.io/tx/${hash}`}
+					href={`${activeNetwork.explorerUrl}/tx/${hash}`}
 				>
 					<p className="text-left text-skin-secondary">{i18n.viewOnViteScan}</p>
 					<ExternalLinkIcon className="w-6 ml-1 mr-2 text-skin-secondary" />

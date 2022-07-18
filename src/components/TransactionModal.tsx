@@ -9,25 +9,12 @@ type Props = State & {
 	transaction?: Transaction | AccountBlockBlock;
 	contractFuncParams?: any[];
 	onClose: () => void;
-	fromRight?: boolean;
 	heading?: string;
 };
 
-const TransactionModal = ({
-	i18n,
-	contractFuncParams,
-	transaction,
-	fromRight,
-	heading,
-	onClose,
-}: Props) => {
+const TransactionModal = ({ i18n, contractFuncParams, transaction, heading, onClose }: Props) => {
 	return (
-		<Modal
-			fromRight={fromRight}
-			heading={heading || i18n.transaction}
-			visible={!!transaction}
-			onClose={onClose}
-		>
+		<Modal heading={heading || i18n.transaction} visible={!!transaction} onClose={onClose}>
 			{!!transaction && (
 				<TransactionInfo {...transaction} contractFuncParams={contractFuncParams} />
 			)}

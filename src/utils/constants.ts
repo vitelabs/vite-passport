@@ -8,15 +8,23 @@ export const PROD = process.env.NODE_ENV === 'production';
 
 export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> = {
 	language: 'en',
-	networkUrl: 'wss://node.vite.net/gvite/ws',
-	networks: {
-		// url => label is more extensible than label => url.
-		// e.g. 'wss://node-tokyo.vite.net/ws': 'Mainnet',
-		// URLs are unique, network names are not.
-		'wss://node.vite.net/gvite/ws': 'Mainnet',
-		'wss://buidl.vite.net/gvite/ws': 'Testnet',
-		'ws://localhost:23457': 'Localnet',
-	},
+	activeNetworkIndex: 0,
+	networkList: [
+		{
+			name: 'Mainnet',
+			rpcUrl: 'wss://node.vite.net/gvite/ws',
+			explorerUrl: 'https://vitescan.io',
+		},
+		{
+			name: 'Testnet',
+			rpcUrl: 'wss://buidl.vite.net/gvite/ws',
+			explorerUrl: 'https://test.vitescan.io',
+		},
+		{
+			name: 'Localnet',
+			rpcUrl: 'ws://localhost:23457',
+		},
+	],
 	currencyConversion: 'USD',
 	activeAccountIndex: 0,
 	contacts: {},

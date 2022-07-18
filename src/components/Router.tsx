@@ -20,7 +20,7 @@ import { ViteAPI, accountBlock } from '@vite/vitejs';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
-// new WS_RPC(networkUrl, providerTimeout, providerOptions)
+// new WS_RPC(networkRpcUrl, providerTimeout, providerOptions)
 
 type Props = State;
 
@@ -39,9 +39,9 @@ const Router = ({
 	setState,
 	i18n,
 	activeAccount,
-	networkUrl,
 	encryptedSecrets,
 	secrets,
+	activeNetwork,
 	toastInfo,
 }: Props) => {
 	const initialEntries = useMemo(() => {
@@ -73,10 +73,10 @@ const Router = ({
 		}
 		return ['/'];
 	}, []); // eslint-disable-line
-
+	const networkRpcUrl = useMemo(() => activeNetwork.rpcUrl, [activeNetwork]);
 	const rpc = useMemo(
-		() => (/^ws/.test(networkUrl) ? new WS_RPC(networkUrl) : new HTTP_RPC(networkUrl)),
-		[networkUrl]
+		() => (/^ws/.test(networkRpcUrl) ? new WS_RPC(networkRpcUrl) : new HTTP_RPC(networkRpcUrl)),
+		[networkRpcUrl]
 	);
 
 	const viteApi = useMemo(() => {
@@ -134,7 +134,7 @@ const Router = ({
 		}
 	}, [viteApi, activeAccount]); // eslint-disable-line
 
-	useEffect(updateViteBalanceInfo, [activeAccount, networkUrl]); // eslint-disable-line
+	useEffect(updateViteBalanceInfo, [activeAccount, networkRpcUrl]); // eslint-disable-line
 
 	useEffect(() => {
 		if (activeAccount) {

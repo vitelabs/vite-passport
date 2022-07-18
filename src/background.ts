@@ -130,7 +130,11 @@ chrome.runtime.onMessage.addListener(
 					break;
 				case 'getNetwork':
 					if (!domainConnected) return connectError();
-					const { networkUrl } = await getValue(['networkUrl']);
+					const { networkList, activeNetworkIndex } = await getValue([
+						'networkList',
+						'activeNetworkIndex',
+					]);
+					const networkUrl = networkList![activeNetworkIndex!].rpcUrl;
 					reply({ result: networkUrl });
 					break;
 				case 'writeAccountBlock':

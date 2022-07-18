@@ -32,11 +32,12 @@ const Home = ({
 	activeAccountIndex,
 	activeAccount,
 	copyWithToast,
-	networks,
-	networkUrl,
+	networkList,
+	activeNetworkIndex,
 	accountList,
 	contacts,
 	toastSuccess,
+	activeNetwork,
 	postPortMessage,
 }: State) => {
 	// const quotaBeneficiaryRef = useRef<TextInputRefObject>();
@@ -79,7 +80,7 @@ const Home = ({
 						className="border-2 px-2 rounded-full border-skin-alt text-sm bg-skin-middleground text-skin-secondary hover:shadow-md active:shadow brightness-button"
 						onClick={() => editingNetworkSet(true)}
 					>
-						{networks[networkUrl]}
+						{activeNetwork.name}
 					</button>
 					<button
 						className="p-1 -mt-1 -mr-1 text-skin-secondary darker-brightness-button"
@@ -128,15 +129,14 @@ const Home = ({
 							<p className="text-skin-secondary">{shortenAddress(activeAddress)}</p>
 							<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 						</button>
-						<A
-							className="ml-0.5 darker-brightness-button"
-							// OPTIMIZE: Make this URL more flexible for different network URLs
-							href={`https://${
-								networkUrl === 'wss://buidl.vite.net/gvite/ws' ? 'test.' : ''
-							}vitescan.io/address/${activeAddress}`}
-						>
-							<ExternalLinkIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-						</A>
+						{activeNetwork.explorerUrl && (
+							<A
+								className="ml-0.5 darker-brightness-button"
+								href={`${activeNetwork.explorerUrl}/address/${activeAddress}`}
+							>
+								<ExternalLinkIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+							</A>
+						)}
 					</div>
 				</div>
 			</div>
@@ -190,28 +190,50 @@ const Home = ({
 				onClose={() => editingNetworkSet(false)}
 				heading={i18n.networks}
 			>
-				{Object.entries(networks).map(([url, label]) => {
-					const active = networkUrl === url;
+				{networkList.map((network, i) => {
+					const active = i === activeNetworkIndex;
 					return (
 						<ModalListItem
 							radio
-							key={url}
+							key={network.rpcUrl}
 							active={active}
-							label={label}
-							sublabel={url}
+							label={network.name}
+							sublabel={network.rpcUrl}
 							onClick={() => {
 								if (!active) {
 									toastSuccess(i18n.networkChanged);
-									setState({ networkUrl: url, viteBalanceInfo: undefined });
-									setValue({ networkUrl: url });
-									postPortMessage({ type: 'networkChange', network: url });
-									chrome.tabs.query({ currentWindow: true, active: true }, (tabs) => {
-										const activeTab = tabs[0];
-										chrome.tabs.sendMessage(activeTab.id!, { message: 'start' });
+									setState({
+										activeNetworkIndex: i,
+										viteBalanceInfo: undefined,
+										activeNetwork: networkList[i],
 									});
+									setValue({ activeNetworkIndex: i });
+									postPortMessage({ type: 'networkChange', network: network.rpcUrl });
+									chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) => {
+										chrome.tabs.sendMessage(tab.id!, { message: 'networkChange' });
+									});
+									// TODO: trigger listeners
 								}
 								editingNetworkSet(false);
 							}}
+							onClose={
+								[
+									'wss://node.vite.net/gvite/ws',
+									'wss://buidl.vite.net/gvite/ws',
+									'ws://localhost:23457',
+								].includes(network.rpcUrl)
+									? undefined
+									: () => {
+											const newNetworkList = [...networkList];
+											newNetworkList.splice(i, 1);
+											const data = {
+												networkList: newNetworkList,
+												activeNetworkIndex: i === networkList.length - 1 ? 0 : activeNetworkIndex,
+											};
+											setState(data);
+											setValue(data);
+									  }
+							}
 						/>
 					);
 				})}
@@ -251,7 +273,7 @@ const Home = ({
 							value={rpcUrl}
 							onUserInput={(v) => rpcUrlSet(v)}
 							getIssue={(v) => {
-								if (!validateWsUrl(v) || !validateHttpUrl(v)) {
+								if (!validateWsUrl(v) && !validateHttpUrl(v)) {
 									return i18n.urlMustStartWithWsWssHttpOrHttps;
 								}
 							}}
@@ -274,12 +296,17 @@ const Home = ({
 							onClick={() => {
 								const valid = validateInputs([networkNameRef, rpcUrlRef, blockExplorerUrlRef]);
 								if (valid) {
-									const newNetworks = {
-										...networks,
-										[rpcUrl]: networkName,
-									};
-									setState({ networks: newNetworks });
-									setValue({ networks: newNetworks });
+									const newNetworkList = [
+										...networkList,
+										{
+											name: networkName.trim(),
+											rpcUrl: networkName.trim(),
+											explorerUrl: blockExplorerUrl.trim() || undefined,
+										},
+									];
+									const data = { networkList: newNetworkList };
+									setState(data);
+									setValue(data);
 									close();
 								}
 							}}
@@ -297,55 +324,56 @@ const Home = ({
 				{accountList.map(({ address }, i) => {
 					const active = i === activeAccountIndex;
 					return (
-						<div key={address} className="flex items-center">
-							<ModalListItem
-								radio
-								active={active}
-								className="flex-1"
-								label={contacts[address]}
-								sublabel={shortenAddress(address)}
-								// rightJSX={
-								// 	// not that useful a feature for the technical overhead it creates.
-								// 	false && (
-								// 		<div className="self-start border-2 border-skin-alt px-1 text-skin-muted rounded-full text-xs">
-								// 			{i18n.new}
-								// 		</div>
-								// 	)
-								// }
-								onClick={() => {
-									if (!active) {
-										toastSuccess(i18n.accountChanged);
-										const data = { activeAccountIndex: i };
-										setState({ ...data, activeAccount: accountList[i] });
-										setValue(data);
-									}
-									changingActiveAccountSet(false);
-								}}
-							/>
-							{i + 1 === accountList.length && i !== 0 && (
-								<button
-									className="xy w-8 h-8 mr-2 overflow-hidden rounded-full bg-skin-middleground brightness-button"
-									onClick={() => {
-										const data = {
-											accountList: [...accountList].slice(0, accountList.length - 1),
-											activeAccountIndex:
-												activeAccountIndex === accountList.length - 1 ? 0 : activeAccountIndex,
-										};
-										setState({ ...data, activeAccount: accountList[data.activeAccountIndex] });
-										setValue(data);
-									}}
-								>
-									<XIcon className="w-5 text-skin-secondary" />
-								</button>
-							)}
-						</div>
+						<ModalListItem
+							radio
+							key={address}
+							active={active}
+							className="flex-1"
+							label={contacts[address]}
+							sublabel={shortenAddress(address)}
+							// rightJSX={
+							// 	// not that useful a feature for the technical overhead it creates.
+							// 	false && (
+							// 		<div className="self-start border-2 border-skin-alt px-1 text-skin-muted rounded-full text-xs">
+							// 			{i18n.new}
+							// 		</div>
+							// 	)
+							// }
+							onClick={() => {
+								if (!active) {
+									toastSuccess(i18n.accountChanged);
+									const data = { activeAccountIndex: i };
+									setState({
+										...data,
+										activeAccount: accountList[i],
+										viteBalanceInfo: undefined,
+										transactionHistory: undefined,
+									});
+									setValue(data);
+								}
+								changingActiveAccountSet(false);
+							}}
+							onClose={
+								i + 1 !== accountList.length || i === 0
+									? undefined
+									: () => {
+											const data = {
+												accountList: [...accountList].slice(0, accountList.length - 1),
+												activeAccountIndex:
+													activeAccountIndex === accountList.length - 1 ? 0 : activeAccountIndex,
+											};
+											setState({ ...data, activeAccount: accountList[data.activeAccountIndex] });
+											setValue(data);
+									  }
+							}
+						/>
 					);
 				})}
 				<ModalListBottomButton
 					label={i18n.deriveAddress}
 					onClick={() => {
 						const newAccount = wallet.deriveAddress({
-							...secrets,
+							...secrets!,
 							index: accountList.length,
 						});
 						const newAccountList = [...accountList, newAccount];
