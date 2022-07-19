@@ -1,21 +1,16 @@
 import { joinWords, prefixName } from './utils/strings';
+import { PortEvent } from './utils/types';
 
 const injectedObject: {
 	getConnectedAccount?: () => Promise<null | string>;
 	connectWallet?: () => Promise<undefined>;
 	getNetwork?: () => Promise<string>;
 	writeAccountBlock?: (type: string, params: object) => Promise<undefined>;
-	// on?: (event: 'accountChange' | 'networkChange', callback: (data: string) => void) => void;
-	addListener?: (
+	on?: (
 		event: 'accountChange' | 'networkChange',
-		callback: (e: Event) => void
+		callback: (payload: object) => void
 		// callback: (data: string) => void
-	) => void;
-	removeListener?: (
-		event: 'accountChange' | 'networkChange',
-		callback: (e: Event) => void
-		// callback: (data: string) => void
-	) => void;
+	) => () => void;
 } = {};
 
 const relayedMethods = [
@@ -85,20 +80,14 @@ relayedMethods.forEach((method) => {
 });
 
 const eventList = ['accountChange', 'networkChange'];
-const requireValidEvent = (eventName: string) => {
+injectedObject.on = (eventName: string, callback: (payload: object) => void) => {
 	if (!eventList.includes(eventName)) {
 		throw new Error(`eventName must be ${joinWords(eventList)}`);
 	}
-};
-
-injectedObject.addListener = (eventName: string, callback: (e: Event) => void) => {
-	requireValidEvent(eventName);
-	window.addEventListener(prefixName(eventName), callback);
-};
-
-injectedObject.removeListener = (eventName: string, callback: (e: Event) => void) => {
-	requireValidEvent(eventName);
-	window.removeEventListener(prefixName(eventName), callback);
+	const name = prefixName(eventName);
+	const fn = (e: any) => callback(e.detail);
+	addEventListener(name, fn);
+	return () => removeEventListener(name, fn);
 };
 
 // @ts-ignore

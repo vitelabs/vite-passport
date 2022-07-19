@@ -138,9 +138,21 @@ const Router = ({
 
 	useEffect(() => {
 		if (activeAccount) {
+			// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
+			// viteApi
+			// 	.subscribe('newAccountBlockByAddress', activeAccount.address)
+			// 	.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
+			// 		event.on((newBlock) => {
+			// 			console.log('newBlock:', newBlock);
+			// 			//
+			// 		});
+			// 	})
+			// 	.catch((err: any) => {
+			// 		console.log(err);
+			// 		setState({ toast: [JSON.stringify(err), 'error'] });
+			// 	});
+
 			viteApi
-				// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
-				// .subscribe('newAccountBlockByAddress', activeAccount.address)
 				.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
 				.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
 					event.on((e) => {

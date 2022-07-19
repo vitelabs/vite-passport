@@ -120,10 +120,10 @@ type TokenInfo = {
 };
 
 export type NewAccountBlock = {
-	hash: string;
-	height: number;
-	heightStr: string;
-	removed: boolean;
+	hash: string; // "cc1d1722d572bd181bb7f98ab051cd78bf3a0a9d0169e81c7da9c737271a48d7",
+	height: string; // "20",
+	// heightStr: string;
+	removed: boolean; // false
 };
 
 export type TokenApiInfo = {
