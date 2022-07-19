@@ -38,7 +38,7 @@ const Home = ({
 	contacts,
 	toastSuccess,
 	activeNetwork,
-	postPortMessage,
+	triggerEvent,
 }: State) => {
 	// const quotaBeneficiaryRef = useRef<TextInputRefObject>();
 	// const lockedAmountRef = useRef<TextInputRefObject>();
@@ -208,11 +208,10 @@ const Home = ({
 										activeNetwork: networkList[i],
 									});
 									setValue({ activeNetworkIndex: i });
-									postPortMessage({ type: 'networkChange', network: network.rpcUrl });
-									chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) => {
-										chrome.tabs.sendMessage(tab.id!, { message: 'networkChange' });
+									triggerEvent({
+										type: 'networkChange',
+										payload: { activeNetwork: network.rpcUrl },
 									});
-									// TODO: trigger listeners
 								}
 								editingNetworkSet(false);
 							}}
@@ -350,6 +349,10 @@ const Home = ({
 										transactionHistory: undefined,
 									});
 									setValue(data);
+									triggerEvent({
+										type: 'accountChange',
+										payload: { activeAddress: accountList[i].address },
+									});
 								}
 								changingActiveAccountSet(false);
 							}}

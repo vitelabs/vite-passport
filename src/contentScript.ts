@@ -1,4 +1,6 @@
 import { BackgroundResponse, VitePassportMethodCall } from './injectedScript';
+import { prefixName } from './utils/strings';
+import { PortEvent, PortMessage } from './utils/types';
 
 // console.log('content');
 
@@ -35,15 +37,15 @@ window.addEventListener('vitePassportMethodCalled', ((
 // });
 // console.log('chromePort:', chromePort);
 
-// chrome.runtime.onMessage.addListener(
-// 	(
-// 		message: VitePassportMethodCall,
-// 		sender,
-// 		reply: (res: Omit<BackgroundResponse, '_messageId'>) => void
-// 	) => {
-// 		//
-// 		console.log('message:', message);
-// 	}
-// );
+chrome.runtime.onMessage.addListener(
+	// (message: PortEvent, sender, reply: () => void) => {
+	(message: PortEvent) => {
+		dispatchEvent(
+			new CustomEvent(prefixName(message.type), {
+				detail: message.payload,
+			})
+		);
+	}
+);
 
 export {};

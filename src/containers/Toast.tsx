@@ -7,7 +7,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from '../utils/global-context';
-import { parseError } from '../utils/strings';
+import { makeReadable } from '../utils/strings';
 import { State } from '../utils/types';
 
 type Props = State;
@@ -106,7 +106,7 @@ const Toast = ({ setState, toast }: Props) => {
 								style={{ background: colors[colorKey] }}
 							/>
 							<Icon className="w-[1.5rem] min-w-[1.5rem]" style={{ fill: colors[colorKey] }} />
-							<p className="mx-1.5 z-10">{parseError(toast[0])}</p>
+							<p className="mx-1.5 z-10">{makeReadable(toast[0])}</p>
 						</div>
 					)}
 				</div>,

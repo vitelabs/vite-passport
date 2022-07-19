@@ -6,7 +6,7 @@ import './styles/colors.css';
 import './styles/classes.css';
 import './styles/theme.ts';
 
-import { PortMessage, State } from './utils/types';
+import { PortEvent, PortMessage, State } from './utils/types';
 import { getValue, setValue } from './utils/storage';
 import { wallet } from '@vite/vitejs';
 import { defaultStorage, i18nDict } from './utils/constants';
@@ -30,11 +30,16 @@ const listen = async (message: PortMessage) => {
 		const state: Partial<State> = {
 			...storage,
 			chromePort,
+			i18n: i18nDict[storage.language!],
+			activeNetwork: storage.networkList![storage.activeNetworkIndex!],
 			postPortMessage: (message: PortMessage) => {
 				chromePort.postMessage(message);
 			},
-			i18n: i18nDict[storage.language!],
-			activeNetwork: storage.networkList![storage.activeNetworkIndex!],
+			triggerEvent: (event: PortEvent) => {
+				chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) => {
+					chrome.tabs.sendMessage(tab.id!, event);
+				});
+			},
 		};
 		if (message.secrets) {
 			state.activeAccount = wallet.deriveAddress({

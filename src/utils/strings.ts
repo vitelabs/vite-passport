@@ -80,5 +80,16 @@ export const addIndexToTokenSymbol = (symbol: string, index: null | number) => {
 // 		return str.toUpperCase();
 // 	});
 
-export const parseError = (err: any) =>
+export const makeReadable = (err: any) =>
 	err.toString() === '[object Object]' ? JSON.stringify(err) : err.toString();
+
+export const joinWords = (arr: string[], conjunction = 'or') => {
+	const listStart = arr.slice(0, -1).join(', ');
+	const listEnd = arr.slice(-1);
+	return [listStart, listEnd].join(
+		arr.length <= 1 ? '' : arr.length > 2 ? `, ${conjunction} ` : ` ${conjunction} `
+	);
+};
+
+// This is to avoid custom event naming collisions
+export const prefixName = (str: string) => 'vitePassport' + str[0].toUpperCase() + str.substring(1);

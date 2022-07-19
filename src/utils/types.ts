@@ -36,6 +36,7 @@ export type Secrets = {
 export type State = Storage & {
 	chromePort: chrome.runtime.Port;
 	postPortMessage: (message: PortMessage) => void;
+	triggerEvent: (event: PortEvent) => void;
 	setState: setStateType;
 	secrets?: Secrets;
 	vitePrice?: number;
@@ -72,11 +73,12 @@ export type PortMessage =
 	| {
 			type: 'writeAccountBlock';
 			block: object;
-	  }
-	| {
-			type: 'networkChange';
-			network: string;
 	  };
+
+export type PortEvent = {
+	type: 'accountChange' | 'networkChange';
+	payload: { activeAddress: string } | { activeNetwork: string };
+};
 
 export type ViteBalanceInfo = {
 	balance: {
@@ -103,7 +105,7 @@ export type ViteBalanceInfo = {
 	};
 };
 
-export type TokenInfo = {
+type TokenInfo = {
 	tokenName: string; // "Vite Token",
 	tokenSymbol: string; // "VITE",
 	totalSupply: string; // "999999996999999999999999751",

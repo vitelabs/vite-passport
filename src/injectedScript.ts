@@ -1,3 +1,5 @@
+import { joinWords, prefixName } from './utils/strings';
+
 const injectedObject: {
 	getConnectedAccount?: () => Promise<null | string>;
 	connectWallet?: () => Promise<undefined>;
@@ -82,33 +84,22 @@ relayedMethods.forEach((method) => {
 	};
 });
 
-window.addEventListener('vitePassportAccountChange', (e) => {
-	console.log('e:', e);
-	//
-});
+const eventList = ['accountChange', 'networkChange'];
+const requireValidEvent = (eventName: string) => {
+	if (!eventList.includes(eventName)) {
+		throw new Error(`eventName must be ${joinWords(eventList)}`);
+	}
+};
 
-// const prefixName = (str: string) => 'vitePassport' + str[0].toUpperCase() + str.substring(1);
+injectedObject.addListener = (eventName: string, callback: (e: Event) => void) => {
+	requireValidEvent(eventName);
+	window.addEventListener(prefixName(eventName), callback);
+};
 
-// injectedObject.addListener = (eventName: string, callback: (e: Event) => void) => {
-// 	if (eventName !== 'accountChange' && eventName !== 'networkChange') {
-// 		throw new Error('eventName must be accountChange or networkChange');
-// 	}
-// 	window.addEventListener(prefixName(eventName), callback);
-// 	// window.addEventListener(prefixName(eventName), (e) => {
-// 	// 	console.log('e:', e);
-// 	// 	// callback(e.detail.result);
-// 	// });
-// };
-
-// injectedObject.removeListener = (eventName: string, callback: (e: Event) => void) => {
-// 	if (eventName !== 'accountChange' && eventName !== 'networkChange') {
-// 		throw new Error('eventName must be accountChange or networkChange');
-// 	}
-// 	window.removeEventListener(prefixName(eventName), callback);
-// 	// window.removeEventListener(prefixName(eventName), (e) => {
-// 	// 	// callback(e.detail.result);
-// 	// });
-// };
+injectedObject.removeListener = (eventName: string, callback: (e: Event) => void) => {
+	requireValidEvent(eventName);
+	window.removeEventListener(prefixName(eventName), callback);
+};
 
 // @ts-ignore
 window.vitePassport = injectedObject;

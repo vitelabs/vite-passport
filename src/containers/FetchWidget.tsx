@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, ReactNode } from 'react';
 import { connect } from '../utils/global-context';
-import { parseError } from '../utils/strings';
+import { makeReadable } from '../utils/strings';
 import { State } from '../utils/types';
 
 type Props = State & {
@@ -22,7 +22,7 @@ const FetchWidget = ({ i18n, children, shouldFetch, getPromise, onResolve, onCat
 			.then((result) => onResolve && onResolve(result))
 			.catch((err) => {
 				console.log('err:', typeof err, err.constructor, err);
-				const errorString = parseError(err);
+				const errorString = makeReadable(err);
 				if (onCatch) {
 					onCatch(errorString);
 				}

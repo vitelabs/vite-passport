@@ -45,11 +45,6 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 				// message.domain isn't used for anything rn, but it may come in handy later
 				runAndClearEventListener('vitePassportConnectDomain', { domain: message.domain });
 				break;
-			case 'networkChange':
-				console.log('networkChange');
-				// message.domain isn't used for anything rn, but it may come in handy later
-				runAndClearEventListener('vitePassportNetworkChange', { network: message.network });
-				break;
 			case 'writeAccountBlock':
 				// message.domain isn't used for anything rn, but it may come in handy later
 				runAndClearEventListener('vitePassportWriteAccountBlock', { block: message.block });
@@ -151,19 +146,6 @@ chrome.runtime.onMessage.addListener(
 						return { result: data.block };
 					});
 					break;
-				// case 'on':
-				// 	if (!domainConnected) return connectError();
-				// 	// message.args
-				// 	// console.log('message.args:', message.args);
-				// 	break;
-				// case 'onAccountChange':
-				// 	if (!domainConnected) return connectError();
-				// 	//
-				// 	break;
-				// case 'onNetworkChange':
-				// 	if (!domainConnected) return connectError();
-				// 	//
-				// 	break;
 				default:
 					break;
 			}
