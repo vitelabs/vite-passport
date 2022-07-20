@@ -30,7 +30,6 @@ const clearEventListeners = () => {
 chrome.runtime.onConnect.addListener((chromePort) => {
 	chromePort.postMessage({ secrets, type: 'opening' } as PortMessage);
 	chromePort.onMessage.addListener((message: PortMessage) => {
-		// console.log('message:', message);
 		switch (message.type) {
 			case 'reopen':
 				if (lockTimer) {
@@ -111,8 +110,10 @@ chrome.runtime.onMessage.addListener(
 			};
 
 			switch (message.method) {
-				case 'getConnectedAccount':
-					if (!domainConnected) return connectError();
+				case 'getConnectedAddress':
+					if (!domainConnected) {
+						return reply({ result: undefined });
+					}
 					const { accountList, activeAccountIndex } = await getValue([
 						'accountList',
 						'activeAccountIndex',

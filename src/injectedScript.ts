@@ -2,7 +2,7 @@ import { joinWords, prefixName } from './utils/strings';
 import { PortEvent } from './utils/types';
 
 const injectedObject: {
-	getConnectedAccount?: () => Promise<null | string>;
+	getConnectedAddress?: () => Promise<undefined | string>;
 	connectWallet?: () => Promise<undefined>;
 	getNetwork?: () => Promise<string>;
 	writeAccountBlock?: (type: string, params: object) => Promise<undefined>;
@@ -14,7 +14,7 @@ const injectedObject: {
 } = {};
 
 const relayedMethods = [
-	'getConnectedAccount',
+	'getConnectedAddress',
 	'connectWallet',
 	'getNetwork',
 	'writeAccountBlock',
@@ -28,7 +28,7 @@ export type VitePassportMethodCall =
 	  }
 	| {
 			readonly _messageId: number;
-			method: 'getConnectedAccount' | 'connectWallet' | 'getNetwork';
+			method: 'getConnectedAddress' | 'connectWallet' | 'getNetwork';
 			// args: any[];
 	  };
 

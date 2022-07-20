@@ -93,22 +93,22 @@ const Router = ({
 		});
 	}, []); // eslint-disable-line
 
+	// Check if tti is listed on ViteX
+	// viteApi.request('dex_getTokenInfo', 'tti_5649544520544f4b454e6e40').then(
+	// 	(
+	// 		data: null | {
+	// 			decimals: number; // 18;
+	// 			index: number; // 0;
+	// 			owner: string; // 'vite_4c2c19f563187163145ab8f53f5bd36864756996e47a767ebe';
+	// 			quoteTokenType: number; // 1;
+	// 			tokenId: string; // 'tti_5649544520544f4b454e6e40';
+	// 			tokenSymbol: string; // 'VITE';
+	// 		}
+	// 	) => {
+	// 		console.log('data:', data);
+	// 	}
+	// );
 	const updateViteBalanceInfo = useCallback(() => {
-		// Check if tti is listed on ViteX
-		// viteApi.request('dex_getTokenInfo', 'tti_5649544520544f4b454e6e40').then(
-		// 	(
-		// 		data: null | {
-		// 			decimals: number; // 18;
-		// 			index: number; // 0;
-		// 			owner: string; // 'vite_4c2c19f563187163145ab8f53f5bd36864756996e47a767ebe';
-		// 			quoteTokenType: number; // 1;
-		// 			tokenId: string; // 'tti_5649544520544f4b454e6e40';
-		// 			tokenSymbol: string; // 'VITE';
-		// 		}
-		// 	) => {
-		// 		console.log('data:', data);
-		// 	}
-		// );
 		if (activeAccount) {
 			viteApi
 				.getBalanceInfo(activeAccount.address)
