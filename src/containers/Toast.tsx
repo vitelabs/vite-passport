@@ -4,7 +4,7 @@ import {
 	InformationCircleIcon,
 	XCircleIcon,
 } from '@heroicons/react/solid';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from '../utils/global-context';
 import { makeReadable } from '../utils/strings';

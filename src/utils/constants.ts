@@ -4,7 +4,7 @@ import { Storage, TokenApiInfo } from './types';
 
 export const i18nDict = { en };
 
-export const PROD = process.env.NODE_ENV === 'production';
+// export const PROD = process.env.NODE_ENV === 'production';
 
 export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> = {
 	language: 'en',

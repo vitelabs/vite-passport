@@ -1,3 +1,4 @@
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
 	CreditCardIcon,
 	DuplicateIcon,
@@ -7,7 +8,6 @@ import {
 	XIcon,
 } from '@heroicons/react/outline';
 import { wallet } from '@vite/vitejs';
-import { useCallback, useMemo, useRef, useState } from 'react';
 import Modal from '../components/Modal';
 import ModalListItem from '../components/ModalListItem';
 import TabContainer from '../components/TabContainer';

@@ -1,6 +1,6 @@
 import { wallet } from '@vite/vitejs';
 import { validateMnemonics } from '@vite/vitejs/distSrc/wallet/hdKey';
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
 import TextInput, { TextInputRefObject } from '../containers/TextInput';

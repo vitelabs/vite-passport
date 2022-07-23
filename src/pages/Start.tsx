@@ -1,5 +1,6 @@
+import React from 'react';
 // import ViteLogo from '../assets/ViteLogo';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import A from '../components/A';
 import { connect } from '../utils/global-context';

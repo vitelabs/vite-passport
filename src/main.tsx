@@ -1,4 +1,4 @@
-// import React from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './components/App';
 import './styles/reset.css';
@@ -12,6 +12,7 @@ import { wallet } from '@vite/vitejs';
 import { defaultStorage, i18nDict } from './utils/constants';
 
 const root = createRoot(document.getElementById('root')!);
+console.log('2342423423424');
 
 const chromePort = chrome.runtime.connect();
 const listen = async (message: PortMessage) => {
@@ -49,10 +50,12 @@ const listen = async (message: PortMessage) => {
 			state.secrets = message.secrets;
 			state.postPortMessage!({ type: 'reopen' });
 		}
+		console.log('test');
 		root.render(
 			// https://stackoverflow.com/a/65167384/13442719
 			// <React.StrictMode>
-			<App initialState={state} />
+			// <App initialState={state} />
+			<p className="b">test</p>
 			// </React.StrictMode>
 		);
 	}

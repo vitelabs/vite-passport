@@ -1,7 +1,8 @@
+import React from 'react';
 import { XIcon } from '@heroicons/react/outline';
-import { useRef, ReactNode, useEffect, useState, useCallback } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { useKeyPress } from '../utils/hooks';
+import React, { useKeyPress } from '../utils/hooks';
 
 type Props = {
 	// TODO: editing - for removing items from lists
@@ -59,10 +60,7 @@ const Modal = ({
 
 	useKeyPress('Escape', () => {
 		if (mounted) {
-			const index = Array.prototype.indexOf.call(
-				modalParent!.children,
-				modalRef.current
-			);
+			const index = Array.prototype.indexOf.call(modalParent!.children, modalRef.current);
 			if (modalParent!.children.length - 1 === index) {
 				close();
 			}
@@ -104,11 +102,7 @@ const Modal = ({
 								<button className="brightness-button" onClick={close}>
 									<XIcon className="w-8 text-skin-secondary" />
 								</button>
-								{heading && (
-									<p className="text-xl flex-1 text-center p-2 mr-8">
-										{heading}
-									</p>
-								)}
+								{heading && <p className="text-xl flex-1 text-center p-2 mr-8">{heading}</p>}
 								{headerComponent}
 							</div>
 							{typeof children === 'function' ? children(close) : children}

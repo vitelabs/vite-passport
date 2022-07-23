@@ -1,3 +1,4 @@
+import React from 'react';
 import { CheckIcon } from '@heroicons/react/solid';
 
 type Props = {
@@ -13,9 +14,7 @@ const Checkbox = ({ checked, onUserInput }: Props) => {
 		>
 			<div
 				className={`h-5 w-5 xy border-2 rounded shadow ${
-					checked
-						? 'bg-skin-highlight border-skin-lowlight'
-						: 'bg-skin-foreground border-skin-alt'
+					checked ? 'bg-skin-highlight border-skin-lowlight' : 'bg-skin-foreground border-skin-alt'
 				}`}
 			>
 				{checked && <CheckIcon className="h-4 w-4 text-white" />}

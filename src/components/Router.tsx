@@ -1,7 +1,7 @@
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
-import { useCallback, useEffect, useMemo } from 'react';
 import { NewAccountBlock, State, ViteBalanceInfo } from '../utils/types';
 import WS_RPC from '@vite/vitejs-ws';
 import HTTP_RPC from '@vite/vitejs-http';
@@ -190,16 +190,16 @@ const Router = ({
 		// https://v5.reactrouter.com/web/api/MemoryRouter
 		<MemoryRouter initialEntries={initialEntries} initialIndex={0}>
 			<Routes>
-				<Route path="/" element={<Start />} />
+				{/* <Route path="/" element={<Start />} />
 				<Route path="/create" element={<Create />} />
 				<Route path="/create2" element={<Create2 />} />
-				<Route path="/import" element={<Import />} />
-				<Route path="/home" element={<Home />} />
-				<Route path="/my-transactions" element={<MyTransactions />} />
+				<Route path="/import" element={<Import />} /> */}
+				{/* <Route path="/home" element={<Home />} /> */}
+				{/* <Route path="/my-transactions" element={<MyTransactions />} />
 				<Route path="/settings" element={<Settings />} />
 				<Route path="/lock" element={<Lock />} />
 				<Route path="/connect" element={<Connect />} />
-				<Route path="/sign-tx" element={<SignTx />} />
+				<Route path="/sign-tx" element={<SignTx />} /> */}
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
 			<Toast />

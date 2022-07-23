@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { connect } from '../utils/global-context';
 import { getValue, setValue } from '../utils/storage';

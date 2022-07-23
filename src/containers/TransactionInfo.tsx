@@ -1,6 +1,6 @@
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import A from '../components/A';
 import DeterministicIcon from '../components/DeterministicIcon';
 import { connect } from '../utils/global-context';

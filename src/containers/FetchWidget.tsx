@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, ReactNode } from 'react';
+import React, { useEffect, useState, useCallback, ReactNode } from 'react';
 import { connect } from '../utils/global-context';
 import { makeReadable } from '../utils/strings';
 import { State } from '../utils/types';

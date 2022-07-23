@@ -1,6 +1,7 @@
+import React from 'react';
 /* eslint-disable */
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 type Props = {
 	tti: string;

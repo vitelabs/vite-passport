@@ -11,12 +11,12 @@
 	},
 	"permissions": ["storage"],
 	"background": {
-		"service_worker": "src/background.ts",
+		"service_worker": "src/background.js",
 		"type": "module"
 	},
 	"content_scripts": [
 		{
-			"js": ["src/contentScript.ts"],
+			"js": ["src/contentScript.js"],
 			"matches": ["<all_urls>"],
 			"run_at": "document_start",
 			"all_frames": true
@@ -24,7 +24,7 @@
 	],
 	"web_accessible_resources": [
 		{
-			"resources": ["src/confirmation.html", "src/injectedScript.ts"],
+			"resources": ["src/confirmation.html", "src/injectedScript.js"],
 			"matches": ["<all_urls>"]
 		}
 	]

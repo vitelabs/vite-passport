@@ -1,3 +1,4 @@
+import React from 'react';
 import Router from './Router';
 import { Provider } from '../utils/global-context';
 import { State } from '../utils/types';

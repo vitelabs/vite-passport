@@ -1,7 +1,7 @@
 import { accountBlock } from '@vite/vitejs';
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/accountBlock/type';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import TransactionModal from '../components/TransactionModal';
 import TransactionInfo from '../containers/TransactionInfo';

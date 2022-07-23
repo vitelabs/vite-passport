@@ -9,19 +9,11 @@ type Props = React.HTMLProps<HTMLAnchorElement> & {
 const A = ({ to, href, children, state, className }: Props) => {
 	const navigate = useNavigate();
 	return to ? (
-		<button
-			onClick={() => navigate(to, state ? { state } : undefined)}
-			className={className}
-		>
+		<button onClick={() => navigate(to, state ? { state } : undefined)} className={className}>
 			{children}
 		</button>
 	) : (
-		<a
-			href={href}
-			target="_blank"
-			rel="noopener noreferrer"
-			className={className}
-		>
+		<a href={href} target="_blank" rel="noopener noreferrer" className={className}>
 			{children}
 		</a>
 	);
