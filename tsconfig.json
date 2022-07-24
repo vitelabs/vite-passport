@@ -14,7 +14,11 @@
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"noEmit": true,
-		"jsx": "react-jsx"
+		"jsx": "react-jsx",
+		"noImplicitAny": false
 	},
-	"include": ["src"]
+	"linterOptions": {
+		"exclude": ["node_modules"]
+	},
+	"include": ["src", "typings.d.ts"]
 }

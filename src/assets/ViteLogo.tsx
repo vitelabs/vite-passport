@@ -1,5 +1,3 @@
-import React from 'react';
-
 const ViteLogo = ({ size = 24, ...rest }) => {
 	return (
 		<svg viewBox="0 0 108 60" width={size} height={size} {...rest}>

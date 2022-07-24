@@ -1,8 +1,7 @@
-import React from 'react';
 import { XIcon } from '@heroicons/react/outline';
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import React, { useKeyPress } from '../utils/hooks';
+import { useKeyPress } from '../utils/hooks';
 
 type Props = {
 	// TODO: editing - for removing items from lists

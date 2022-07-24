@@ -1,9 +1,8 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './components/App';
-import './styles/reset.css';
-import './styles/colors.css';
-import './styles/classes.css';
+// import './styles/reset.css';
+// import './styles/colors.css';
+// import './styles/classes.css';
 import './styles/theme.ts';
 
 import { PortEvent, PortMessage, State } from './utils/types';
@@ -55,7 +54,8 @@ const listen = async (message: PortMessage) => {
 			// https://stackoverflow.com/a/65167384/13442719
 			// <React.StrictMode>
 			// <App initialState={state} />
-			<p className="b">test</p>
+			// <p className="b">test</p>
+			null
 			// </React.StrictMode>
 		);
 	}

@@ -1,4 +1,3 @@
-import React from 'react';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
 

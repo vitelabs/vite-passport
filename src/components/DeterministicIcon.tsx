@@ -1,4 +1,3 @@
-import React from 'react';
 /* eslint-disable */
 
 import React, { useMemo } from 'react';

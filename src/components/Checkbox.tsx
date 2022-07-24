@@ -1,4 +1,3 @@
-import React from 'react';
 import { CheckIcon } from '@heroicons/react/solid';
 
 type Props = {
