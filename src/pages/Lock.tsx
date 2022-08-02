@@ -1,5 +1,5 @@
 import { wallet } from '@vite/vitejs';
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import TextInput, { TextInputRefObject } from '../containers/TextInput';
 import ResetWalletModal from '../containers/ResetWalletModal';

@@ -34,6 +34,7 @@
 	--text-primary-color: #eeeeee;
 	--text-secondary-color: #a6a9b6;
 	--text-muted-color: #818388;
-	--bg-line-divider-color: #0e1118;
+	/* --bg-line-divider-color: #0e1118; */
+	--bg-line-divider-color: #1f2228;
 }
 /* } */

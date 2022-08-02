@@ -75,10 +75,15 @@ export type PortMessage =
 			block: object;
 	  };
 
-export type PortEvent = {
-	type: 'accountChange' | 'networkChange';
-	payload: { activeAddress: string } | { activeNetwork: string };
-};
+export type PortEvent =
+	| {
+			type: 'accountChange';
+			payload: { activeAddress: undefined | string };
+	  }
+	| {
+			type: 'networkChange';
+			payload: { activeNetwork: string };
+	  };
 
 export type ViteBalanceInfo = {
 	balance: {
@@ -124,6 +129,12 @@ export type NewAccountBlock = {
 	height: string; // "20",
 	// heightStr: string;
 	removed: boolean; // false
+};
+
+export type UnreceivedBlockMessage = {
+	hash: string; // 'c425b542d56f37d3255ded1ac80110c00fc15cd75f9f9008bc5ddf3ab0abe94b';
+	received: boolean; // false => true;
+	removed: boolean; // false;
 };
 
 export type TokenApiInfo = {

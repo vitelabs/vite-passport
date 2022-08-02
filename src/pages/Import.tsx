@@ -1,6 +1,5 @@
 import { wallet } from '@vite/vitejs';
-import { validateMnemonics } from '@vite/vitejs/distSrc/wallet/hdKey';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageContainer from '../components/PageContainer';
 import TextInput, { TextInputRefObject } from '../containers/TextInput';
@@ -35,7 +34,7 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 				label={i18n.mnemonicPhrase}
 				inputClassName="h-44"
 				getIssue={(v) => {
-					if (!validateMnemonics(v)) {
+					if (!wallet.validateMnemonics(v)) {
 						return i18n.invalidMnemonicPhrase;
 					}
 				}}

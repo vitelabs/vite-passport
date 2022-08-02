@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { ChevronLeftIcon } from '@heroicons/react/outline';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,6 +1,6 @@
 // type Props = {};
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 type Props = {
 	bigWhite?: boolean;

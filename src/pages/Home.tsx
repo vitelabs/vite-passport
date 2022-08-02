@@ -1,11 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
 	CreditCardIcon,
 	DuplicateIcon,
 	PencilIcon,
 	// LockClosedIcon,
 	// SortAscendingIcon,
-	XIcon,
 } from '@heroicons/react/outline';
 import { wallet } from '@vite/vitejs';
 import Modal from '../components/Modal';

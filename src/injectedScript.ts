@@ -1,17 +1,17 @@
 import { joinWords, prefixName } from './utils/strings';
-import { PortEvent } from './utils/types';
 
-const injectedObject: {
-	getConnectedAddress?: () => Promise<undefined | string>;
-	connectWallet?: () => Promise<undefined>;
-	getNetwork?: () => Promise<string>;
-	writeAccountBlock?: (type: string, params: object) => Promise<undefined>;
-	on?: (
+type VitePassport = {
+	getConnectedAddress: () => Promise<undefined | string>;
+	connectWallet: () => Promise<undefined>;
+	getNetwork: () => Promise<string>;
+	writeAccountBlock: (type: string, params: object) => Promise<undefined>;
+	on: (
 		event: 'accountChange' | 'networkChange',
-		callback: (payload: object) => void
-		// callback: (data: string) => void
+		callback: (payload: { activeAddress?: string; activeNetwork: string }) => void
 	) => () => void;
-} = {};
+};
+
+const injectedObject: Partial<VitePassport> = {};
 
 const relayedMethods = [
 	'getConnectedAddress',
@@ -48,6 +48,9 @@ relayedMethods.forEach((method) => {
 		// _messageId is used to differentiate different function calls
 		const _messageId = Math.random();
 
+		// OPTIMIZE: update icon chrome.action
+		// https://developer.chrome.com/docs/extensions/reference/action/
+
 		window.dispatchEvent(
 			new CustomEvent('vitePassportMethodCalled', {
 				detail: {
@@ -80,7 +83,10 @@ relayedMethods.forEach((method) => {
 });
 
 const eventList = ['accountChange', 'networkChange'];
-injectedObject.on = (eventName: string, callback: (payload: object) => void) => {
+injectedObject.on = (
+	eventName: 'accountChange' | 'networkChange',
+	callback: (payload: { activeAddress?: string; activeNetwork: string }) => void
+) => {
 	if (!eventList.includes(eventName)) {
 		throw new Error(`eventName must be ${joinWords(eventList)}`);
 	}

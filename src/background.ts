@@ -2,12 +2,17 @@ import { VitePassportMethodCall, BackgroundResponse } from './injectedScript';
 import { getValue } from './utils/storage';
 import { getHostname, toQueryString } from './utils/strings';
 import { MINUTE } from './utils/time';
-import { PortMessage, Secrets } from './utils/types';
+import { PortMessage } from './utils/types';
 
-// console.log('background');
+// console.log('bg', Date.now());
 
-let secrets: Secrets | undefined;
-let lockTimer: NodeJS.Timeout | undefined;
+const lockingAlarmName = 'clearSecrets';
+const secretsKey = 'secrets';
+chrome.alarms.onAlarm.addListener((alarm) => {
+	if (alarm.name === lockingAlarmName) {
+		chrome.storage.local.remove(secretsKey);
+	}
+});
 
 // Have to make a replacement for `dispatch(Custom Event(...))` and `addEventListener` cuz
 // https://stackoverflow.com/questions/41266567/service-worker-warning-in-google-chrome
@@ -27,18 +32,16 @@ const clearEventListeners = () => {
 };
 
 // Below are messages from within the extension
-chrome.runtime.onConnect.addListener((chromePort) => {
+chrome.runtime.onConnect.addListener(async (chromePort) => {
+	const { secrets } = await chrome.storage.local.get(secretsKey);
 	chromePort.postMessage({ secrets, type: 'opening' } as PortMessage);
 	chromePort.onMessage.addListener((message: PortMessage) => {
 		switch (message.type) {
 			case 'reopen':
-				if (lockTimer) {
-					clearTimeout(lockTimer);
-					lockTimer = undefined;
-				}
+				chrome.alarms.clear(lockingAlarmName);
 				break;
 			case 'updateSecrets':
-				secrets = message.secrets;
+				chrome.storage.local.set({ secrets: message.secrets });
 				break;
 			case 'connectDomain':
 				// message.domain isn't used for anything rn, but it may come in handy later
@@ -49,7 +52,7 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 				runAndClearEventListener('vitePassportWriteAccountBlock', { block: message.block });
 				break;
 			case 'lock':
-				secrets = undefined;
+				chrome.storage.local.remove(secretsKey);
 				break;
 			default:
 				break;
@@ -58,14 +61,11 @@ chrome.runtime.onConnect.addListener((chromePort) => {
 
 	// https://stackoverflow.com/a/39732154/13442719
 	chromePort.onDisconnect.addListener(async () => {
-		if (secrets) {
-			if (lockTimer) {
-				clearTimeout(lockTimer);
-			}
-			lockTimer = setTimeout(() => {
-				secrets = undefined;
-			}, 30 * MINUTE); // TODO: make this time adjustable
-		}
+		// "service workers are terminated when not in use"
+		// https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#alarms
+		// https://discourse.mozilla.org/t/alarms-and-settimeout-setinterval-in-background-scripts/36662
+		// chrome.alarms.create(lockingAlarmName, { when: Date.now() + 30 * MINUTE });
+		chrome.alarms.create(lockingAlarmName, { delayInMinutes: 1 });
 		runAndClearEventListener('vitePassportChromePortDisconnect');
 	});
 });

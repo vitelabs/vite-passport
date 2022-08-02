@@ -1,6 +1,6 @@
 import { BackgroundResponse, VitePassportMethodCall } from './injectedScript';
 import { prefixName } from './utils/strings';
-import { PortEvent, PortMessage } from './utils/types';
+import { PortEvent } from './utils/types';
 
 // console.log('content');
 

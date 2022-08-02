@@ -16,6 +16,7 @@ module.exports = {
 					alt: 'var(--alt-color)',
 					'bg-base': 'var(--bg-base-color)',
 					'text-muted': 'var(--text-muted-color)',
+					'line-divider': 'var(--bg-line-divider-color)',
 				},
 			},
 			textColor: {
@@ -32,7 +33,6 @@ module.exports = {
 					middleground: 'var(--bg-middleground-color)',
 					foreground: 'var(--bg-foreground-color)',
 					// // highlight: 'var(--highlight-color)',
-					'line-divider': 'var(--bg-line-divider-color)',
 				},
 			},
 			borderColor: {

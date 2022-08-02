@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { DuplicateIcon } from '@heroicons/react/outline';
 import { connect } from '../utils/global-context';
 import { isDarkMode } from '../utils/misc';
@@ -10,7 +10,7 @@ type Props = State & {
 	className?: string;
 };
 
-const Secrets = ({ i18n, mnemonics, copyWithToast, passphrase, className }: Props) => {
+const Secrets = ({ i18n, mnemonics, copyWithToast, className }: Props) => {
 	const [visible, visibleSet] = useState(false);
 	return (
 		<div

@@ -1,7 +1,15 @@
 const stylePlugin = require('esbuild-style-plugin');
+const { register } = require('esbuild-register/dist/node');
 
 const args = process.argv.slice(2);
 const PROD = args.includes('--prod');
+
+// const { unregister } = register({
+// https://github.com/egoist/esbuild-register
+// register({
+// 	// currently doesn't work
+// 	// ...options
+// });
 
 require('esbuild')
 	.build({
@@ -10,6 +18,7 @@ require('esbuild')
 			'src/main.tsx',
 			'src/background.ts',
 			'src/contentScript.ts',
+			'src/injectedScript.ts',
 			'src/confirmation.html',
 			'popup.html',
 			'manifest.json',
@@ -21,8 +30,7 @@ require('esbuild')
 		watch: !PROD,
 		minify: PROD,
 		treeShaking: PROD,
-
-		format: 'cjs',
+		format: 'esm',
 		// globalName: '_contentScriptReturn',
 		// footer: { js: '_contentScriptReturn.default' }, // this allows the default export to be returned to global scope
 		banner: {
@@ -30,11 +38,14 @@ require('esbuild')
 			// js: `var regeneratorRuntime;`,
 			// js: `delete window.eval;`,
 		},
+		external: ['~@vite/vitejs-utils'],
 		loader: {
 			'.html': 'copy',
 			'.json': 'copy',
 			'.png': 'copy',
 		},
+		// logLevel: 'debug',
+		// logLevel: 'silent',
 		plugins: [
 			stylePlugin({
 				postcss: {

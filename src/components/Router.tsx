@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
-import { NewAccountBlock, State, ViteBalanceInfo } from '../utils/types';
+import { UnreceivedBlockMessage, State, ViteBalanceInfo } from '../utils/types';
 import WS_RPC from '@vite/vitejs-ws';
 import HTTP_RPC from '@vite/vitejs-http';
 import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
@@ -17,6 +17,7 @@ import Lock from '../pages/Lock';
 import Connect from '../pages/Connect';
 import SignTx from '../pages/SignTx';
 import { ViteAPI, accountBlock } from '@vite/vitejs';
+import { Transaction } from '@vite/vitejs/distSrc/utils/type';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
@@ -42,6 +43,7 @@ const Router = ({
 	encryptedSecrets,
 	secrets,
 	activeNetwork,
+	transactionHistory,
 	toastInfo,
 }: Props) => {
 	const initialEntries = useMemo(() => {
@@ -122,7 +124,7 @@ const Router = ({
 							privateKey: activeAccount.privateKey,
 							provider: viteApi,
 						});
-						receiveTask.start();
+						// receiveTask.start();
 					}
 				})
 				.catch((err) => {
@@ -137,7 +139,7 @@ const Router = ({
 	useEffect(updateViteBalanceInfo, [activeAccount, networkRpcUrl]); // eslint-disable-line
 
 	useEffect(() => {
-		if (activeAccount) {
+		if (activeAccount && toastInfo) {
 			// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
 			// viteApi
 			// 	.subscribe('newAccountBlockByAddress', activeAccount.address)
@@ -151,13 +153,24 @@ const Router = ({
 			// 		console.log(err);
 			// 		setState({ toast: [JSON.stringify(err), 'error'] });
 			// 	});
-
+			console.log('tsfsdf');
 			viteApi
 				.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
-				.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
-					event.on((e) => {
-						console.log('e:', e);
+				.then((event: { on: (callback: (result: UnreceivedBlockMessage[]) => void) => void }) => {
+					event.on((res) => {
+						console.log('transactionHistory?.unreceived:', transactionHistory?.unreceived, res);
 						toastInfo(i18n.newUnreceivedAccountBlock);
+						if (transactionHistory?.unreceived) {
+							res.forEach(async (block) => {
+								const tx: Transaction = await viteApi.request('ledger_getAccountBlockByHash');
+								const key = block.received ? 'received' : 'unreceived';
+								// console.log('transactionHistory[key]:', key, transactionHistory[key]);
+								setState(
+									{ transactionHistory: { [key]: [...transactionHistory[key]!, tx] } },
+									{ deepMerge: true }
+								);
+							});
+						}
 						// TODO: throttle updateViteBalanceInfo()
 						updateViteBalanceInfo();
 					});
@@ -168,7 +181,15 @@ const Router = ({
 				});
 		}
 		return () => viteApi.unsubscribeAll();
-	}, [activeAccount, toastInfo, viteApi, updateViteBalanceInfo]); // eslint-disable-line
+	}, [
+		activeAccount,
+		toastInfo,
+		viteApi,
+		updateViteBalanceInfo,
+		i18n.newUnreceivedAccountBlock,
+		setState,
+		transactionHistory,
+	]);
 
 	useEffect(() => {
 		setState({
@@ -188,18 +209,18 @@ const Router = ({
 
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter
-		<MemoryRouter initialEntries={initialEntries} initialIndex={0}>
+		<MemoryRouter initialEntries={initialEntries}>
 			<Routes>
-				{/* <Route path="/" element={<Start />} />
+				<Route path="/" element={<Start />} />
 				<Route path="/create" element={<Create />} />
 				<Route path="/create2" element={<Create2 />} />
-				<Route path="/import" element={<Import />} /> */}
-				{/* <Route path="/home" element={<Home />} /> */}
-				{/* <Route path="/my-transactions" element={<MyTransactions />} />
+				<Route path="/import" element={<Import />} />
+				<Route path="/home" element={<Home />} />
+				<Route path="/my-transactions" element={<MyTransactions />} />
 				<Route path="/settings" element={<Settings />} />
 				<Route path="/lock" element={<Lock />} />
 				<Route path="/connect" element={<Connect />} />
-				<Route path="/sign-tx" element={<SignTx />} /> */}
+				<Route path="/sign-tx" element={<SignTx />} />
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
 			<Toast />

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, HTMLProps } from 'react';
+import { useRef, useEffect, useState, HTMLProps } from 'react';
 import QRCode from 'qrcode';
 
 const QR = ({

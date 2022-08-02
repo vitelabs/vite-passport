@@ -26,6 +26,7 @@ import { setValue } from '../utils/storage';
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import DeterministicIcon from '../components/DeterministicIcon';
 import TransactionInfo from './TransactionInfo';
+import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 
 const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
 	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
@@ -49,6 +50,7 @@ const WalletContents = ({
 	activeAccount,
 	contacts,
 	setState,
+	transactionHistory,
 }: Props) => {
 	const toAddressRef = useRef<TextInputRefObject>();
 	const amountRef = useRef<TextInputRefObject>();
@@ -534,6 +536,16 @@ const WalletContents = ({
 								unsentBlock.sign(activeAccount.privateKey);
 								const res: AccountBlockBlock = await unsentBlock.autoSendByPoW();
 								sentTxSet(res);
+								if (transactionHistory?.received) {
+									setState(
+										{
+											transactionHistory: {
+												received: [...transactionHistory.received, res as Transaction],
+											},
+										},
+										{ deepMerge: true }
+									);
+								}
 							} catch (e) {
 								console.log('error:', e);
 								toastError(JSON.stringify(e));

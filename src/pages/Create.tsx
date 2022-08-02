@@ -1,5 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
-import A from '../components/A';
+import { useCallback, useRef, useState } from 'react';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
 import PageContainer from '../components/PageContainer';

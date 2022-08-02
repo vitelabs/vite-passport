@@ -23,12 +23,13 @@ const TabContainer = ({ heading, children }: Props) => {
 	return (
 		<div className="h-full flex flex-col">
 			{heading && (
-				<div className="w-full top-10 shadow bg-skin-middleground">
+				<div className="w-full top-10 border-b-2 border-skin-line-divider bg-skin-middleground">
 					<p className="text-xl flex-1 text-center p-2">{heading}</p>
 				</div>
 			)}
 			<div className="top-0 flex-1 overflow-scroll">{children}</div>
-			<div className="h-10 bg-skin-middleground flex">
+			{/* <div className="top-0 flex-1 overflow-scroll bg-white">{null}</div> */}
+			<div className="h-10 top-2 border-t-2 border-skin-line-divider bg-skin-base flex">
 				{[
 					['/home', OutlineCreditCardIcon, SolidCreditCardIcon],
 					['/my-transactions', OutlineBookOpenIcon, SolidBookOpenIcon],

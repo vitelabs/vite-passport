@@ -1,5 +1,5 @@
 // import ViteLogo from '../assets/ViteLogo';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import A from '../components/A';
 import { connect } from '../utils/global-context';

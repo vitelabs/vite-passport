@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, ReactNode } from 'react';
+import { useEffect, useState, useCallback, ReactNode } from 'react';
 import { connect } from '../utils/global-context';
 import { makeReadable } from '../utils/strings';
 import { State } from '../utils/types';
@@ -37,7 +37,11 @@ const FetchWidget = ({ i18n, children, shouldFetch, getPromise, onResolve, onCat
 		}
 	}, [shouldFetch, fetchData]);
 
-	return error ? (
+	return fetching ? (
+		<div className="xy min-h-8">
+			<p className="text-skin-secondary text-center">{i18n.loading}...</p>
+		</div>
+	) : error ? (
 		<div className="xy flex-col min-h-8">
 			<p className="text-skin-secondary text-center">{i18n.error}</p>
 			<p className="text-skin-secondary text-center text-sm mt-0.5">"{error}"</p>
@@ -45,13 +49,9 @@ const FetchWidget = ({ i18n, children, shouldFetch, getPromise, onResolve, onCat
 				{i18n.retry}
 			</button>
 		</div>
-	) : children && !shouldFetch && !fetching ? (
+	) : (
 		<>{children}</>
-	) : fetching ? (
-		<div className="xy min-h-8">
-			<p className="text-skin-secondary text-center">{i18n.loading}...</p>
-		</div>
-	) : null;
+	);
 };
 
 export default connect(FetchWidget);
