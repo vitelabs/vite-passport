@@ -1,22 +1,49 @@
 import { CheckIcon } from '@heroicons/react/solid';
+import { useRef, useState } from 'react';
 
 type Props = {
-	checked: boolean;
-	onUserInput: (checked: boolean) => void;
+	_ref: CheckboxRefObject;
+	onUserInput?: (checked: boolean) => void;
+	initialValue?: string;
+	className?: string;
 };
 
-const Checkbox = ({ checked, onUserInput }: Props) => {
+export type CheckboxRefObject = {
+	tag: HTMLElement | null;
+	value: boolean;
+};
+
+export const useCheckboxRef = () => {
+	return useRef<CheckboxRefObject>({
+		tag: null,
+		value: false,
+	}).current;
+};
+
+const Checkbox = ({ onUserInput, initialValue, _ref, className }: Props) => {
+	const [internalValue, internalValueSet] = useState(initialValue || false);
+
 	return (
 		<button
-			className="brightness-button h-8 w-8 p-1.5 -m-1.5"
-			onClick={() => onUserInput(!checked)}
+			className={`brightness-button h-8 w-8 p-1.5 -m-1.5 -mr-2 ${className}`}
+			onClick={() => {
+				onUserInput && onUserInput(!internalValue);
+				internalValueSet(!internalValue);
+			}}
+			ref={(tag) => {
+				_ref.tag = tag;
+				Object.defineProperty(_ref, 'value', {
+					get: () => internalValue,
+					set: (v) => internalValueSet(v),
+				});
+			}}
 		>
 			<div
-				className={`h-5 w-5 xy border-2 rounded shadow ${
-					checked ? 'bg-skin-highlight border-skin-lowlight' : 'bg-skin-foreground border-skin-alt'
+				className={`h-3 w-3 xy border rounded-sm shadow ${
+					internalValue ? 'border-skin-lowlight' : 'border-skin-unchecked-checkbox'
 				}`}
 			>
-				{checked && <CheckIcon className="h-4 w-4 text-white" />}
+				{internalValue && <CheckIcon className="h-3 w-3 text-skin-lowlight" />}
 			</div>
 		</button>
 	);

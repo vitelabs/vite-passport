@@ -16,7 +16,7 @@ const ResetWalletModal = ({ visible, onClose, i18n }: Props) => {
 			<div className="p-2 space-y-2">
 				<p className="">{i18n.youAreAboutToErase}</p>
 				<button
-					className="round-solid-button"
+					className="h-10 w-full bg-skin-highlight xy rounded-sm"
 					onClick={async () => {
 						const storage = await getValue(null);
 						removeKeys(Object.keys(storage) as StorageFields[]);

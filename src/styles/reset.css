@@ -17,13 +17,15 @@ body,
 	scrollbar-width: none;
 }
 
-p,
-label,
-body input,
-body textarea,
-body button {
-	/* ^ body needed to increase specificity. Idk what styles would override just the button selector. */
-	@apply text-skin-primary font-semibold;
+body {
+	p,
+	a,
+	label,
+	input,
+	textarea,
+	button {
+		@apply text-skin-primary font-semibold;
+	}
 }
 
 button,

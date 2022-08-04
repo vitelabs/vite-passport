@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 type Props = React.HTMLProps<HTMLAnchorElement> & {
 	to?: string;
@@ -7,11 +7,10 @@ type Props = React.HTMLProps<HTMLAnchorElement> & {
 };
 
 const A = ({ to, href, children, state, className }: Props) => {
-	const navigate = useNavigate();
 	return to ? (
-		<button onClick={() => navigate(to, state ? { state } : undefined)} className={className}>
+		<Link to={to} state={state} className={className}>
 			{children}
-		</button>
+		</Link>
 	) : (
 		<a href={href} target="_blank" rel="noopener noreferrer" className={className}>
 			{children}

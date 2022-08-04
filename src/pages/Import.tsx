@@ -1,8 +1,10 @@
 import { wallet } from '@vite/vitejs';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import A from '../components/A';
+import Checkbox, { useCheckboxRef } from '../components/Checkbox';
 import PageContainer from '../components/PageContainer';
-import TextInput, { TextInputRefObject } from '../containers/TextInput';
+import TextInput, { useTextInputRef } from '../containers/TextInput';
 import { defaultStorage } from '../utils/constants';
 import { encrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
@@ -13,21 +15,21 @@ import { State } from '../utils/types';
 const Import = ({ i18n, postPortMessage, setState }: State) => {
 	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState('');
-	// const [passphrase, passphraseSet] = useState('');
-	const [password, passwordSet] = useState('');
-	const mnemonicRef = useRef<TextInputRefObject>();
-	// const passphraseRef = useRef<TextInputRefObject>();
-	const passwordRef = useRef<TextInputRefObject>();
+	const mnemonicRef = useTextInputRef();
 	const {
 		state: { routeAfterUnlock },
 	} = useLocation() as {
 		state: { routeAfterUnlock?: string };
 	};
+	const passwordRef = useTextInputRef();
+	const confirmPasswordRef = useTextInputRef();
+	const agreeToTermsRef = useCheckboxRef();
 
 	return (
-		<PageContainer heading={i18n.importWallet} className="gap-3">
+		<PageContainer heading={i18n.importWallet} className="gap-4">
 			<TextInput
 				textarea
+				autoFocus
 				_ref={mnemonicRef}
 				value={mnemonics}
 				onUserInput={(v) => mnemonicsSet(v)}
@@ -39,33 +41,31 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 					}
 				}}
 			/>
-			{/* <TextInput
-				optional
-				_ref={passphraseRef}
-				value={passphrase}
-				onUserInput={(v) => passphraseSet(v)}
-				label={i18n.bip39Passphrase}
-			/> */}
-			<TextInput
-				password
-				_ref={passwordRef}
-				value={password}
-				onUserInput={(v) => passwordSet(v)}
-				label="Password"
-			/>
+			<TextInput password _ref={passwordRef} label={i18n.password} />
+			<TextInput password _ref={confirmPasswordRef} label={i18n.confirmPassword} />
+			{/* <p className="mt-1 text-skin-tertiary text-sm">{i18n.mustContainAtLeast8Characters}</p> */}
+			<div className="fx">
+				<Checkbox _ref={agreeToTermsRef} />
+				<p className="text-skin-tertiary text-xs">
+					{i18n.iHaveReadAndAgreeToThe}{' '}
+					<A href="TODO" className="text-skin-lowlight">
+						{i18n.termsOfUse}
+					</A>
+				</p>
+			</div>
 			<div className="flex-1"></div>
 			<button
-				className="mt-4 round-solid-button"
+				className="h-10 w-full bg-skin-highlight xy rounded-sm"
 				onClick={async () => {
-					// const valid = validateInputs([mnemonicRef, passphraseRef, passwordRef]);
-					const valid = validateInputs([mnemonicRef, passwordRef]);
+					let valid = validateInputs([passwordRef, confirmPasswordRef]);
+					if (passwordRef.value !== confirmPasswordRef.value) {
+						confirmPasswordRef.error = i18n.passwordsDoNotMatch;
+						valid = false;
+					}
 					if (valid) {
-						const secrets = {
-							// passphrase,
-							mnemonics: mnemonics.trim(),
-						};
+						const secrets = { mnemonics };
 						postPortMessage({ secrets, type: 'updateSecrets' });
-						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
+						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
 						const accountList = [
 							wallet.deriveAddress({
 								...secrets,
@@ -82,7 +82,7 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 							contacts,
 							activeAccount: accountList[0],
 						});
-						navigate(routeAfterUnlock || '/home', { replace: true });
+						navigate(routeAfterUnlock || '/home');
 					}
 				}}
 			>

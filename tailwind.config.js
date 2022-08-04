@@ -8,23 +8,22 @@ module.exports = {
 			},
 			colors: {
 				skin: {
-					// 'pending-green': 'var(--pending-green-color)',
-					// 'alert-red': 'var(--alert-red-color)',
 					highlight: 'var(--highlight-color)',
-					medlight: 'var(--medlight-color)',
 					lowlight: 'var(--lowlight-color)',
-					alt: 'var(--alt-color)',
-					'bg-base': 'var(--bg-base-color)',
-					'text-muted': 'var(--text-muted-color)',
-					'line-divider': 'var(--bg-line-divider-color)',
+					'back-arrow-icon': 'var(--back-arrow-icon-color)',
+					'eye-icon': 'var(--eye-icon-color)',
+					'connected-green': 'var(--connected-green-color)',
+					error: 'var(--error-color)',
+					divider: 'var(--divider-color)',
+					'unchecked-checkbox': 'var(--unchecked-checkbox-color)',
 				},
 			},
 			textColor: {
 				skin: {
-					primary: 'var(--text-primary-color)',
-					secondary: 'var(--text-secondary-color)',
-					muted: 'var(--text-muted-color)',
-					// highlight: 'var(--highlight-color)',
+					primary: 'var(--primary-text-color)',
+					secondary: 'var(--secondary-text-color)',
+					tertiary: 'var(--tertiary-text-color)',
+					'input-label': 'var(--text-input-label-color)',
 				},
 			},
 			backgroundColor: {
@@ -32,14 +31,6 @@ module.exports = {
 					base: 'var(--bg-base-color)',
 					middleground: 'var(--bg-middleground-color)',
 					foreground: 'var(--bg-foreground-color)',
-					// // highlight: 'var(--highlight-color)',
-				},
-			},
-			borderColor: {
-				skin: {
-					foreground: 'var(--bg-foreground-color)',
-					// // highlight: 'var(--highlight-color)',
-					lowlight: 'var(--lowlight-color)',
 				},
 			},
 		},

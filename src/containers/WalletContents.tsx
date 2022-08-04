@@ -15,7 +15,7 @@ import {
 	toQueryString,
 	toSmallestUnit,
 } from '../utils/strings';
-import TextInput, { TextInputRefObject } from './TextInput';
+import TextInput, { useTextInputRef } from './TextInput';
 import { accountBlock, wallet } from '@vite/vitejs';
 import Checkbox from '../components/Checkbox';
 import QR from '../components/QR';
@@ -52,9 +52,9 @@ const WalletContents = ({
 	setState,
 	transactionHistory,
 }: Props) => {
-	const toAddressRef = useRef<TextInputRefObject>();
-	const amountRef = useRef<TextInputRefObject>();
-	const commentRef = useRef<TextInputRefObject>();
+	const toAddressRef = useTextInputRef();
+	const amountRef = useTextInputRef();
+	const commentRef = useTextInputRef();
 	const [sendingTx, sendingTxSet] = useState(false);
 	const [tokenQuery, tokenQuerySet] = useState('');
 	const [checkedTokens, checkedTokensSet] = useState<{
@@ -301,11 +301,14 @@ const WalletContents = ({
 					)}
 				</div>
 				<div className="flex gap-2 p-2 shadow z-50">
-					<button className="p-0 round-outline-button" onClick={() => editingTokenListSet(false)}>
+					<button
+						className="p-0 h-10 w-full bg-white xy rounded-sm text-skin-lowlight"
+						onClick={() => editingTokenListSet(false)}
+					>
 						{i18n.cancel}
 					</button>
 					<button
-						className="p-0 round-solid-button"
+						className="p-0 h-10 w-full bg-skin-highlight xy rounded-sm"
 						onClick={() => {
 							const data = {
 								displayedTokenIds: Object.entries(checkedTokens)
@@ -363,10 +366,16 @@ const WalletContents = ({
 					{selectedToken && <TransactionList tti={selectedToken.tokenAddress} />}
 				</div>
 				<div className="fx p-2 gap-2 shadow">
-					<button className="round-outline-button p-0" onClick={() => receivingFundsSet(true)}>
+					<button
+						className="h-10 w-full bg-white xy rounded-sm text-skin-lowlight p-0"
+						onClick={() => receivingFundsSet(true)}
+					>
 						Receive
 					</button>
-					<button className="round-outline-button p-0" onClick={() => sendingFundsSet(true)}>
+					<button
+						className="h-10 w-full bg-white xy rounded-sm text-skin-lowlight p-0"
+						onClick={() => sendingFundsSet(true)}
+					>
 						{i18n.send}
 					</button>
 				</div>
@@ -481,7 +490,7 @@ const WalletContents = ({
 							onUserInput={(v) => commentSet(v)}
 						/>
 						<button
-							className="round-solid-button"
+							className="h-10 w-full bg-skin-highlight xy rounded-sm"
 							onClick={() => {
 								const valid = validateInputs([toAddressRef, amountRef, commentRef]);
 								if (valid) {
@@ -520,7 +529,7 @@ const WalletContents = ({
 					{unsentBlock && <TransactionInfo {...unsentBlock} />}
 					<button
 						disabled={sendingTx}
-						className="round-solid-button"
+						className="h-10 w-full bg-skin-highlight xy rounded-sm"
 						onClick={async () => {
 							try {
 								sendingTxSet(true);

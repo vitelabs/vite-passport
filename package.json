@@ -22,7 +22,6 @@
 		"@typescript-eslint/parser": "^5.29.0",
 		"autoprefixer": "^10.4.7",
 		"esbuild": "0.14.51",
-		"esbuild-register": "^3.3.3",
 		"esbuild-style-plugin": "^1.6.0",
 		"eslint": "^8.14.0",
 		"eslint-plugin-react": "^7.30.0",

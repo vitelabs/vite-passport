@@ -92,6 +92,7 @@ const en = {
 	accountChanged: 'Account changed',
 	showSecrets: 'Show Secrets',
 	password: 'Password',
+	confirmPassword: 'Confirm Password',
 	language: 'Language',
 	secrets: 'Secrets',
 	languageChanged: 'Language Changed',
@@ -151,6 +152,12 @@ const en = {
 	publicKey: 'PublicKey',
 	sendBlockHash: 'SendBlockHash',
 	signature: 'Signature',
+	passwordsDoNotMatch: 'Passwords do not match',
+	storeTheseWordsSomewhereSafe: 'Store these words somewhere safe',
+	mustContainAtLeast8Characters: 'Must contain at least 8 characters',
+	youAreAboutToViewYourMnemonicPhraseAnyoneWhoSeesItCanStealYourWalletSoMakeSureNoOneElseIsLooking:
+		'You are about to view your mnemonic phrase. Anyone who sees it can steal your wallet, so make sure no one else is looking.',
+	view: 'View',
 	test: 'test',
 	'': '',
 };

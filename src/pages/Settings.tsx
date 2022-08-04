@@ -6,7 +6,7 @@ import ModalListBottomButton from '../components/ModalListBottomButton';
 import ModalListItem from '../components/ModalListItem';
 import Secrets from '../containers/Secrets';
 import TabContainer from '../components/TabContainer';
-import TextInput, { TextInputRefObject } from '../containers/TextInput';
+import TextInput, { useTextInputRef } from '../containers/TextInput';
 import { currencyConversions, i18nDict, languages } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { shortenAddress } from '../utils/strings';
@@ -46,15 +46,15 @@ const Settings = ({
 	toastSuccess,
 }: State) => {
 	const navigate = useNavigate();
-	const oldPasswordRef = useRef<TextInputRefObject>();
-	const newPasswordRef = useRef<TextInputRefObject>();
+	const oldPasswordRef = useTextInputRef();
+	const newPasswordRef = useTextInputRef();
 	const [activeModal, activeModalSet] = useState<
 		'currency' | 'language' | 'contacts' | 'password' | 'secrets' | 'reset' | ''
 	>();
 	const [showSecrets, showSecretsSet] = useState(false);
 	const [oldPassword, oldPasswordSet] = useState('');
 	const [newPassword, newPasswordSet] = useState('');
-	const passwordRef = useRef<TextInputRefObject>();
+	const passwordRef = useTextInputRef();
 	const [password, passwordSet] = useState('');
 
 	// TODO: toggle show prices
@@ -214,7 +214,7 @@ const Settings = ({
 						label={i18n.newPassword}
 					/>
 					<button
-						className="round-solid-button"
+						className="h-10 w-full bg-skin-highlight xy rounded-sm"
 						onClick={async () => {
 							const valid = validateInputs([oldPasswordRef]);
 							if (valid) {
@@ -259,7 +259,7 @@ const Settings = ({
 							}}
 						/>
 						<button
-							className="round-solid-button mt-2"
+							className="h-10 w-full bg-skin-highlight xy rounded-sm mt-2"
 							onClick={() => {
 								attemptToShowPassword();
 							}}

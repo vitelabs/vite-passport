@@ -1,17 +1,18 @@
 import { wallet } from '@vite/vitejs';
 import { useCallback, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import TextInput, { TextInputRefObject } from '../containers/TextInput';
+import TextInput, { useTextInputRef } from '../containers/TextInput';
 import ResetWalletModal from '../containers/ResetWalletModal';
 import { decrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { State } from '../utils/types';
+import ViteLogo from '../assets/ViteLogo';
 // import { accountBlock } from '@vite/vitejs'
 // console.log('accountBlock:', accountBlock)
 
 const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSecrets }: State) => {
-	const passwordRef = useRef<TextInputRefObject>();
+	const passwordRef = useTextInputRef();
 	const [resettingWallet, resettingWalletSet] = useState(false);
 	const [password, passwordSet] = useState('');
 	const [searchParams] = useSearchParams();
@@ -50,8 +51,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 	return (
 		<div className="p-4 h-full flex flex-col">
 			<div className="flex-1 xy flex-col">
-				{/* <ViteLogo size={170} className="drop-shadow-lg text-[var(--bg-base-color)]" /> */}
-				<p className="text-3xl drop-shadow-lg font-black text-skin-muted">Vite Passport</p>
+				<ViteLogo size={150} className="text-skin-primary" />
 			</div>
 			<TextInput
 				password
@@ -66,7 +66,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 					}
 				}}
 			/>
-			<button className="mt-2 round-solid-button" onClick={attemptUnlock}>
+			<button className="mt-2 h-10 w-full bg-skin-highlight xy rounded-sm" onClick={attemptUnlock}>
 				{i18n.unlock}
 			</button>
 			<button

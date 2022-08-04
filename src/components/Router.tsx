@@ -153,7 +153,6 @@ const Router = ({
 			// 		console.log(err);
 			// 		setState({ toast: [JSON.stringify(err), 'error'] });
 			// 	});
-			console.log('tsfsdf');
 			viteApi
 				.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
 				.then((event: { on: (callback: (result: UnreceivedBlockMessage[]) => void) => void }) => {

@@ -85,7 +85,7 @@ const SignTx = ({
 			<TransactionInfo {...block} contractFuncParams={contractFuncParams} />
 			<button
 				disabled={insufficientFunds || sendingTx}
-				className="mt-2 round-solid-button"
+				className="mt-2 h-10 w-full bg-skin-highlight xy rounded-sm"
 				onClick={async () => {
 					try {
 						sendingTxSet(true);

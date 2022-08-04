@@ -20,7 +20,7 @@ const Connect = ({ i18n, postPortMessage }: State) => {
 				</p>
 			</div>
 			<button
-				className="mt-2 round-solid-button"
+				className="mt-2 h-10 w-full bg-skin-highlight xy rounded-sm"
 				onClick={async () => {
 					const { connectedDomains = {} } = await getValue('connectedDomains');
 					if (!connectedDomains?.[hostname]) {
@@ -33,7 +33,10 @@ const Connect = ({ i18n, postPortMessage }: State) => {
 			>
 				{i18n.connect}
 			</button>
-			<button className="mt-2 round-outline-button" onClick={() => window.close()}>
+			<button
+				className="mt-2 h-10 w-full bg-white xy rounded-sm text-skin-lowlight"
+				onClick={() => window.close()}
+			>
 				{i18n.no}
 			</button>
 		</div>

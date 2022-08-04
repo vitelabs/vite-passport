@@ -10,7 +10,7 @@ import { wallet } from '@vite/vitejs';
 import Modal from '../components/Modal';
 import ModalListItem from '../components/ModalListItem';
 import TabContainer from '../components/TabContainer';
-import TextInput, { TextInputRefObject } from '../containers/TextInput';
+import TextInput, { useTextInputRef } from '../containers/TextInput';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { shortenAddress, validateHttpUrl, validateWsUrl } from '../utils/strings';
@@ -39,11 +39,11 @@ const Home = ({
 	activeNetwork,
 	triggerEvent,
 }: State) => {
-	// const quotaBeneficiaryRef = useRef<TextInputRefObject>();
-	// const lockedAmountRef = useRef<TextInputRefObject>();
-	const networkNameRef = useRef<TextInputRefObject>();
-	const rpcUrlRef = useRef<TextInputRefObject>();
-	const blockExplorerUrlRef = useRef<TextInputRefObject>();
+	// const quotaBeneficiaryRef = useTextInputRef();
+	// const lockedAmountRef = useTextInputRef();
+	const networkNameRef = useTextInputRef();
+	const rpcUrlRef = useTextInputRef();
+	const blockExplorerUrlRef = useTextInputRef();
 	const [editingNetwork, editingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
@@ -290,7 +290,7 @@ const Home = ({
 							}}
 						/>
 						<button
-							className="round-solid-button p-1"
+							className="h-10 w-full bg-skin-highlight xy rounded-sm p-1"
 							onClick={() => {
 								const valid = validateInputs([networkNameRef, rpcUrlRef, blockExplorerUrlRef]);
 								if (valid) {

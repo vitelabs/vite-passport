@@ -1,45 +1,42 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
 import PageContainer from '../components/PageContainer';
 import Secrets from '../containers/Secrets';
 import { wallet } from '@vite/vitejs';
 import { useLocation, useNavigate } from 'react-router-dom';
-import TextInput, { TextInputRefObject } from '../containers/TextInput';
-import { validateInputs } from '../utils/misc';
-import { setValue } from '../utils/storage';
-import { defaultStorage } from '../utils/constants';
-import { encrypt } from '../utils/encryption';
+import A from '../components/A';
 
-const Create = ({ i18n, postPortMessage, setState }: State) => {
+const Create = ({ i18n }: State) => {
 	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState(wallet.createMnemonics());
 	const createMnemonics = useCallback((twelveWords = false) => {
 		mnemonicsSet(wallet.createMnemonics(twelveWords ? 128 : 256));
 	}, []);
-	const [password, passwordSet] = useState('');
-	const passwordRef = useRef<TextInputRefObject>();
-	const {
-		state: { routeAfterUnlock },
-	} = useLocation() as {
+	const { state } = useLocation() as {
 		state: { routeAfterUnlock?: string };
 	};
+	const mnemonicsLength = useMemo(() => mnemonics.split(' ').length, [mnemonics]);
 
 	return (
 		<PageContainer heading={i18n.createWallet}>
-			<div className="w-full xy">
-				<div className="flex bg-skin-middleground shadow rounded overflow-hidden">
+			<div className="w-full flex flex-col">
+				<div className="self-start flex rounded-full border border-skin-divider">
 					<button
-						className={`brightness-button px-2 py-0.5 text-sm ${
-							mnemonics.length === 12 ? 'bg-skin-foreground' : 'bg-skin-middleground'
+						className={`text-sm px-3 py-1 rounded-full border ${
+							mnemonicsLength === 12
+								? 'text-skin-lowlight bg-skin-foreground border-skin-divider'
+								: 'text-skin-secondary border-transparent'
 						}`}
 						onClick={() => createMnemonics(true)}
 					>
 						{i18n._12Words}
 					</button>
 					<button
-						className={`brightness-button px-2 py-0.5 text-sm ${
-							mnemonics.length === 24 ? 'bg-skin-foreground' : 'bg-skin-middleground'
+						className={`text-sm px-3 py-1 rounded-full border ${
+							mnemonicsLength === 24
+								? 'text-skin-lowlight bg-skin-foreground border-skin-divider'
+								: 'text-skin-secondary border-transparent'
 						}`}
 						onClick={() => createMnemonics()}
 					>
@@ -47,54 +44,16 @@ const Create = ({ i18n, postPortMessage, setState }: State) => {
 					</button>
 				</div>
 			</div>
-			<Secrets mnemonics={mnemonics} className="mt-2" />
-			<p className="mt-1 text-skin-secondary text-center text-sm">
-				Store these words somewhere safe
-			</p>
-			<TextInput
-				password
-				_ref={passwordRef}
-				value={password}
-				onUserInput={(v) => passwordSet(v)}
-				label={i18n.password}
-				containerClassName="mt-2"
-			/>
+			<Secrets mnemonics={mnemonics} className="mt-2 self-center" />
+			<p className="mt-1 text-skin-tertiary text-sm">{i18n.storeTheseWordsSomewhereSafe}</p>
 			<div className="flex-1"></div>
-			{/* <A to="/create2" className="round-solid-button" state={{ mnemonics, routeAfterUnlock }}>
-				{i18n.next}
-			</A> */}
-			<button
-				className="round-solid-button"
-				onClick={async () => {
-					// const valid = validateInputs([passwordRef, passphraseRef]);
-					const valid = validateInputs([passwordRef]);
-					if (valid) {
-						// const secrets = { mnemonics, passphrase };
-						const secrets = { mnemonics };
-						postPortMessage({ secrets, type: 'updateSecrets' });
-						const encryptedSecrets = await encrypt(JSON.stringify(secrets), password);
-						const accountList = [
-							wallet.deriveAddress({
-								...secrets,
-								index: 0,
-							}),
-						];
-						const contacts = { [accountList[0].address]: 'Account 0' };
-						setValue({ ...defaultStorage, encryptedSecrets, accountList, contacts });
-						setState({
-							...defaultStorage,
-							secrets,
-							encryptedSecrets,
-							accountList,
-							contacts,
-							activeAccount: accountList[0],
-						});
-						navigate(routeAfterUnlock || '/home', { replace: true });
-					}
-				}}
+			<A
+				to="/create2"
+				className="h-10 w-full bg-skin-highlight xy rounded-sm"
+				state={{ ...state, mnemonics }}
 			>
 				{i18n.next}
-			</button>
+			</A>
 		</PageContainer>
 	);
 };

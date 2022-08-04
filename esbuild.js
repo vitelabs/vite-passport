@@ -1,15 +1,7 @@
 const stylePlugin = require('esbuild-style-plugin');
-const { register } = require('esbuild-register/dist/node');
 
 const args = process.argv.slice(2);
 const PROD = args.includes('--prod');
-
-// const { unregister } = register({
-// https://github.com/egoist/esbuild-register
-// register({
-// 	// currently doesn't work
-// 	// ...options
-// });
 
 require('esbuild')
 	.build({
