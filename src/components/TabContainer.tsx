@@ -23,13 +23,13 @@ const TabContainer = ({ heading, children }: Props) => {
 	return (
 		<div className="h-full flex flex-col">
 			{heading && (
-				<div className="w-full top-10 border-b-2 border-skin-line-divider bg-skin-middleground">
-					<p className="text-xl flex-1 text-center p-2">{heading}</p>
+				<div className="w-full top-12">
+					<p className="text-lg flex-1 text-center p-2">{heading}</p>
 				</div>
 			)}
 			<div className="top-0 flex-1 overflow-scroll">{children}</div>
 			{/* <div className="top-0 flex-1 overflow-scroll bg-white">{null}</div> */}
-			<div className="h-10 top-2 border-t-2 border-skin-line-divider bg-skin-base flex">
+			<div className="h-10 flex shadow-lg shadow-white">
 				{[
 					['/home', OutlineCreditCardIcon, SolidCreditCardIcon],
 					['/my-transactions', OutlineBookOpenIcon, SolidBookOpenIcon],
@@ -42,7 +42,7 @@ const TabContainer = ({ heading, children }: Props) => {
 							key={to as string}
 							disabled={active}
 							className={`flex-1 xy darker-brightness-button ${
-								active ? 'text-skin-primary' : 'text-skin-secondary'
+								active ? 'text-skin-highlight' : 'text-skin-secondary'
 							}`}
 							onClick={() => navigate(to as string, { replace: true })}
 						>

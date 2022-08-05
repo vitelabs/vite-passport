@@ -34,7 +34,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 				const routeAfterUnlock = searchParams.get('routeAfterUnlock');
 				navigate(routeAfterUnlock || '/home', { replace: true });
 			} catch {
-				passwordRef.current?.issueSet(i18n.incorrectPassword);
+				passwordRef.error = i18n.incorrectPassword;
 			}
 		}
 	}, [
@@ -75,7 +75,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 			>
 				{i18n.resetWallet}
 			</button>
-			<ResetWalletModal visible={resettingWallet} onClose={() => resettingWalletSet(false)} />
+			{resettingWallet && <ResetWalletModal onClose={() => resettingWalletSet(false)} />}
 		</div>
 	);
 };

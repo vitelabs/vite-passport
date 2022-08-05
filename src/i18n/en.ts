@@ -158,6 +158,9 @@ const en = {
 	youAreAboutToViewYourMnemonicPhraseAnyoneWhoSeesItCanStealYourWalletSoMakeSureNoOneElseIsLooking:
 		'You are about to view your mnemonic phrase. Anyone who sees it can steal your wallet, so make sure no one else is looking.',
 	view: 'View',
+	add: 'Add',
+	connected: 'Connected',
+	disconnected: 'Disconnected',
 	test: 'test',
 	'': '',
 };

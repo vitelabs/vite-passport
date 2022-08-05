@@ -129,7 +129,7 @@ const TransactionList = ({
 										</button>
 									)}
 									{!!transactionHistory.unreceived?.length && (
-										<div className="h-0.5 bg-skin-alt mt-2"></div>
+										<div className="h-0.5 bg-skin-eye-icon mt-2"></div>
 									)}
 									<p className="text-center text-skin-secondary">
 										{viteBalanceInfo!.balance.blockCount} {i18n.received}
@@ -213,7 +213,9 @@ const TransactionList = ({
 					);
 				})
 			)}
-			<TransactionModal transaction={txInfoModalTx} onClose={() => txInfoModalTxSet(undefined)} />
+			{txInfoModalTx && (
+				<TransactionModal transaction={txInfoModalTx} onClose={() => txInfoModalTxSet(undefined)} />
+			)}
 		</FetchWidget>
 	);
 };

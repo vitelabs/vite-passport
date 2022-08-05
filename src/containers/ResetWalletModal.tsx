@@ -5,27 +5,23 @@ import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
 
 type Props = State & {
-	visible: boolean;
 	onClose: () => void;
 };
 
-const ResetWalletModal = ({ visible, onClose, i18n }: Props) => {
+const ResetWalletModal = ({ onClose, i18n }: Props) => {
 	const navigate = useNavigate();
 	return (
-		<Modal visible={visible} onClose={onClose} heading={i18n.resetWallet}>
-			<div className="p-2 space-y-2">
-				<p className="">{i18n.youAreAboutToErase}</p>
-				<button
-					className="h-10 w-full bg-skin-highlight xy rounded-sm"
-					onClick={async () => {
-						const storage = await getValue(null);
-						removeKeys(Object.keys(storage) as StorageFields[]);
-						navigate('/', { replace: true });
-					}}
-				>
-					{i18n.confirm}
-				</button>
-			</div>
+		<Modal
+			onClose={onClose}
+			heading={i18n.resetWallet}
+			buttonText={i18n.confirm}
+			onButtonClick={async () => {
+				const storage = await getValue(null);
+				removeKeys(Object.keys(storage) as StorageFields[]);
+				navigate('/', { replace: true });
+			}}
+		>
+			<p className="m-3">{i18n.youAreAboutToErase}</p>
 		</Modal>
 	);
 };

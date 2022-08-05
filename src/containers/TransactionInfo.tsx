@@ -70,7 +70,7 @@ const TransactionInfo = ({
 	return (
 		<div className="flex flex-col gap-2 p-2">
 			<div className="">
-				<p className="text-xl">
+				<p className="text-lg">
 					{
 						{
 							1: i18n.contractCreation, // request(create contract)
@@ -96,7 +96,7 @@ const TransactionInfo = ({
 								src={tokenApiInfo?.icon}
 								// alt={tokenApiInfo.symbol}
 								alt={tokenName}
-								className="h-10 w-10 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-alt to-skin-bg-base"
+								className="h-10 w-10 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
 							/>
 						)}
 						<p className="">{tokenName}</p>

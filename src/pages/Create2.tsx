@@ -37,7 +37,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 				<Checkbox _ref={agreeToTermsRef} />
 				<p className="text-skin-tertiary text-xs">
 					{i18n.iHaveReadAndAgreeToThe}{' '}
-					<A href="TODO" className="text-skin-lowlight">
+					<A href="https://vite.org/terms.html" className="text-skin-lowlight">
 						{i18n.termsOfUse}
 					</A>
 				</p>

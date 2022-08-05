@@ -41,6 +41,7 @@ type Props = State &
 		optional?: boolean;
 		maxLength?: number;
 		getIssue?: (value: string) => string | void;
+		onKeyDown?: (key: string) => void;
 	};
 
 const normalizeNumericInput = (str: string, decimals = 6, removeInsignificantZeros = false) => {
@@ -75,6 +76,7 @@ const TextInput = ({
 	optional,
 	maxLength,
 	getIssue = () => '',
+	onKeyDown,
 	_ref,
 }: Props) => {
 	const input = useRef<HTMLInputElement | HTMLTextAreaElement | null>();
@@ -126,6 +128,9 @@ const TextInput = ({
 						onUserInput(value);
 					}
 					internalValueSet(value);
+				}}
+				onKeyDown={(event) => {
+					onKeyDown && onKeyDown(event.key);
 				}}
 				onChange={({ target: { value } }) => {
 					// e.stopPropagation();

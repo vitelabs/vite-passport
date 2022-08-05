@@ -26,17 +26,21 @@ const ModalListItem = ({
 	return (
 		<div className="flex items-center">
 			<button
-				className={`p-2 ${
+				className={`p-4 ${
 					radio ? 'pl-0' : ''
 				} fx w-full bg-skin-middleground brightness-button ${className}`}
 				onClick={onClick}
 			>
 				{radio && (
-					<div className="w-10 xy">
+					<div className="w-12 xy">
+						{active && (
+							// This hack gives CheckCircleIcon a white checkmark
+							<div className="bg-white h-4 w-4 absolute rounded-full z-0" />
+						)}
 						{active ? (
-							<CheckCircleIcon className="w-6 text-skin-highlight" />
+							<CheckCircleIcon className="w-6 text-skin-lowlight z-10" />
 						) : (
-							<div className="w-5 h-5 border-2 border-skin-alt rounded-full" />
+							<div className="w-5 h-5 border-2 border-skin-eye-icon rounded-full" />
 						)}
 					</div>
 				)}
@@ -51,7 +55,7 @@ const ModalListItem = ({
 					className="xy w-8 h-8 mr-2 overflow-hidden rounded-full bg-skin-middleground brightness-button"
 					onClick={onClose}
 				>
-					<XIcon className="w-5 text-skin-secondary" />
+					<XIcon className="w-5 text-skin-eye-icon" />
 				</button>
 			)}
 		</div>

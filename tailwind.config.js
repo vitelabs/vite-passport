@@ -11,6 +11,7 @@ module.exports = {
 					highlight: 'var(--highlight-color)',
 					lowlight: 'var(--lowlight-color)',
 					'back-arrow-icon': 'var(--back-arrow-icon-color)',
+					'address-icon': 'var(--address-icon-color)',
 					'eye-icon': 'var(--eye-icon-color)',
 					'connected-green': 'var(--connected-green-color)',
 					error: 'var(--error-color)',

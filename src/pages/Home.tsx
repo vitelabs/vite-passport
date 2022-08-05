@@ -47,7 +47,6 @@ const Home = ({
 	const [editingNetwork, editingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
-	const [editingAccountName, editingAccountNameSet] = useState(false);
 	const [accountName, accountNameSet] = useState(contacts[activeAccount.address]);
 	const [networkName, networkNameSet] = useState('');
 	const [rpcUrl, rpcUrlSet] = useState('');
@@ -62,78 +61,44 @@ const Home = ({
 		return activeAccount.address;
 	}, [activeAccount, contacts]);
 
-	const saveAccountName = useCallback(() => {
-		accountNameSet(accountName);
-		const data = {
-			contacts: { ...contacts, [activeAddress]: accountName },
-		};
-		setValue(data);
-		setState(data);
-	}, [accountName, activeAddress, contacts, setState]);
-
 	return (
 		<TabContainer>
 			<div className="bg-skin-middleground shadow-md z-10 p-2">
-				<div className="fx justify-between">
-					<button
-						className="border-2 px-2 rounded-full border-skin-alt text-sm bg-skin-middleground text-skin-secondary hover:shadow-md active:shadow brightness-button"
-						onClick={() => editingNetworkSet(true)}
-					>
-						{activeNetwork.name}
-					</button>
-					<button
-						className="p-1 -mt-1 -mr-1 text-skin-secondary darker-brightness-button"
-						onClick={() => changingActiveAccountSet(true)}
-					>
-						<CreditCardIcon className="w-6 text-inherit" />
-					</button>
+				<button
+					className="absolute p-1 -m-1 text-sm text-skin-secondary leading-3"
+					onClick={() => editingNetworkSet(true)}
+				>
+					{activeNetwork.name}
+				</button>
+				<button
+					className="absolute p-1 -m-1 text-skin-secondary right-2"
+					onClick={() => changingActiveAccountSet(true)}
+				>
+					<CreditCardIcon className="w-6 text-inherit" />
+				</button>
+				<div className="absolute fx right-2 top-8">
+					<div
+						className={`h-2 w-2 rounded-full ${
+							!true ? 'bg-skin-connected-green' : 'bg-skin-error'
+						}`}
+					/>
+					<p className="ml-1 text-xs text-skin-tertiary">
+						{!true ? i18n.connected : i18n.disconnected}
+					</p>
 				</div>
-				<div className="fy xy">
-					{editingAccountName ? (
-						<input
-							autoFocus
-							className="text-xl text-center px-2 w-full bg-skin-base rounded"
-							value={accountName}
-							placeholder={accountName}
-							onChange={(e) => accountNameSet(e.target.value)}
-							onBlur={() => {
-								// TODO: set account name
-								saveAccountName();
-								editingAccountNameSet(false);
-							}}
-							onKeyDown={(e) => {
-								if (e.key === 'Escape') {
-									editingAccountNameSet(false);
-									accountNameSet(contacts[activeAccount.address]);
-								} else if (e.key === 'Enter') {
-									saveAccountName();
-									editingAccountNameSet(false);
-								}
-							}}
-						/>
-					) : (
-						<button
-							className="group ml-[1.625rem] fx darker-brightness-button"
-							onClick={() => editingAccountNameSet(true)}
-						>
-							<p className="text-xl">{accountName}</p>
-							<PencilIcon className="ml-1.5 w-5 opacity-0 duration-200 group-hover:opacity-100" />
-						</button>
-					)}
-					<div className="flex group">
-						<button
-							className="ml-12 fx darker-brightness-button"
-							onClick={() => copyWithToast(activeAddress)}
-						>
-							<p className="text-skin-secondary">{shortenAddress(activeAddress)}</p>
-							<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+				<div className="fy xy mt-10">
+					<p className="text-skin-secondary">{accountName}</p>
+					<div className="flex rounded-full bg-skin-base gap-2 py-2 px-4">
+						<p className="text-sm">{shortenAddress(activeAddress)}</p>
+						<button className="p-1 -m-1 xy" onClick={() => copyWithToast(activeAddress)}>
+							<DuplicateIcon className="w-4 text-skin-back-arrow-icon" />
 						</button>
 						{activeNetwork.explorerUrl && (
 							<A
-								className="ml-0.5 darker-brightness-button"
+								className="p-1 -m-1 xy"
 								href={`${activeNetwork.explorerUrl}/address/${activeAddress}`}
 							>
-								<ExternalLinkIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+								<ExternalLinkIcon className="w-4 text-skin-back-arrow-icon" />
 							</A>
 						)}
 					</div>
@@ -156,7 +121,7 @@ const Home = ({
 						<p>{i18n.quota}</p>
 					</button>
 				</div> */}
-				<WalletContents />
+				{/* <WalletContents /> */}
 			</div>
 			{/* <Modal
 				visible={votingModalOpen}
@@ -183,81 +148,92 @@ const Home = ({
 					onUserInput={(v) => lockedAmountSet(v)}
 				/>
 			</Modal> */}
-			<Modal
-				visible={editingNetwork}
-				fromLeft={addingNetwork}
-				onClose={() => editingNetworkSet(false)}
-				heading={i18n.networks}
-			>
-				{networkList.map((network, i) => {
-					const active = i === activeNetworkIndex;
-					return (
-						<ModalListItem
-							radio
-							key={network.rpcUrl}
-							active={active}
-							label={network.name}
-							sublabel={network.rpcUrl}
-							onClick={() => {
-								if (!active) {
-									toastSuccess(i18n.networkChanged);
-									setState({
-										activeNetworkIndex: i,
-										viteBalanceInfo: undefined,
-										activeNetwork: networkList[i],
-									});
-									setValue({ activeNetworkIndex: i });
-									triggerEvent({
-										type: 'networkChange',
-										payload: { activeNetwork: network.rpcUrl },
-									});
-								}
-								editingNetworkSet(false);
-							}}
-							onClose={
-								[
-									'wss://node.vite.net/gvite/ws',
-									'wss://buidl.vite.net/gvite/ws',
-									'ws://localhost:23457',
-								].includes(network.rpcUrl)
-									? undefined
-									: () => {
-											const newNetworkList = [...networkList];
-											newNetworkList.splice(i, 1);
-											const data = {
-												networkList: newNetworkList,
-												activeNetworkIndex: i === networkList.length - 1 ? 0 : activeNetworkIndex,
-											};
-											setState(data);
-											setValue(data);
-									  }
-							}
-						/>
-					);
-				})}
-				<ModalListBottomButton
-					label={i18n.addNetwork}
-					onClick={() => {
+			{editingNetwork && (
+				<Modal
+					onClose={() => editingNetworkSet(false)}
+					heading={i18n.networks}
+					buttonText={i18n.addNetwork}
+					onButtonClick={() => {
 						editingNetworkSet(false);
 						addingNetworkSet(true);
 					}}
-				/>
-			</Modal>
-			<Modal
-				fromRight
-				heading={i18n.addNetwork}
-				visible={addingNetwork}
-				onStartClose={() => {
-					editingNetworkSet(true);
-					setTimeout(() => addingNetworkSet(false), 0);
-				}}
-				onClose={() => {
-					networkNameSet('');
-					rpcUrlSet('');
-					blockExplorerUrlSet('');
-				}}
-			>
-				{(close) => (
+				>
+					{networkList.map((network, i) => {
+						const active = i === activeNetworkIndex;
+						return (
+							<ModalListItem
+								radio
+								key={network.rpcUrl}
+								active={active}
+								label={network.name}
+								sublabel={network.rpcUrl}
+								onClick={() => {
+									if (!active) {
+										toastSuccess(i18n.networkChanged);
+										setState({
+											activeNetworkIndex: i,
+											viteBalanceInfo: undefined,
+											activeNetwork: networkList[i],
+										});
+										setValue({ activeNetworkIndex: i });
+										triggerEvent({
+											type: 'networkChange',
+											payload: { activeNetwork: network.rpcUrl },
+										});
+									}
+									editingNetworkSet(false);
+								}}
+								onClose={
+									[
+										'wss://node.vite.net/gvite/ws',
+										'wss://buidl.vite.net/gvite/ws',
+										'ws://localhost:23457',
+									].includes(network.rpcUrl)
+										? undefined
+										: () => {
+												const newNetworkList = [...networkList];
+												newNetworkList.splice(i, 1);
+												const data = {
+													networkList: newNetworkList,
+													activeNetworkIndex: i === networkList.length - 1 ? 0 : activeNetworkIndex,
+												};
+												setState(data);
+												setValue(data);
+										  }
+								}
+							/>
+						);
+					})}
+				</Modal>
+			)}
+			{addingNetwork && (
+				<Modal
+					heading={i18n.addNetwork}
+					onClose={() => {
+						editingNetworkSet(true);
+						networkNameSet('');
+						rpcUrlSet('');
+						blockExplorerUrlSet('');
+					}}
+					buttonText={i18n.add}
+					onButtonClick={() => {
+						const valid = validateInputs([networkNameRef, rpcUrlRef, blockExplorerUrlRef]);
+						if (valid) {
+							const newNetworkList = [
+								...networkList,
+								{
+									name: networkName.trim(),
+									rpcUrl: networkName.trim(),
+									explorerUrl: blockExplorerUrl.trim() || undefined,
+								},
+							];
+							const data = { networkList: newNetworkList };
+							setState(data);
+							setValue(data);
+							addingNetworkSet(false);
+						}
+					}}
+				>
 					<div className="space-y-3 p-3">
 						<TextInput
 							_ref={networkNameRef}
@@ -289,91 +265,16 @@ const Home = ({
 								}
 							}}
 						/>
-						<button
-							className="h-10 w-full bg-skin-highlight xy rounded-sm p-1"
-							onClick={() => {
-								const valid = validateInputs([networkNameRef, rpcUrlRef, blockExplorerUrlRef]);
-								if (valid) {
-									const newNetworkList = [
-										...networkList,
-										{
-											name: networkName.trim(),
-											rpcUrl: networkName.trim(),
-											explorerUrl: blockExplorerUrl.trim() || undefined,
-										},
-									];
-									const data = { networkList: newNetworkList };
-									setState(data);
-									setValue(data);
-									close();
-								}
-							}}
-						>
-							Add
-						</button>
 					</div>
-				)}
-			</Modal>
-			<Modal
-				heading={i18n.accounts}
-				visible={changingActiveAccount}
-				onClose={() => changingActiveAccountSet(false)}
-			>
-				{accountList.map(({ address }, i) => {
-					const active = i === activeAccountIndex;
-					return (
-						<ModalListItem
-							radio
-							key={address}
-							active={active}
-							className="flex-1"
-							label={contacts[address]}
-							sublabel={shortenAddress(address)}
-							// rightJSX={
-							// 	// not that useful a feature for the technical overhead it creates.
-							// 	false && (
-							// 		<div className="self-start border-2 border-skin-alt px-1 text-skin-muted rounded-full text-xs">
-							// 			{i18n.new}
-							// 		</div>
-							// 	)
-							// }
-							onClick={() => {
-								if (!active) {
-									toastSuccess(i18n.accountChanged);
-									const data = { activeAccountIndex: i };
-									setState({
-										...data,
-										activeAccount: accountList[i],
-										viteBalanceInfo: undefined,
-										transactionHistory: undefined,
-									});
-									setValue(data);
-									triggerEvent({
-										type: 'accountChange',
-										payload: { activeAddress: accountList[i].address },
-									});
-								}
-								changingActiveAccountSet(false);
-							}}
-							onClose={
-								i + 1 !== accountList.length || i === 0
-									? undefined
-									: () => {
-											const data = {
-												accountList: [...accountList].slice(0, accountList.length - 1),
-												activeAccountIndex:
-													activeAccountIndex === accountList.length - 1 ? 0 : activeAccountIndex,
-											};
-											setState({ ...data, activeAccount: accountList[data.activeAccountIndex] });
-											setValue(data);
-									  }
-							}
-						/>
-					);
-				})}
-				<ModalListBottomButton
-					label={i18n.deriveAddress}
-					onClick={() => {
+				</Modal>
+			)}
+			{changingActiveAccount && (
+				<Modal
+					plusIcon
+					heading={i18n.accounts}
+					onClose={() => changingActiveAccountSet(false)}
+					buttonText={i18n.deriveAddress}
+					onButtonClick={() => {
 						const newAccount = wallet.deriveAddress({
 							...secrets!,
 							index: accountList.length,
@@ -390,8 +291,61 @@ const Home = ({
 						setState(data);
 						setValue(data);
 					}}
-				/>
-			</Modal>
+				>
+					{accountList.map(({ address }, i) => {
+						const active = i === activeAccountIndex;
+						return (
+							<ModalListItem
+								radio
+								key={address}
+								active={active}
+								className="flex-1"
+								label={contacts[address]}
+								sublabel={shortenAddress(address)}
+								// rightJSX={
+								// 	// not that useful a feature for the technical overhead it creates.
+								// 	false && (
+								// 		<div className="self-start border-2 border-skin-eye-icon px-1 text-skin-muted rounded-full text-xs">
+								// 			{i18n.new}
+								// 		</div>
+								// 	)
+								// }
+								onClick={() => {
+									if (!active) {
+										toastSuccess(i18n.accountChanged);
+										const data = { activeAccountIndex: i };
+										setState({
+											...data,
+											activeAccount: accountList[i],
+											viteBalanceInfo: undefined,
+											transactionHistory: undefined,
+										});
+										setValue(data);
+										triggerEvent({
+											type: 'accountChange',
+											payload: { activeAddress: accountList[i].address },
+										});
+									}
+									changingActiveAccountSet(false);
+								}}
+								onClose={
+									i + 1 !== accountList.length || i === 0
+										? undefined
+										: () => {
+												const data = {
+													accountList: [...accountList].slice(0, accountList.length - 1),
+													activeAccountIndex:
+														activeAccountIndex === accountList.length - 1 ? 0 : activeAccountIndex,
+												};
+												setState({ ...data, activeAccount: accountList[data.activeAccountIndex] });
+												setValue(data);
+										  }
+								}
+							/>
+						);
+					})}
+				</Modal>
+			)}
 		</TabContainer>
 	);
 };
