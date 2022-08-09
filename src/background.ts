@@ -169,7 +169,7 @@ const openPopup = async (routeAfterUnlock: string) => {
 	chrome.windows.create({
 		url: host + toQueryString({ routeAfterUnlock }),
 		type: 'popup',
-		width: (9 / 16) * 35 * 16, // w-[calc(9/16*35rem)
+		width: (10 / 16) * 35 * 16, // w-[calc(10/16*35rem)
 		height: 35 * 16 + 22, // h-[35rem] + frame header height (22px on macOS?)
 		top: lastFocused.top,
 		left: lastFocused.left! + (lastFocused.width! - 18 * 16),

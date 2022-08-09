@@ -44,7 +44,8 @@ export const debounce = (fn: (...args: any) => any, ms = 0) => {
 	};
 };
 
-const tokenApiInfoCache: { [tti: string]: TokenApiInfo } = {};
+// OPTIMIZE:
+// const tokenApiInfoCache: { [tti: string]: TokenApiInfo } = {};
 // getTokenApiInfo to differentiate from the `tokenInfo` returned from `viteApi.getBalanceInfo`
 export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<TokenApiInfo[]> => {
 	if (!tokenIds.length) {
@@ -62,7 +63,7 @@ export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<Toke
 	});
 	const data: { msg: string; code: number; data: TokenApiInfo[] } = await res.json();
 	if (data.msg === 'ok' && data.code === 0) {
-		data.data.forEach((info) => (tokenApiInfoCache[info.tokenAddress] = info));
+		// data.data.forEach((info) => (tokenApiInfoCache[info.tokenAddress] = info));
 		return data.data;
 	}
 	// TODO: fail gracefully

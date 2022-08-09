@@ -6,9 +6,7 @@ import { State } from '../utils/types';
 const MyTransactions = ({ i18n }: State) => {
 	return (
 		<TabContainer heading={i18n.myTransactions}>
-			<div className="flex-1 overflow-scroll p-2 space-y-2">
-				<TransactionList />
-			</div>
+			<TransactionList />
 		</TabContainer>
 	);
 };

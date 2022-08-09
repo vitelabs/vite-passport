@@ -1,5 +1,5 @@
 import { XIcon } from '@heroicons/react/outline';
-import { PlusIcon } from '@heroicons/react/solid';
+import { ArrowNarrowLeftIcon, PlusIcon } from '@heroicons/react/solid';
 import { ReactNode, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useKeyPress } from '../utils/hooks';
@@ -60,18 +60,15 @@ const Modal = ({
 			}}
 		>
 			{fullscreen ? (
-				<div
-					onClick={(e) => e.stopPropagation()}
-					className={`w-full h-full bg-skin-middleground ${className}`}
-				>
-					<div className="z-50 fx w-full px-1 shadow">
-						<button className="brightness-button" onClick={onClose}>
-							<XIcon className="w-8 text-skin-secondary" />
+				<div onClick={(e) => e.stopPropagation()} className="w-full h-full bg-skin-base">
+					<div className="xy h-12">
+						<button className="absolute left-3 w-8 xy" onClick={onClose}>
+							<ArrowNarrowLeftIcon className="w-5 text-skin-back-arrow-icon" />
 						</button>
-						{heading && <p className="text-lg flex-1 text-center p-2 mr-8">{heading}</p>}
+						{heading && <p className="text-lg">{heading}</p>}
 						{headerComponent}
 					</div>
-					{children}
+					<div className={className}>{children}</div>
 				</div>
 			) : (
 				<>

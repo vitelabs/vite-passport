@@ -49,7 +49,7 @@ const Create = ({ i18n }: State) => {
 			<div className="flex-1"></div>
 			<A
 				to="/create2"
-				className="h-10 w-full bg-skin-highlight xy rounded-sm"
+				className="h-10 w-full xy rounded-sm bg-skin-highlight text-white"
 				state={{ ...state, mnemonics }}
 			>
 				{i18n.next}

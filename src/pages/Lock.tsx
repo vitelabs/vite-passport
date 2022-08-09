@@ -8,6 +8,7 @@ import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { State } from '../utils/types';
 import ViteLogo from '../assets/ViteLogo';
+import Button from '../components/Button';
 // import { accountBlock } from '@vite/vitejs'
 // console.log('accountBlock:', accountBlock)
 
@@ -66,9 +67,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 					}
 				}}
 			/>
-			<button className="mt-2 h-10 w-full bg-skin-highlight xy rounded-sm" onClick={attemptUnlock}>
-				{i18n.unlock}
-			</button>
+			<Button theme="highlight" label={i18n.unlock} onClick={attemptUnlock} />
 			<button
 				className="mt-1 text-skin-highlight self-center"
 				onClick={() => resettingWalletSet(true)}

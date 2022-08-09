@@ -3,8 +3,9 @@ import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/accountBlock/type';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import Button from '../components/Button';
 import TransactionModal from '../components/TransactionModal';
-import TransactionInfo from '../containers/TransactionInfo';
+// import TransactionInfo from '../containers/TransactionInfo';
 import { connect } from '../utils/global-context';
 import { getTokenApiInfo } from '../utils/misc';
 import { State, TokenApiInfo } from '../utils/types';
@@ -82,10 +83,11 @@ const SignTx = ({
 		</div>
 	) : (
 		<div className="flex-1 p-4 space-y-2 overflow-scroll bg-skin-base">
-			<TransactionInfo {...block} contractFuncParams={contractFuncParams} />
-			<button
+			{/* <TransactionInfo {...block} contractFuncParams={contractFuncParams} /> */}
+			<Button
 				disabled={insufficientFunds || sendingTx}
-				className="mt-2 h-10 w-full bg-skin-highlight xy rounded-sm"
+				theme="highlight"
+				label={i18n.signAndSendBlock}
 				onClick={async () => {
 					try {
 						sendingTxSet(true);
@@ -132,9 +134,7 @@ const SignTx = ({
 						// };
 					}
 				}}
-			>
-				{i18n.signAndSendBlock}
-			</button>
+			/>
 			<TransactionModal
 				transaction={sentBlock}
 				contractFuncParams={contractFuncParams}

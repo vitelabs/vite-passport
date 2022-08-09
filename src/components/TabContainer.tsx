@@ -41,9 +41,7 @@ const TabContainer = ({ heading, children }: Props) => {
 						<button
 							key={to as string}
 							disabled={active}
-							className={`flex-1 xy darker-brightness-button ${
-								active ? 'text-skin-highlight' : 'text-skin-secondary'
-							}`}
+							className={`flex-1 xy ${active ? 'text-skin-highlight' : 'text-skin-secondary'}`}
 							onClick={() => navigate(to as string, { replace: true })}
 						>
 							<Icon className="h-6 w-6 text-inherit" />

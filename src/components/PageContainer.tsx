@@ -14,14 +14,11 @@ const PageContainer = ({ heading, children, className }: Props) => {
 		<div className="h-full flex flex-col ">
 			<div className="xy w-full h-12">
 				<p className="text-lg">{heading}</p>
-				<button
-					className="absolute left-3 w-8 xy darker-brightness-button"
-					onClick={() => navigate(-1)}
-				>
+				<button className="absolute left-3 w-8 xy" onClick={() => navigate(-1)}>
 					<ArrowNarrowLeftIcon className="w-5 text-skin-back-arrow-icon" />
 				</button>
 			</div>
-			<div className={`flex-1 p-5 pt-0 flex flex-col z-10 ${className}`}>{children}</div>
+			<div className={`flex-1 p-4 pt-0 flex flex-col z-10 ${className}`}>{children}</div>
 		</div>
 	);
 };

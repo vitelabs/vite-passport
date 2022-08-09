@@ -13,14 +13,14 @@ const Start = ({ i18n }: State) => {
 	const routeAfterUnlock = useMemo(() => searchParams.get('routeAfterUnlock'), [searchParams]);
 
 	return (
-		<div className="p-5 pb-8 h-full flex flex-col">
+		<div className="p-4 pb-8 h-full flex flex-col">
 			<div className="flex-1 xy flex-col">
 				<ViteLogo size={150} className="text-skin-primary" />
 			</div>
 			<A
 				to="/create"
 				state={{ routeAfterUnlock }}
-				className="h-10 w-full bg-skin-highlight xy rounded-sm"
+				className="h-10 w-full xy rounded-sm bg-skin-highlight text-white"
 			>
 				{i18n.createANewWallet}
 			</A>

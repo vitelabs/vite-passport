@@ -2,7 +2,8 @@ import { wallet } from '@vite/vitejs';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import A from '../components/A';
-import Checkbox, { useCheckboxRef } from '../components/Checkbox';
+import Button from '../components/Button';
+import Checkbox from '../components/Checkbox';
 import PageContainer from '../components/PageContainer';
 import TextInput, { useTextInputRef } from '../containers/TextInput';
 import { defaultStorage } from '../utils/constants';
@@ -15,15 +16,13 @@ import { State } from '../utils/types';
 const Import = ({ i18n, postPortMessage, setState }: State) => {
 	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState('');
+	const [agreesToTerms, agreesToTermsSet] = useState(false);
 	const mnemonicRef = useTextInputRef();
-	const {
-		state: { routeAfterUnlock },
-	} = useLocation() as {
+	const { state: { routeAfterUnlock } = {} } = useLocation() as {
 		state: { routeAfterUnlock?: string };
 	};
 	const passwordRef = useTextInputRef();
 	const confirmPasswordRef = useTextInputRef();
-	const agreeToTermsRef = useCheckboxRef();
 
 	return (
 		<PageContainer heading={i18n.importWallet} className="gap-4">
@@ -45,7 +44,7 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 			<TextInput password _ref={confirmPasswordRef} label={i18n.confirmPassword} />
 			{/* <p className="mt-1 text-skin-tertiary text-sm">{i18n.mustContainAtLeast8Characters}</p> */}
 			<div className="fx">
-				<Checkbox _ref={agreeToTermsRef} />
+				<Checkbox value={agreesToTerms} onUserInput={(v) => agreesToTermsSet(v)} />
 				<p className="text-skin-tertiary text-xs">
 					{i18n.iHaveReadAndAgreeToThe}{' '}
 					<A href="https://vite.org/terms.html" className="text-skin-lowlight">
@@ -54,16 +53,17 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 				</p>
 			</div>
 			<div className="flex-1"></div>
-			<button
-				className="h-10 w-full bg-skin-highlight xy rounded-sm"
+			<Button
+				theme="highlight"
+				label={i18n.next}
 				onClick={async () => {
-					let valid = validateInputs([passwordRef, confirmPasswordRef]);
+					let valid = validateInputs([mnemonicRef, passwordRef, confirmPasswordRef]);
 					if (passwordRef.value !== confirmPasswordRef.value) {
 						confirmPasswordRef.error = i18n.passwordsDoNotMatch;
 						valid = false;
 					}
 					if (valid) {
-						const secrets = { mnemonics };
+						const secrets = { mnemonics: mnemonics.trim() };
 						postPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
 						const accountList = [
@@ -85,9 +85,7 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 						navigate(routeAfterUnlock || '/home');
 					}
 				}}
-			>
-				{i18n.next}
-			</button>
+			/>
 		</PageContainer>
 	);
 };

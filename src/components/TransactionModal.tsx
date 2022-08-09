@@ -1,24 +1,188 @@
+import { ExternalLinkIcon } from '@heroicons/react/outline';
+import { DuplicateIcon } from '@heroicons/react/outline';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
-import TransactionInfo from '../containers/TransactionInfo';
+import { useEffect, useMemo, useState } from 'react';
 import { connect } from '../utils/global-context';
-import { State } from '../utils/types';
+import { getTokenApiInfo } from '../utils/misc';
+import {
+	addIndexToTokenSymbol,
+	shortenAddress,
+	shortenHash,
+	toBiggestUnit,
+} from '../utils/strings';
+import { State, TokenApiInfo } from '../utils/types';
+import A from './A';
+import DeterministicIcon from './DeterministicIcon';
 import Modal from './Modal';
 
 type Props = State & {
 	transaction?: Transaction | AccountBlockBlock;
 	contractFuncParams?: any[];
 	onClose: () => void;
-	heading?: string;
+	signable?: boolean;
 };
 
-const TransactionModal = ({ i18n, contractFuncParams, transaction, heading, onClose }: Props) => {
-	return (
-		<Modal heading={heading || i18n.transaction} visible={!!transaction} onClose={onClose}>
-			{!!transaction && (
-				<TransactionInfo {...transaction} contractFuncParams={contractFuncParams} />
+const Field = ({
+	label,
+	value,
+	format,
+}: {
+	label: string;
+	value?: string;
+	format?: (v: string) => string;
+}) =>
+	!value ? null : (
+		<div className="fx">
+			<p className="leading-5 break-words font-medium">
+				<span className="text-skin-secondary">{label}: </span>
+				{format ? format(value) : value}
+			</p>
+			{!!format && (
+				<button className="ml-2" onClick={() => {}}>
+					<DuplicateIcon className="w-5 text-skin-tertiary" />
+				</button>
 			)}
-		</Modal>
+		</div>
+	);
+
+const TransactionModal = ({
+	signable,
+	onClose,
+	i18n,
+	transaction,
+	contractFuncParams,
+	activeNetwork,
+}: Props) => {
+	const [tokenApiInfo, tokenApiInfoSet] = useState<undefined | TokenApiInfo>();
+
+	const {
+		address,
+		amount,
+		blockType,
+		data,
+		difficulty,
+		fee,
+		hash,
+		height,
+		nonce,
+		previousHash,
+		publicKey,
+		sendBlockHash,
+		signature,
+		// @ts-ignore
+		_toAddress,
+		// accountBlock.createAccountBlock returns a block with _toAddress instead of toAddress idk y
+		toAddress = _toAddress,
+		tokenId,
+	} = transaction || {};
+
+	useEffect(() => {
+		(async () => {
+			if (tokenId) {
+				const info = await getTokenApiInfo(tokenId);
+				if (info.length === 1) {
+					tokenApiInfoSet(info[0]);
+				}
+			}
+		})();
+	}, [tokenId]);
+	const tokenName = useMemo(
+		() =>
+			!tokenApiInfo ? '' : addIndexToTokenSymbol(tokenApiInfo.symbol, tokenApiInfo.tokenIndex),
+		[tokenApiInfo]
+	);
+
+	return (
+		<>
+			{!!transaction && (
+				<Modal
+					fullscreen
+					heading={signable ? i18n.confirmTransaction : i18n.transaction}
+					onClose={onClose}
+				>
+					<div className="flex flex-col px-5">
+						{!tokenApiInfo ? (
+							<p className="">...</p>
+						) : (
+							<>
+								<p className="">
+									{
+										{
+											1: i18n.contractCreation, // request(create contract)
+											2: i18n.send, // request(transfer)
+											3: i18n.reissueToken, // request(re-issue token)
+											4: i18n.receive, // response
+											5: i18n.failedResponse, // response(failed)
+											6: i18n.contractRefund, // request(refund by contract)
+											7: i18n.genesis, // response(genesis)
+										}[blockType!]
+									}
+								</p>
+								<div className="flex flex-col mt-4 gap-4 p-4 bg-skin-middleground">
+									<div className="fx">
+										<div className="fx">
+											<p className="leading-5 break-words font-medium">
+												<span className="text-skin-secondary">{i18n.token}: </span>
+												{tokenName}
+											</p>
+											{!tokenApiInfo?.icon ? (
+												<DeterministicIcon tti={tokenId!} className="h-5 w-5 rounded-full ml-2" />
+											) : (
+												<img
+													src={tokenApiInfo?.icon}
+													// alt={tokenApiInfo.symbol}
+													alt={tokenName}
+													className="h-5 w-5 rounded-full ml-2 overflow-hidden bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
+												/>
+											)}
+										</div>
+									</div>
+									<Field
+										label={i18n.amount}
+										value={toBiggestUnit(amount!, tokenApiInfo?.decimal)}
+									/>
+									<Field
+										label={i18n.params}
+										// @ts-ignore
+										value={contractFuncParams}
+										format={(v) => JSON.stringify(v, null, 2)}
+									/>
+									<Field label={i18n.from} value={address} format={shortenAddress} />
+									<Field label={i18n.to} value={toAddress} format={shortenAddress} />
+									{(
+										[
+											// [i18n.data, data],
+											// [i18n.difficulty, difficulty],
+											// [i18n.fee, fee],
+											[i18n.hash, hash, shortenHash],
+											[i18n.blockHeight, height],
+											// [i18n.nonce, nonce],
+											// [i18n.previousHash, previousHash, shortenHash],
+											// [i18n.publicKey, publicKey],
+											// [i18n.sendBlockHash, sendBlockHash, shortenHash],
+											// [i18n.signature, signature],
+										] as [string, string, () => string][]
+									).map(([key, value, format]) => (
+										<Field key={key} label={key} value={value} format={format} />
+									))}
+								</div>
+								{hash && (
+									<A
+										className="fx self-center mt-5"
+										// OPTIMIZE: Make this URL more flexible for different network URLs
+										href={`${activeNetwork.explorerUrl}/tx/${hash}`}
+									>
+										<p className="text-skin-lowlight">{i18n.viewOnViteScan}</p>
+										<ExternalLinkIcon className="w-6 ml-1 mr-2 text-skin-lowlight" />
+									</A>
+								)}
+							</>
+						)}
+					</div>
+				</Modal>
+			)}
+		</>
 	);
 };
 

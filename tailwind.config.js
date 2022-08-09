@@ -32,6 +32,7 @@ module.exports = {
 					base: 'var(--bg-base-color)',
 					middleground: 'var(--bg-middleground-color)',
 					foreground: 'var(--bg-foreground-color)',
+					tertiary: 'var(--tertiary-text-color)',
 				},
 			},
 		},

@@ -19,11 +19,7 @@ const MONTHS = [
 	'December',
 ];
 
-export const formatDate = (
-	date: number | Date,
-	verbose?: boolean,
-	utc?: boolean
-) => {
+export const formatDate = (date: number | Date, verbose?: boolean, utc?: boolean) => {
 	if (!date) {
 		return;
 	}
@@ -46,5 +42,5 @@ export const formatDate = (
 			minute < 10 ? `0${minute}` : minute
 		}`;
 	}
-	return `${year}-${month + 1}-${day} ${hour}:${minute}:${second}`;
+	return `${year}/${month + 1}/${day} ${hour}:${minute}:${second}`;
 };

@@ -16,10 +16,7 @@ const Secrets = ({ i18n, mnemonics, copyWithToast, className }: Props) => {
 		<div
 			className={`relative overflow-hidden w-full bg-skin-middleground rounded shadow p-4 ${className}`}
 		>
-			<button
-				className="fx group darker-brightness-button leading-3 mb-2"
-				onClick={() => copyWithToast(mnemonics)}
-			>
+			<button className="fx group leading-3 mb-2" onClick={() => copyWithToast(mnemonics)}>
 				<p className="text-skin-secondary">{i18n.mnemonicPhrase}</p>
 				<DuplicateIcon className="ml-1 w-5 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 			</button>

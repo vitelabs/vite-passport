@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
 	CreditCardIcon,
 	DuplicateIcon,
-	PencilIcon,
+	// PencilIcon,
 	// LockClosedIcon,
 	// SortAscendingIcon,
 } from '@heroicons/react/outline';
@@ -15,11 +15,11 @@ import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { shortenAddress, validateHttpUrl, validateWsUrl } from '../utils/strings';
 import { State } from '../utils/types';
-import ModalListBottomButton from '../components/ModalListBottomButton';
 import { setValue } from '../utils/storage';
 import WalletContents from '../containers/WalletContents';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import A from '../components/A';
+import ViteLogo from '../assets/ViteLogo';
 
 // constant.Contracts.StakeForQuota_V1
 // constant.Contracts.StakeForQuota
@@ -47,7 +47,6 @@ const Home = ({
 	const [editingNetwork, editingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
-	const [accountName, accountNameSet] = useState(contacts[activeAccount.address]);
 	const [networkName, networkNameSet] = useState('');
 	const [rpcUrl, rpcUrlSet] = useState('');
 	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
@@ -56,47 +55,54 @@ const Home = ({
 	// const [quotaBeneficiary, quotaBeneficiarySet] = useState('');
 	// const [lockedAmount, lockedAmountSet] = useState('');
 
-	const activeAddress = useMemo(() => {
-		accountNameSet(contacts[activeAccount.address]);
-		return activeAccount.address;
-	}, [activeAccount, contacts]);
-
 	return (
 		<TabContainer>
-			<div className="bg-skin-middleground shadow-md z-10 p-2">
+			<div className="bg-skin-middleground shadow-md z-10 p-4">
+				<div className="fx absolute top-3">
+					<div className="h-8 w-8 xy rounded-full text-white bg-gradient-to-br from-[#1944c5] to-[#60b2ed]">
+						<ViteLogo noText size={16} />
+					</div>
+					<div className="flex flex-col items-start ml-2.5">
+						<button
+							className="mt-0.5 p-1 text-sm text-skin-secondary leading-3"
+							onClick={() => editingNetworkSet(true)}
+						>
+							{activeNetwork.name}
+						</button>
+						<button
+							className="p-1 fx"
+							onClick={() => {
+								//
+							}}
+						>
+							<div
+								className={`h-2 w-2 rounded-full ${
+									!true ? 'bg-skin-connected-green' : 'bg-skin-eye-icon'
+								}`}
+							/>
+							<p className="ml-1 text-xs text-skin-tertiary leading-3">
+								{!true ? i18n.connected : i18n.disconnected}
+							</p>
+						</button>
+					</div>
+				</div>
 				<button
-					className="absolute p-1 -m-1 text-sm text-skin-secondary leading-3"
-					onClick={() => editingNetworkSet(true)}
-				>
-					{activeNetwork.name}
-				</button>
-				<button
-					className="absolute p-1 -m-1 text-skin-secondary right-2"
+					className="absolute p-1 -m-1 right-5"
 					onClick={() => changingActiveAccountSet(true)}
 				>
-					<CreditCardIcon className="w-6 text-inherit" />
+					<CreditCardIcon className="w-6 text-skin-unchecked-checkbox" />
 				</button>
-				<div className="absolute fx right-2 top-8">
-					<div
-						className={`h-2 w-2 rounded-full ${
-							!true ? 'bg-skin-connected-green' : 'bg-skin-error'
-						}`}
-					/>
-					<p className="ml-1 text-xs text-skin-tertiary">
-						{!true ? i18n.connected : i18n.disconnected}
-					</p>
-				</div>
-				<div className="fy xy mt-10">
-					<p className="text-skin-secondary">{accountName}</p>
+				<div className="fy xy mt-12">
+					<p className="text-skin-secondary">{contacts[activeAccount.address]}</p>
 					<div className="flex rounded-full bg-skin-base gap-2 py-2 px-4">
-						<p className="text-sm">{shortenAddress(activeAddress)}</p>
-						<button className="p-1 -m-1 xy" onClick={() => copyWithToast(activeAddress)}>
+						<p className="text-sm">{shortenAddress(activeAccount.address)}</p>
+						<button className="p-1 -m-1 xy" onClick={() => copyWithToast(activeAccount.address)}>
 							<DuplicateIcon className="w-4 text-skin-back-arrow-icon" />
 						</button>
 						{activeNetwork.explorerUrl && (
 							<A
 								className="p-1 -m-1 xy"
-								href={`${activeNetwork.explorerUrl}/address/${activeAddress}`}
+								href={`${activeNetwork.explorerUrl}/address/${activeAccount.address}`}
 							>
 								<ExternalLinkIcon className="w-4 text-skin-back-arrow-icon" />
 							</A>
@@ -104,7 +110,7 @@ const Home = ({
 					</div>
 				</div>
 			</div>
-			<div className="flex-1 p-2 space-y-2 overflow-scroll">
+			<div className="flex-1 p-4 space-y-4 overflow-scroll">
 				{/* <div className="flex gap-2 h-10">
 					<button
 						className="bg-skin-middleground xy flex-1 rounded brightness-button gap-1.5"
@@ -121,7 +127,7 @@ const Home = ({
 						<p>{i18n.quota}</p>
 					</button>
 				</div> */}
-				{/* <WalletContents /> */}
+				<WalletContents />
 			</div>
 			{/* <Modal
 				visible={votingModalOpen}

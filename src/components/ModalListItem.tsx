@@ -5,6 +5,7 @@ import { ReactNode } from 'react';
 type Props = {
 	radio?: boolean;
 	active?: boolean;
+	base?: boolean;
 	onClick: () => void;
 	rightJSX?: ReactNode;
 	label: string;
@@ -17,6 +18,7 @@ const ModalListItem = ({
 	radio,
 	active,
 	onClick,
+	base,
 	label,
 	sublabel,
 	rightJSX,
@@ -26,13 +28,13 @@ const ModalListItem = ({
 	return (
 		<div className="flex items-center">
 			<button
-				className={`p-4 ${
-					radio ? 'pl-0' : ''
-				} fx w-full bg-skin-middleground brightness-button ${className}`}
+				className={`p-4 ${radio ? 'pl-0' : ''} fx w-full ${
+					base ? 'bg-skin-base' : 'bg-skin-middleground'
+				} brightness-button ${className}`}
 				onClick={onClick}
 			>
 				{radio && (
-					<div className="w-12 xy">
+					<div className="w-12 xy relative">
 						{active && (
 							// This hack gives CheckCircleIcon a white checkmark
 							<div className="bg-white h-4 w-4 absolute rounded-full z-0" />
@@ -46,7 +48,9 @@ const ModalListItem = ({
 				)}
 				<div className="text-left flex-1">
 					<p className="leading-4">{label}</p>
-					{sublabel && <p className="mt-1 leading-4 text-sm text-skin-secondary">{sublabel}</p>}
+					{sublabel && (
+						<p className="mt-1 leading-4 text-sm font-medium text-skin-secondary">{sublabel}</p>
+					)}
 				</div>
 				{rightJSX}
 			</button>

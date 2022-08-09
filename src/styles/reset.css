@@ -5,16 +5,7 @@
 body,
 #root {
 	-webkit-font-smoothing: antialiased;
-	@apply bg-skin-base h-[35rem] w-[calc(9/16*35rem)] text-base overflow-scroll;
-}
-
-#root::-webkit-scrollbar {
-	display: none;
-}
-
-#root {
-	-ms-overflow-style: none;
-	scrollbar-width: none;
+	@apply bg-skin-base h-[35rem] w-[calc(10/16*35rem)] text-base overflow-scroll;
 }
 
 body {
@@ -58,4 +49,14 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type='number'] {
 	-moz-appearance: textfield;
+}
+
+/* https://stackoverflow.com/a/72047637/4975090 */
+div {
+	-ms-overflow-style: none; /* Edge, Internet Explorer */
+	scrollbar-width: none; /* Firefox */
+	overflow-y: scroll;
+}
+div::-webkit-scrollbar {
+	display: none; /* Chrome, Safari, Opera */
 }

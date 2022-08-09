@@ -68,7 +68,10 @@ const Router = ({
 		}
 		if (encryptedSecrets) {
 			if (secrets) {
+				// return ['/create'];
 				return ['/home'];
+				// return ['/my-transactions'];
+				// return ['/connect?hostname=example.com'];
 			} else {
 				return ['/lock'];
 			}

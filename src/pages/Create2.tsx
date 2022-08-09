@@ -5,11 +5,13 @@ import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { State } from '../utils/types';
 import A from '../components/A';
-import Checkbox, { useCheckboxRef } from '../components/Checkbox';
+import Checkbox from '../components/Checkbox';
 import { encrypt } from '../utils/encryption';
 import { wallet } from '@vite/vitejs';
 import { setValue } from '../utils/storage';
 import { defaultStorage } from '../utils/constants';
+import { useState } from 'react';
+import Button from '../components/Button';
 
 const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 	const navigate = useNavigate();
@@ -18,10 +20,9 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 	} = useLocation() as {
 		state: { mnemonics: string; routeAfterUnlock?: string };
 	};
-
+	const [agreesToTerms, agreesToTermsSet] = useState(false);
 	const passwordRef = useTextInputRef();
 	const confirmPasswordRef = useTextInputRef();
-	const agreeToTermsRef = useCheckboxRef();
 
 	return (
 		<PageContainer heading={i18n.createWallet}>
@@ -34,7 +35,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 			/>
 			{/* <p className="mt-1 text-skin-tertiary text-sm">{i18n.mustContainAtLeast8Characters}</p> */}
 			<div className="mt-4 fx">
-				<Checkbox _ref={agreeToTermsRef} />
+				<Checkbox value={agreesToTerms} onUserInput={(v) => agreesToTermsSet(v)} />
 				<p className="text-skin-tertiary text-xs">
 					{i18n.iHaveReadAndAgreeToThe}{' '}
 					<A href="https://vite.org/terms.html" className="text-skin-lowlight">
@@ -43,8 +44,9 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 				</p>
 			</div>
 			<div className="flex-1"></div>
-			<button
-				className="h-10 w-full bg-skin-highlight xy rounded-sm"
+			<Button
+				theme="highlight"
+				label={i18n.next}
 				onClick={async () => {
 					let valid = validateInputs([passwordRef, confirmPasswordRef]);
 					if (passwordRef.value !== confirmPasswordRef.value) {
@@ -74,9 +76,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 						navigate(routeAfterUnlock || '/home');
 					}
 				}}
-			>
-				{i18n.next}
-			</button>
+			/>
 		</PageContainer>
 	);
 };

@@ -25,8 +25,8 @@ import { DuplicateIcon } from '@heroicons/react/outline';
 import { setValue } from '../utils/storage';
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import DeterministicIcon from '../components/DeterministicIcon';
-import TransactionInfo from './TransactionInfo';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
+import Button from '../components/Button';
 
 const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
 	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
@@ -158,26 +158,26 @@ const WalletContents = ({
 								return (
 									<button
 										key={tti}
-										className="fx rounded-sm w-full p-1.5 shadow cursor-pointer bg-skin-middleground brightness-button"
+										className="fx rounded-sm w-full px-4 py-3 shadow cursor-pointer bg-skin-middleground brightness-button"
 										onClick={() => selectedTokenSet(tokenApiInfo)}
 									>
 										{!icon ? (
-											<DeterministicIcon tti={tti} className="h-10 w-10 rounded-full mr-2" />
+											<DeterministicIcon tti={tti} className="h-10 w-10 rounded-full" />
 										) : (
 											<img
 												src={icon}
 												alt={addIndexToTokenSymbol(symbol, tokenIndex)}
-												className="h-10 w-10 rounded-full mr-2 bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
+												className="h-10 w-10 rounded-full bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
 											/>
 										)}
-										<div className="flex-1 flex">
+										<div className="ml-4 flex-1 flex">
 											<div className="flex flex-col flex-1 items-start">
 												<p className="text-lg">{addIndexToTokenSymbol(symbol, tokenIndex)}</p>
-												<p className="text-xs text-skin-tertiary">{shortenTti(tti)}</p>
+												<p className="text-sm text-skin-tertiary font-medium">{shortenTti(tti)}</p>
 											</div>
 											<div className="flex flex-col items-end mr-1.5">
 												<p className="text-lg">{biggestUnit === null ? '...' : biggestUnit}</p>
-												<p className="text-xs text-skin-secondary">
+												<p className="text-sm text-skin-secondary font-medium">
 													{!vitePrice || biggestUnit === null
 														? '...'
 														: `≈${calculatePrice(biggestUnit!, vitePrice)}`}
@@ -280,16 +280,13 @@ const WalletContents = ({
 											<div className="flex-1 fx">
 												<div className="flex flex-col flex-1 items-start">
 													<p className="text-lg">{tokenName}</p>
-													<button
-														className="group fx darker-brightness-button"
-														onClick={() => copyWithToast(tti)}
-													>
+													<button className="group fx" onClick={() => copyWithToast(tti)}>
 														<p className="text-xs text-skin-secondary">{shortenTti(tti)}</p>
 														<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 													</button>
 												</div>
 												<Checkbox
-													checked={checkedTokens[tti]}
+													value={checkedTokens[tti]}
 													onUserInput={(checked) => {
 														checkedTokens[tti] = checked;
 														checkedTokensSet({ ...checkedTokens });
@@ -303,14 +300,10 @@ const WalletContents = ({
 						)}
 					</div>
 					<div className="flex gap-2 p-2 shadow z-50">
-						<button
-							className="p-0 h-10 w-full bg-white xy rounded-sm text-skin-lowlight"
-							onClick={() => editingTokenListSet(false)}
-						>
-							{i18n.cancel}
-						</button>
-						<button
-							className="p-0 h-10 w-full bg-skin-highlight xy rounded-sm"
+						<Button theme="white" label={i18n.cancel} onClick={() => editingTokenListSet(false)} />
+						<Button
+							theme="highlight"
+							label={i18n.confirm}
 							onClick={() => {
 								const data = {
 									displayedTokenIds: Object.entries(checkedTokens)
@@ -321,9 +314,7 @@ const WalletContents = ({
 								setValue(data);
 								editingTokenListSet(false);
 							}}
-						>
-							{i18n.confirm}
-						</button>
+						/>
 					</div>
 				</Modal>
 			)}
@@ -338,10 +329,10 @@ const WalletContents = ({
 								<div className="flex-1 fy">
 									<p className="text-lg leading-4 mt-1">{selectedToken.symbol}</p>
 									<button
-										className="group fx darker-brightness-button"
+										className="group fx"
 										onClick={() => copyWithToast(selectedToken.tokenAddress)}
 									>
-										<p className="ml-5 leading-3 text-xs text-skin-secondary">
+										<p className="m-4 leading-3 text-xs text-skin-secondary">
 											{shortenTti(selectedToken.tokenAddress)}
 										</p>
 										<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
@@ -368,19 +359,13 @@ const WalletContents = ({
 					<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
 						{selectedToken && <TransactionList tti={selectedToken.tokenAddress} />}
 					</div>
-					<div className="fx p-2 gap-2 shadow">
-						<button
-							className="h-10 w-full bg-white xy rounded-sm text-skin-lowlight p-0"
+					<div className="fx p-4 gap-4 shadow">
+						<Button theme="white" onClick={() => sendingFundsSet(true)} label={i18n.send} />
+						<Button
+							theme="highlight"
 							onClick={() => receivingFundsSet(true)}
-						>
-							Receive
-						</button>
-						<button
-							className="h-10 w-full bg-white xy rounded-sm text-skin-lowlight p-0"
-							onClick={() => sendingFundsSet(true)}
-						>
-							{i18n.send}
-						</button>
+							label={i18n.receive}
+						/>
 					</div>
 				</Modal>
 			)}
@@ -405,6 +390,7 @@ const WalletContents = ({
 							<TextInput
 								optional
 								numeric
+								_ref={amountRef}
 								label="Amount"
 								value={amount}
 								onUserInput={(v) => amountSet(v)}
@@ -412,6 +398,7 @@ const WalletContents = ({
 							<TextInput
 								optional
 								textarea
+								_ref={commentRef}
 								label="Comment"
 								value={comment}
 								onUserInput={(v) => commentSet(v)}
@@ -493,8 +480,9 @@ const WalletContents = ({
 								value={comment}
 								onUserInput={(v) => commentSet(v)}
 							/>
-							<button
-								className="h-10 w-full bg-skin-highlight xy rounded-sm"
+							<Button
+								theme="highlight"
+								label={i18n.next}
 								onClick={() => {
 									const valid = validateInputs([toAddressRef, amountRef, commentRef]);
 									if (valid) {
@@ -502,9 +490,7 @@ const WalletContents = ({
 										// setTimeout(() => sendingFundsSet(false), 0);
 									}
 								}}
-							>
-								{i18n.next}
-							</button>
+							/>
 						</div>
 					)}
 				</Modal>
@@ -526,10 +512,10 @@ const WalletContents = ({
 							<p className="">{comment}</p>
 						</div>
 					)} */}
-						{unsentBlock && <TransactionInfo {...unsentBlock} />}
-						<button
-							disabled={sendingTx}
-							className="h-10 w-full bg-skin-highlight xy rounded-sm"
+						<Button
+							disabled={!!sendingTx}
+							theme="highlight"
+							label={i18n.signAndSendBlock}
 							onClick={async () => {
 								try {
 									sendingTxSet(true);
@@ -561,20 +547,17 @@ const WalletContents = ({
 									sendingTxSet(false);
 								}
 							}}
-						>
-							{i18n.signAndSendBlock}
-						</button>
+						/>
 					</div>
 				</Modal>
 			)}
 			<TransactionModal
-				heading={i18n.transactionSent}
 				onClose={() => {
 					sendingFundsSet(false);
 					confirmingTransactionSet(false);
 					setTimeout(() => sentTxSet(undefined), 0);
 				}}
-				transaction={sentTx}
+				transaction={sentTx || unsentBlock}
 			/>
 		</>
 	);

@@ -131,8 +131,7 @@ const en = {
 	_12Words: '12 words',
 	_24Words: '24 words',
 	transactionSent: 'Transaction Sent!',
-	doYouWantToConnectVitePassportToThisDomain:
-		'Do you want to connect Vite Passport to this domain?',
+	vitePassportIsLinking: 'Vite Passport is linking',
 	notAtThisTime: 'Not at this time',
 	no: 'No',
 	nothingFound: 'Nothing Found',
@@ -146,7 +145,7 @@ const en = {
 	difficulty: 'Difficulty',
 	fee: 'Fee',
 	hash: 'Hash',
-	height: 'Height',
+	blockHeight: 'Block Height',
 	nonce: 'Nonce',
 	previousHash: 'PreviousHash',
 	publicKey: 'PublicKey',
@@ -161,6 +160,7 @@ const en = {
 	add: 'Add',
 	connected: 'Connected',
 	disconnected: 'Disconnected',
+	token: 'Token',
 	test: 'test',
 	'': '',
 };

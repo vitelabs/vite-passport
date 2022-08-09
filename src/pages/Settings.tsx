@@ -2,14 +2,12 @@
 
 import React, { useCallback, useRef, useState } from 'react';
 import Modal from '../components/Modal';
-import ModalListBottomButton from '../components/ModalListBottomButton';
 import ModalListItem from '../components/ModalListItem';
 import Secrets from '../containers/Secrets';
 import TabContainer from '../components/TabContainer';
 import TextInput, { useTextInputRef } from '../containers/TextInput';
 import { currencyConversions, i18nDict, languages } from '../utils/constants';
 import { connect } from '../utils/global-context';
-import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
 import ResetWalletModal from '../containers/ResetWalletModal';
@@ -30,7 +28,7 @@ const ListItem = ({
 		onClick={onClick}
 		className="fx w-full bg-skin-base justify-between p-3 brightness-button"
 	>
-		<p className="text-skin-input-label font-normal">{label}</p>
+		<p className="text-skin-input-label font-medium">{label}</p>
 		{value && <p>{value}</p>}
 	</button>
 );
