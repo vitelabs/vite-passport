@@ -160,6 +160,7 @@ const en = {
 	add: 'Add',
 	connected: 'Connected',
 	disconnected: 'Disconnected',
+	searchTokensBySymbolOrTti: 'Search tokens by symbol or tti',
 	token: 'Token',
 	test: 'test',
 	'': '',

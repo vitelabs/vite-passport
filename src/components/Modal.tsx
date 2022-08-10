@@ -6,9 +6,9 @@ import { useKeyPress } from '../utils/hooks';
 
 type Props = {
 	fullscreen?: boolean;
+	noHeader?: boolean;
 	heading?: string;
 	subheading?: string;
-	headerComponent?: ReactNode;
 	onClose?: () => void;
 	children: ReactNode;
 	className?: string;
@@ -21,9 +21,9 @@ const modalParent = document.getElementById('modal')!;
 
 const Modal = ({
 	fullscreen,
+	noHeader,
 	heading,
 	subheading,
-	headerComponent,
 	onClose = () => {},
 	children,
 	className,
@@ -60,13 +60,18 @@ const Modal = ({
 			}}
 		>
 			{fullscreen ? (
-				<div onClick={(e) => e.stopPropagation()} className="w-full h-full bg-skin-base">
-					<div className="xy h-12">
-						<button className="absolute left-3 w-8 xy" onClick={onClose}>
+				<div
+					onClick={(e) => e.stopPropagation()}
+					className="flex flex-col w-full h-full bg-skin-base"
+				>
+					<div className="xy flex-col h-12">
+						<button className="absolute left-3 w-8 h-8 xy" onClick={onClose}>
 							<ArrowNarrowLeftIcon className="w-5 text-skin-back-arrow-icon" />
 						</button>
 						{heading && <p className="text-lg">{heading}</p>}
-						{headerComponent}
+						{subheading && (
+							<p className="mt-1 text-center leading-3 text-xs text-skin-secondary">{subheading}</p>
+						)}
 					</div>
 					<div className={className}>{children}</div>
 				</div>
@@ -75,19 +80,21 @@ const Modal = ({
 					<div className="flex-1 min-h-[3rem]" />
 					<div className="flex justify-center">
 						<div
-							className={`bg-skin-middleground w-full max-w-full mx-3 overflow-hidden rounded-sm shadow-md ${className}`}
+							className={`bg-skin-middleground w-full max-w-full mx-8 overflow-hidden rounded-sm shadow-md ${className}`}
 							onClick={(e) => e.stopPropagation()}
 							onMouseDown={() => (mouseDraggingModal.current = true)}
 							onMouseUp={() => (mouseDraggingModal.current = false)}
 						>
-							<div className="xy h-12 border-b-2 border-skin-divider">
-								<p className="text-lg text-center leading-4">{heading}</p>
-								{subheading && (
-									<p className="mt-1 text-center leading-3 text-xs text-skin-secondary">
-										{subheading}
-									</p>
-								)}
-							</div>
+							{!noHeader && (
+								<div className="xy h-12 border-b-2 border-skin-divider">
+									<p className="text-lg text-center leading-4">{heading}</p>
+									{subheading && (
+										<p className="mt-1 text-center leading-3 text-xs text-skin-secondary">
+											{subheading}
+										</p>
+									)}
+								</div>
+							)}
 							{children}
 							{buttonText && (
 								<button

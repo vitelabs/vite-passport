@@ -1,12 +1,12 @@
 import { useRef, useEffect, useState, HTMLProps } from 'react';
 import QRCode from 'qrcode';
 
-const QR = ({
-	data,
-	...rest
-}: HTMLProps<HTMLDivElement> & {
+type Props = {
+	className?: string;
 	data: string;
-}) => {
+};
+
+const QR = ({ data, className }: Props) => {
 	const [src, srcSet] = useState('');
 
 	const mountedRef = useRef(true);
@@ -29,7 +29,7 @@ const QR = ({
 	}, [data]);
 
 	return (
-		<div {...rest}>
+		<div className={`h-48 w-48 mx-auto ${className}`}>
 			<div
 				{...{
 					dangerouslySetInnerHTML: { __html: src },

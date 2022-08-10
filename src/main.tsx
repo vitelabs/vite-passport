@@ -9,6 +9,7 @@ import { PortEvent, PortMessage, State } from './utils/types';
 import { getValue, setValue } from './utils/storage';
 import { wallet } from '@vite/vitejs';
 import { defaultStorage, i18nDict } from './utils/constants';
+import { getCurrentTab } from './utils/misc';
 
 const root = createRoot(document.getElementById('root')!);
 
@@ -34,10 +35,9 @@ const listen = async (message: PortMessage) => {
 			postPortMessage: (message: PortMessage) => {
 				chromePort.postMessage(message);
 			},
-			triggerEvent: (event: PortEvent) => {
-				chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) => {
-					chrome.tabs.sendMessage(tab.id!, event);
-				});
+			triggerEvent: async (event: PortEvent) => {
+				const tab = await getCurrentTab();
+				chrome.tabs.sendMessage(tab.id!, event);
 			},
 		};
 		if (message.secrets) {

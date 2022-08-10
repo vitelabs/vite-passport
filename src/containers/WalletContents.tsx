@@ -21,12 +21,13 @@ import Checkbox from '../components/Checkbox';
 import QR from '../components/QR';
 import TransactionList from './TransactionList';
 import Modal from '../components/Modal';
-import { DuplicateIcon } from '@heroicons/react/outline';
+import { DocumentDuplicateIcon } from '@heroicons/react/outline';
 import { setValue } from '../utils/storage';
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import DeterministicIcon from '../components/DeterministicIcon';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import Button from '../components/Button';
+import TokenCard from './TokenCard';
 
 const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
 	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
@@ -100,6 +101,7 @@ const WalletContents = ({
 				a.symbol === 'VITE' ? -1 : b.symbol === 'VITE' ? 1 : a.symbol < b.symbol ? -1 : 1
 			)
 		);
+		// selectedTokenSet(list[0]);
 	}, []);
 
 	const unsentBlock = useMemo<AccountBlockClass>(() => {
@@ -143,50 +145,13 @@ const WalletContents = ({
 						{!displayedTokens.length ? (
 							<p className="text-center text-skin-secondary">{i18n.yourWalletIsEmpty}</p>
 						) : (
-							displayedTokens.map((tokenApiInfo) => {
-								const {
-									symbol,
-									// name,
-									tokenAddress: tti,
-									tokenIndex,
-									icon,
-									decimal,
-									// gatewayInfo,
-								} = tokenApiInfo;
-								const balance = balanceInfoMap?.[tti]?.balance || '0';
-								const biggestUnit = !balanceInfoMap ? null : toBiggestUnit(balance, decimal);
-								return (
-									<button
-										key={tti}
-										className="fx rounded-sm w-full px-4 py-3 shadow cursor-pointer bg-skin-middleground brightness-button"
-										onClick={() => selectedTokenSet(tokenApiInfo)}
-									>
-										{!icon ? (
-											<DeterministicIcon tti={tti} className="h-10 w-10 rounded-full" />
-										) : (
-											<img
-												src={icon}
-												alt={addIndexToTokenSymbol(symbol, tokenIndex)}
-												className="h-10 w-10 rounded-full bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
-											/>
-										)}
-										<div className="ml-4 flex-1 flex">
-											<div className="flex flex-col flex-1 items-start">
-												<p className="text-lg">{addIndexToTokenSymbol(symbol, tokenIndex)}</p>
-												<p className="text-sm text-skin-tertiary font-medium">{shortenTti(tti)}</p>
-											</div>
-											<div className="flex flex-col items-end mr-1.5">
-												<p className="text-lg">{biggestUnit === null ? '...' : biggestUnit}</p>
-												<p className="text-sm text-skin-secondary font-medium">
-													{!vitePrice || biggestUnit === null
-														? '...'
-														: `≈${calculatePrice(biggestUnit!, vitePrice)}`}
-												</p>
-											</div>
-										</div>
-									</button>
-								);
-							})
+							displayedTokens.map((tokenApiInfo) => (
+								<TokenCard
+									{...tokenApiInfo}
+									key={tokenApiInfo.tokenAddress}
+									onClick={() => selectedTokenSet(tokenApiInfo)}
+								/>
+							))
 						)}
 						<button
 							className="mx-auto block text-skin-highlight brightness-button leading-3"
@@ -219,7 +184,7 @@ const WalletContents = ({
 					className="flex flex-col"
 				>
 					<input
-						placeholder="Search tokens by symbol or tti"
+						placeholder={i18n.searchTokensBySymbolOrTti}
 						value={tokenQuery}
 						className="p-2 shadow z-10 w-full bg-skin-middleground"
 						onChange={(e) => {
@@ -282,7 +247,7 @@ const WalletContents = ({
 													<p className="text-lg">{tokenName}</p>
 													<button className="group fx" onClick={() => copyWithToast(tti)}>
 														<p className="text-xs text-skin-secondary">{shortenTti(tti)}</p>
-														<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
+														<DocumentDuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
 													</button>
 												</div>
 												<Checkbox
@@ -322,42 +287,12 @@ const WalletContents = ({
 				<Modal
 					fullscreen
 					onClose={() => selectedTokenSet(undefined)}
-					className="flex flex-col"
-					headerComponent={
-						selectedToken && (
-							<>
-								<div className="flex-1 fy">
-									<p className="text-lg leading-4 mt-1">{selectedToken.symbol}</p>
-									<button
-										className="group fx"
-										onClick={() => copyWithToast(selectedToken.tokenAddress)}
-									>
-										<p className="m-4 leading-3 text-xs text-skin-secondary">
-											{shortenTti(selectedToken.tokenAddress)}
-										</p>
-										<DuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-									</button>
-								</div>
-								<div className="w-10 p-1">
-									{!selectedToken.icon ? (
-										<DeterministicIcon
-											tti={selectedToken.tokenAddress}
-											className="h-8 w-8 rounded-full mr-2"
-										/>
-									) : (
-										<img
-											src={selectedToken.icon}
-											alt={selectedToken.symbol}
-											className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
-										/>
-									)}
-								</div>
-							</>
-						)
-					}
+					className="flex flex-col flex-1"
+					heading={addIndexToTokenSymbol(selectedToken.symbol, selectedToken.tokenIndex)}
+					subheading={selectedToken.tokenAddress}
 				>
-					<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
-						{selectedToken && <TransactionList tti={selectedToken.tokenAddress} />}
+					<div className="flex-1">
+						<TransactionList tti={selectedToken.tokenAddress} />
 					</div>
 					<div className="fx p-4 gap-4 shadow">
 						<Button theme="white" onClick={() => sendingFundsSet(true)} label={i18n.send} />
@@ -385,7 +320,6 @@ const WalletContents = ({
 									tti: selectedToken.tokenAddress,
 									data: btoa(comment).replace(/=+$/, ''),
 								})}`}
-								className="h-40 w-40 mx-auto"
 							/>
 							<TextInput
 								optional

@@ -44,12 +44,14 @@ export const debounce = (fn: (...args: any) => any, ms = 0) => {
 	};
 };
 
-// OPTIMIZE:
-// const tokenApiInfoCache: { [tti: string]: TokenApiInfo } = {};
+const tokenApiInfoCache: { [tti: string]: TokenApiInfo } = {};
 // getTokenApiInfo to differentiate from the `tokenInfo` returned from `viteApi.getBalanceInfo`
 export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<TokenApiInfo[]> => {
 	if (!tokenIds.length) {
 		return [];
+	}
+	if (Array.isArray(tokenIds) && tokenIds.every((tti) => !!tokenApiInfoCache[tti])) {
+		return tokenIds.map((tti) => tokenApiInfoCache[tti]);
 	}
 	const res = await fetch('https://vitex.vite.net/api/v1/cryptocurrency/info/platform/query', {
 		method: 'POST',
@@ -63,9 +65,15 @@ export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<Toke
 	});
 	const data: { msg: string; code: number; data: TokenApiInfo[] } = await res.json();
 	if (data.msg === 'ok' && data.code === 0) {
-		// data.data.forEach((info) => (tokenApiInfoCache[info.tokenAddress] = info));
+		data.data.forEach((info) => (tokenApiInfoCache[info.tokenAddress] = info));
 		return data.data;
 	}
 	// TODO: fail gracefully
 	return [];
+};
+
+export const getCurrentTab = (): Promise<chrome.tabs.Tab> => {
+	return new Promise((res) => {
+		chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) => res(tab));
+	});
 };

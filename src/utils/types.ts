@@ -22,8 +22,10 @@ export type Storage = {
 	contacts: { [address: string]: string };
 	displayedTokenIds: string[];
 	connectedDomains: {
-		[domain: string]: {
-			[contractAddress: string]: boolean;
+		[address: string]: {
+			[domain: string]: {
+				[contractAddress: string]: boolean;
+			};
 		};
 	};
 };

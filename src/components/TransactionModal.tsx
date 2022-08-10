@@ -1,5 +1,5 @@
 import { ExternalLinkIcon } from '@heroicons/react/outline';
-import { DuplicateIcon } from '@heroicons/react/outline';
+import { DocumentDuplicateIcon } from '@heroicons/react/outline';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { useEffect, useMemo, useState } from 'react';
@@ -40,7 +40,7 @@ const Field = ({
 			</p>
 			{!!format && (
 				<button className="ml-2" onClick={() => {}}>
-					<DuplicateIcon className="w-5 text-skin-tertiary" />
+					<DocumentDuplicateIcon className="w-5 text-skin-tertiary" />
 				</button>
 			)}
 		</div>

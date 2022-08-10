@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
 	CreditCardIcon,
-	DuplicateIcon,
+	DownloadIcon,
+	DocumentDuplicateIcon,
+	UploadIcon,
 	// PencilIcon,
 	// LockClosedIcon,
 	// SortAscendingIcon,
@@ -12,14 +14,23 @@ import ModalListItem from '../components/ModalListItem';
 import TabContainer from '../components/TabContainer';
 import TextInput, { useTextInputRef } from '../containers/TextInput';
 import { connect } from '../utils/global-context';
-import { validateInputs } from '../utils/misc';
-import { shortenAddress, validateHttpUrl, validateWsUrl } from '../utils/strings';
-import { State } from '../utils/types';
+import { getCurrentTab, getTokenApiInfo, validateInputs } from '../utils/misc';
+import {
+	addIndexToTokenSymbol,
+	getHostname,
+	shortenAddress,
+	validateHttpUrl,
+	validateWsUrl,
+} from '../utils/strings';
+import { State, TokenApiInfo } from '../utils/types';
 import { setValue } from '../utils/storage';
 import WalletContents from '../containers/WalletContents';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import A from '../components/A';
 import ViteLogo from '../assets/ViteLogo';
+import QR from '../components/QR';
+import TokenSearchBar from '../containers/TokenSearchBar';
+import TokenCard from '../containers/TokenCard';
 
 // constant.Contracts.StakeForQuota_V1
 // constant.Contracts.StakeForQuota
@@ -38,6 +49,8 @@ const Home = ({
 	toastSuccess,
 	activeNetwork,
 	triggerEvent,
+	connectedDomains,
+	viteBalanceInfo,
 }: State) => {
 	// const quotaBeneficiaryRef = useTextInputRef();
 	// const lockedAmountRef = useTextInputRef();
@@ -54,6 +67,28 @@ const Home = ({
 	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
 	// const [quotaBeneficiary, quotaBeneficiarySet] = useState('');
 	// const [lockedAmount, lockedAmountSet] = useState('');
+	const [receiving, receivingSet] = useState(false);
+	const [sending, sendingSet] = useState(false);
+	const [connected, connectedSet] = useState(false);
+	const [tokensInWallet, tokensInWalletSet] = useState<TokenApiInfo[]>([]);
+	const [displayedTokens, displayedTokensSet] = useState<TokenApiInfo[]>([]);
+	const [sendingToken, sendingTokenSet] = useState<undefined | TokenApiInfo>();
+
+	const balanceInfoMap = useMemo(
+		() => (viteBalanceInfo ? viteBalanceInfo?.balance?.balanceInfoMap || {} : undefined),
+		[viteBalanceInfo]
+	);
+
+	useEffect(() => {
+		setTimeout(() => {
+			getCurrentTab().then((tab) => {
+				// console.log('tab:', tab);
+				// console.log('tab.url:', tab.url);
+				const hostname = getHostname(tab.url);
+				connectedSet(!!connectedDomains[activeAccount.address]?.[hostname]);
+			});
+		}, 1000);
+	}, [connectedDomains]);
 
 	return (
 		<TabContainer>
@@ -72,16 +107,18 @@ const Home = ({
 						<button
 							className="p-1 fx"
 							onClick={() => {
-								//
+								if (connected) {
+									//
+								}
 							}}
 						>
 							<div
 								className={`h-2 w-2 rounded-full ${
-									!true ? 'bg-skin-connected-green' : 'bg-skin-eye-icon'
+									connected ? 'bg-skin-connected-green' : 'bg-skin-eye-icon'
 								}`}
 							/>
 							<p className="ml-1 text-xs text-skin-tertiary leading-3">
-								{!true ? i18n.connected : i18n.disconnected}
+								{connected ? i18n.connected : i18n.disconnected}
 							</p>
 						</button>
 					</div>
@@ -97,7 +134,7 @@ const Home = ({
 					<div className="flex rounded-full bg-skin-base gap-2 py-2 px-4">
 						<p className="text-sm">{shortenAddress(activeAccount.address)}</p>
 						<button className="p-1 -m-1 xy" onClick={() => copyWithToast(activeAccount.address)}>
-							<DuplicateIcon className="w-4 text-skin-back-arrow-icon" />
+							<DocumentDuplicateIcon className="w-4 text-skin-back-arrow-icon" />
 						</button>
 						{activeNetwork.explorerUrl && (
 							<A
@@ -111,22 +148,34 @@ const Home = ({
 				</div>
 			</div>
 			<div className="flex-1 p-4 space-y-4 overflow-scroll">
-				{/* <div className="flex gap-2 h-10">
-					<button
-						className="bg-skin-middleground xy flex-1 rounded brightness-button gap-1.5"
-						onClick={() => votingModalOpenSet(true)}
-					>
-						<SortAscendingIcon className="w-4" />
-						<p>{i18n.voting}</p>
-					</button>
-					<button
-						className="bg-skin-middleground xy flex-1 rounded brightness-button gap-1.5"
-						onClick={() => quotaModalOpenSet(true)}
-					>
-						<LockClosedIcon className="w-4" />
-						<p>{i18n.quota}</p>
-					</button>
-				</div> */}
+				<div className="xy gap-16">
+					<div className="fy">
+						<button
+							className="h-14 w-14 bg-skin-middleground xy rounded-full"
+							onClick={async () => {
+								if (balanceInfoMap) {
+									sendingSet(true);
+									const arr = await getTokenApiInfo(Object.keys(balanceInfoMap));
+									tokensInWalletSet(arr);
+									displayedTokensSet(arr);
+								}
+							}}
+						>
+							<UploadIcon className="w-8" />
+						</button>
+						<p>{i18n.send}</p>
+					</div>
+					<div className="fy">
+						<button
+							className="h-14 w-14 bg-skin-middleground xy rounded-full"
+							onClick={() => receivingSet(true)}
+						>
+							<DownloadIcon className="w-8" />
+						</button>
+						<p>{i18n.receive}</p>
+					</div>
+				</div>
+				<div className="h-0.5 bg-skin-divider" />
 				<WalletContents />
 			</div>
 			{/* <Modal
@@ -350,6 +399,69 @@ const Home = ({
 							/>
 						);
 					})}
+				</Modal>
+			)}
+			{receiving && (
+				<Modal noHeader onClose={() => receivingSet(false)} className="p-4">
+					<div className="xy gap-2 px-4 py-3 bg-skin-base rounded-full">
+						<p className="text-lg">{shortenAddress(activeAccount.address)}</p>
+						<button
+							className="p-1.5 -m-1.5 xy"
+							onClick={() => copyWithToast(activeAccount.address)}
+						>
+							<DocumentDuplicateIcon className="w-5 text-skin-back-arrow-icon" />
+						</button>
+					</div>
+					<QR data={`vite:${activeAccount.address}`} className="mt-4" />
+				</Modal>
+			)}
+			{sending && (
+				<Modal
+					fullscreen
+					heading={i18n.send}
+					onClose={() => sendingSet(false)}
+					className="flex flex-col"
+				>
+					<TokenSearchBar
+						onUserInput={(v) => {
+							if (balanceInfoMap) {
+								const search = v.toLocaleLowerCase();
+								displayedTokensSet(
+									tokensInWallet.filter((tokenApiInfo) => {
+										return (
+											tokenApiInfo.tokenAddress.includes(search) ||
+											addIndexToTokenSymbol(tokenApiInfo.symbol, tokenApiInfo.tokenIndex)
+												.toLocaleLowerCase()
+												.includes(search)
+										);
+									})
+								);
+							}
+						}}
+					/>
+					<div className="px-4 pb-4 mt-4 space-y-4 flex-1 overflow-scroll">
+						<div className="h-0.5 bg-skin-divider" />
+						{displayedTokens.map((tokenApiInfo) => (
+							<TokenCard
+								{...tokenApiInfo}
+								key={tokenApiInfo.tokenAddress}
+								onClick={() => sendingTokenSet(tokenApiInfo)}
+							/>
+						))}
+					</div>
+				</Modal>
+			)}
+			{sendingToken && (
+				<Modal
+					fullscreen
+					heading={`${i18n.send} ${addIndexToTokenSymbol(
+						sendingToken.symbol,
+						sendingToken.tokenIndex
+					)}`}
+					onClose={() => sendingTokenSet(undefined)}
+					className="flex flex-col"
+				>
+					{/*  */}
 				</Modal>
 			)}
 		</TabContainer>

@@ -9,7 +9,7 @@
 		"default_title": "Vite Passport",
 		"default_popup": "popup.html"
 	},
-	"permissions": ["storage", "alarms"],
+	"permissions": ["storage", "alarms", "s"],
 	"background": {
 		"service_worker": "src/background.js",
 		"type": "module"
