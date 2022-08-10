@@ -65,7 +65,7 @@ chrome.runtime.onConnect.addListener(async (chromePort) => {
 		// https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#alarms
 		// https://discourse.mozilla.org/t/alarms-and-settimeout-setinterval-in-background-scripts/36662
 		// chrome.alarms.create(lockingAlarmName, { when: Date.now() + 30 * MINUTE });
-		chrome.alarms.create(lockingAlarmName, { delayInMinutes: 1 });
+		chrome.alarms.create(lockingAlarmName, { delayInMinutes: 30 });
 		runAndClearEventListener('vitePassportChromePortDisconnect');
 	});
 });

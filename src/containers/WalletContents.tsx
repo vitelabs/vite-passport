@@ -28,6 +28,7 @@ import DeterministicIcon from '../components/DeterministicIcon';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import Button from '../components/Button';
 import TokenCard from './TokenCard';
+import SendTxFlow from './SendTxFlow';
 
 const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
 	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
@@ -53,10 +54,8 @@ const WalletContents = ({
 	setState,
 	transactionHistory,
 }: Props) => {
-	const toAddressRef = useTextInputRef();
 	const amountRef = useTextInputRef();
 	const commentRef = useTextInputRef();
-	const [sendingTx, sendingTxSet] = useState(false);
 	const [tokenQuery, tokenQuerySet] = useState('');
 	const [checkedTokens, checkedTokensSet] = useState<{
 		[tti: string]: boolean;
@@ -65,32 +64,11 @@ const WalletContents = ({
 	const [editingTokenList, editingTokenListSet] = useState(false);
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
-	// const [toAddress, toAddressSet] = useState('');
-	const [toAddress, toAddressSet] = useState(
-		'vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99'
-	);
-	// const [amount, amountSet] = useState('');
-	const [amount, amountSet] = useState('0.002');
+	const [amount, amountSet] = useState('');
 	// const [comment, commentSet] = useState('');
 	const [comment, commentSet] = useState('test');
-	const [confirmingTransaction, confirmingTransactionSet] = useState(false);
-	const [sentTx, sentTxSet] = useState<undefined | AccountBlockBlock>();
 	const [displayedTokens, displayedTokensSet] = useState<undefined | TokenApiInfo[]>();
 	const [availableTokens, availableTokensSet] = useState<undefined | TokenApiInfo[]>();
-	const balanceInfoMap = useMemo(
-		() => (viteBalanceInfo ? viteBalanceInfo?.balance?.balanceInfoMap || {} : undefined),
-		[viteBalanceInfo]
-	);
-	const selectedTokenBalance = useMemo(() => {
-		return !selectedToken
-			? null
-			: balanceInfoMap?.[selectedToken.tokenAddress]?.balance
-			? toBiggestUnit(
-					balanceInfoMap[selectedToken.tokenAddress]?.balance,
-					balanceInfoMap[selectedToken.tokenAddress]?.tokenInfo?.decimals
-			  )
-			: '0';
-	}, [balanceInfoMap, selectedToken]);
 	const activeAddress = useMemo(() => activeAccount.address, [activeAccount]);
 	const getPromise = useCallback(() => {
 		return getTokenApiInfo(displayedTokenIds);
@@ -103,29 +81,6 @@ const WalletContents = ({
 		);
 		// selectedTokenSet(list[0]);
 	}, []);
-
-	const unsentBlock = useMemo<AccountBlockClass>(() => {
-		if (confirmingTransaction && balanceInfoMap && selectedToken) {
-			return accountBlock.createAccountBlock('send', {
-				address: activeAddress,
-				toAddress: toAddress.trim(),
-				tokenId: selectedToken.tokenAddress,
-				amount: toSmallestUnit(
-					amount,
-					balanceInfoMap![selectedToken.tokenAddress]?.tokenInfo?.decimals
-				),
-				data: btoa(comment),
-			});
-		}
-	}, [
-		confirmingTransaction,
-		activeAddress,
-		amount,
-		balanceInfoMap,
-		selectedToken,
-		toAddress,
-		comment,
-	]);
 
 	return (
 		<>
@@ -342,157 +297,8 @@ const WalletContents = ({
 				</Modal>
 			)}
 			{sendingFunds && (
-				<Modal
-					fullscreen
-					onClose={() => {
-						sendingFundsSet(false);
-						if (!confirmingTransaction) {
-							toAddressSet('');
-							amountSet('');
-							commentSet('');
-						}
-					}}
-					className="flex flex-col"
-					heading={
-						!selectedToken
-							? ''
-							: `${i18n.send} ${addIndexToTokenSymbol(
-									selectedToken!.symbol,
-									selectedToken!.tokenIndex
-							  )}`
-					}
-					// subheading={selectedToken?.tokenAddress}
-				>
-					{!!selectedToken && (
-						<div className="flex-1 p-4 space-y-2 overflow-scroll bg-skin-base">
-							<div className="">
-								<p className="leading-5 text-skin-secondary">{i18n.from}</p>
-								<p className="break-words text-sm">{contacts[activeAddress]}</p>
-								<p className="break-words text-sm">{activeAddress}</p>
-							</div>
-							<div className="">
-								<p className="leading-5 text-skin-secondary">{i18n.balance}</p>
-								<p className="">{selectedTokenBalance}</p>
-							</div>
-							{/* <div className="">
-						<p className="leading-5 text-skin-secondary">
-							{i18n.quotaAvailable} / {i18n.quotaLimit}
-						</p>
-						<p className="">
-							{10} / {10} Quota
-						</p>
-					</div> */}
-							<TextInput
-								_ref={toAddressRef}
-								label="To Address"
-								value={toAddress}
-								onUserInput={(v) => toAddressSet(v)}
-								getIssue={(v) => {
-									if (!wallet.isValidAddress(v)) {
-										return i18n.invalidAddress;
-									}
-								}}
-							/>
-							<TextInput
-								numeric
-								_ref={amountRef}
-								label="Amount"
-								value={amount}
-								onUserInput={(v) => amountSet(v)}
-								getIssue={(v) => {
-									console.log('v:', v);
-									if (+v > +selectedTokenBalance!) {
-										return i18n.insufficientFunds;
-									}
-								}}
-							/>
-							<TextInput
-								optional
-								textarea
-								_ref={commentRef}
-								label="Comment"
-								value={comment}
-								onUserInput={(v) => commentSet(v)}
-							/>
-							<Button
-								theme="highlight"
-								label={i18n.next}
-								onClick={() => {
-									const valid = validateInputs([toAddressRef, amountRef, commentRef]);
-									if (valid) {
-										confirmingTransactionSet(true);
-										// setTimeout(() => sendingFundsSet(false), 0);
-									}
-								}}
-							/>
-						</div>
-					)}
-				</Modal>
+				<SendTxFlow selectedToken={selectedToken!} onClose={() => sendingFundsSet(false)} />
 			)}
-			{confirmingTransaction && (
-				<Modal heading={i18n.confirmTransaction} onClose={() => confirmingTransactionSet(false)}>
-					<div className="p-2 space-y-2">
-						{/* <div className="">
-						<p className="leading-5 text-skin-secondary">{i18n.toAddress}</p>
-						<p className="break-words text-sm">{toAddress}</p>
-					</div>
-					<div className="">
-						<p className="leading-5 text-skin-secondary">{i18n.amount}</p>
-						<p className="">{amount}</p>
-					</div>
-					{comment && (
-						<div className="">
-							<p className="leading-5 text-skin-secondary">{i18n.comment}</p>
-							<p className="">{comment}</p>
-						</div>
-					)} */}
-						<Button
-							disabled={!!sendingTx}
-							theme="highlight"
-							label={i18n.signAndSendBlock}
-							onClick={async () => {
-								try {
-									sendingTxSet(true);
-									// await vitePassport.writeAccountBlock('send', {
-									// address: 'vite_2daedeee8d0a41085dee136e36052f48d8e6122b9fec075639',
-									// toAddress: 'vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99',
-									// tokenId: 'tti_5649544520544f4b454e6e40',
-									// amount: 1 + '0'.repeat(17), // 0.1 VITE
-									// });
-									unsentBlock.setProvider(viteApi);
-									unsentBlock.setPrivateKey(activeAccount.privateKey);
-									await unsentBlock.autoSetPreviousAccountBlock();
-									unsentBlock.sign(activeAccount.privateKey);
-									const res: AccountBlockBlock = await unsentBlock.autoSendByPoW();
-									sentTxSet(res);
-									if (transactionHistory?.received) {
-										setState(
-											{
-												transactionHistory: {
-													received: [...transactionHistory.received, res as Transaction],
-												},
-											},
-											{ deepMerge: true }
-										);
-									}
-								} catch (e) {
-									console.log('error:', e);
-									toastError(JSON.stringify(e));
-									sendingTxSet(false);
-								}
-							}}
-						/>
-					</div>
-				</Modal>
-			)}
-			<TransactionModal
-				onClose={() => {
-					sendingFundsSet(false);
-					confirmingTransactionSet(false);
-					setTimeout(() => sentTxSet(undefined), 0);
-				}}
-				transaction={sentTx || unsentBlock}
-			/>
 		</>
 	);
 };

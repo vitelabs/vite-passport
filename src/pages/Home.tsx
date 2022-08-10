@@ -23,7 +23,7 @@ import {
 	validateWsUrl,
 } from '../utils/strings';
 import { State, TokenApiInfo } from '../utils/types';
-import { setValue } from '../utils/storage';
+import { getValue, setValue } from '../utils/storage';
 import WalletContents from '../containers/WalletContents';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import A from '../components/A';
@@ -31,6 +31,8 @@ import ViteLogo from '../assets/ViteLogo';
 import QR from '../components/QR';
 import TokenSearchBar from '../containers/TokenSearchBar';
 import TokenCard from '../containers/TokenCard';
+import Button from '../components/Button';
+import SendTxFlow from '../containers/SendTxFlow';
 
 // constant.Contracts.StakeForQuota_V1
 // constant.Contracts.StakeForQuota
@@ -60,8 +62,6 @@ const Home = ({
 	const [editingNetwork, editingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
-	const [networkName, networkNameSet] = useState('');
-	const [rpcUrl, rpcUrlSet] = useState('');
 	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
 	// const [votingModalOpen, votingModalOpenSet] = useState(false);
 	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
@@ -69,7 +69,8 @@ const Home = ({
 	// const [lockedAmount, lockedAmountSet] = useState('');
 	const [receiving, receivingSet] = useState(false);
 	const [sending, sendingSet] = useState(false);
-	const [connected, connectedSet] = useState(false);
+	const [viewingConnected, viewingConnectedSet] = useState(false);
+	const [hostname, hostnameSet] = useState('');
 	const [tokensInWallet, tokensInWalletSet] = useState<TokenApiInfo[]>([]);
 	const [displayedTokens, displayedTokensSet] = useState<TokenApiInfo[]>([]);
 	const [sendingToken, sendingTokenSet] = useState<undefined | TokenApiInfo>();
@@ -80,15 +81,13 @@ const Home = ({
 	);
 
 	useEffect(() => {
-		setTimeout(() => {
-			getCurrentTab().then((tab) => {
-				// console.log('tab:', tab);
-				// console.log('tab.url:', tab.url);
-				const hostname = getHostname(tab.url);
-				connectedSet(!!connectedDomains[activeAccount.address]?.[hostname]);
-			});
-		}, 1000);
+		console.log('run');
+		getCurrentTab().then((tab) => hostnameSet(getHostname(tab.url)));
 	}, [connectedDomains]);
+	const connected = useMemo(
+		() => (!hostname ? false : !!connectedDomains[activeAccount.address]?.[hostname]),
+		[connectedDomains, activeAccount, hostname]
+	);
 
 	return (
 		<TabContainer>
@@ -105,12 +104,9 @@ const Home = ({
 							{activeNetwork.name}
 						</button>
 						<button
+							disabled={!connected}
 							className="p-1 fx"
-							onClick={() => {
-								if (connected) {
-									//
-								}
-							}}
+							onClick={() => viewingConnectedSet(true)}
 						>
 							<div
 								className={`h-2 w-2 rounded-full ${
@@ -266,9 +262,7 @@ const Home = ({
 					heading={i18n.addNetwork}
 					onClose={() => {
 						editingNetworkSet(true);
-						networkNameSet('');
-						rpcUrlSet('');
-						blockExplorerUrlSet('');
+						addingNetworkSet(false);
 					}}
 					buttonText={i18n.add}
 					onButtonClick={() => {
@@ -277,9 +271,9 @@ const Home = ({
 							const newNetworkList = [
 								...networkList,
 								{
-									name: networkName.trim(),
-									rpcUrl: networkName.trim(),
-									explorerUrl: blockExplorerUrl.trim() || undefined,
+									name: networkNameRef.value.trim(),
+									rpcUrl: networkNameRef.value.trim(),
+									explorerUrl: blockExplorerUrlRef.value.trim() || undefined,
 								},
 							];
 							const data = { networkList: newNetworkList };
@@ -290,17 +284,10 @@ const Home = ({
 					}}
 				>
 					<div className="space-y-3 p-3">
-						<TextInput
-							_ref={networkNameRef}
-							label={i18n.networkName}
-							value={networkName}
-							onUserInput={(v) => networkNameSet(v)}
-						/>
+						<TextInput _ref={networkNameRef} label={i18n.networkName} />
 						<TextInput
 							_ref={rpcUrlRef}
 							label={i18n.rpcUrl}
-							value={rpcUrl}
-							onUserInput={(v) => rpcUrlSet(v)}
 							getIssue={(v) => {
 								if (!validateWsUrl(v) && !validateHttpUrl(v)) {
 									return i18n.urlMustStartWithWsWssHttpOrHttps;
@@ -311,7 +298,6 @@ const Home = ({
 							optional
 							_ref={blockExplorerUrlRef}
 							label={i18n.blockExplorerUrl}
-							value={blockExplorerUrl}
 							onUserInput={(v) => blockExplorerUrlSet(v)}
 							getIssue={(v) => {
 								// console.log(v, validateHttpUrl(v));
@@ -441,27 +427,55 @@ const Home = ({
 					/>
 					<div className="px-4 pb-4 mt-4 space-y-4 flex-1 overflow-scroll">
 						<div className="h-0.5 bg-skin-divider" />
-						{displayedTokens.map((tokenApiInfo) => (
-							<TokenCard
-								{...tokenApiInfo}
-								key={tokenApiInfo.tokenAddress}
-								onClick={() => sendingTokenSet(tokenApiInfo)}
-							/>
-						))}
+						{!displayedTokens.length ? (
+							<p className="leading-3 text-skin-secondary text-center">{i18n.nothingFound}</p>
+						) : (
+							displayedTokens.map((tokenApiInfo) => (
+								<TokenCard
+									{...tokenApiInfo}
+									key={tokenApiInfo.tokenAddress}
+									onClick={() => sendingTokenSet(tokenApiInfo)}
+								/>
+							))
+						)}
 					</div>
 				</Modal>
 			)}
 			{sendingToken && (
-				<Modal
-					fullscreen
-					heading={`${i18n.send} ${addIndexToTokenSymbol(
-						sendingToken.symbol,
-						sendingToken.tokenIndex
-					)}`}
-					onClose={() => sendingTokenSet(undefined)}
-					className="flex flex-col"
-				>
-					{/*  */}
+				<SendTxFlow
+					selectedToken={sendingToken}
+					onClose={() => {
+						sendingSet(false);
+						sendingTokenSet(undefined);
+					}}
+				/>
+			)}
+			{viewingConnected && (
+				<Modal bottom onClose={() => viewingConnectedSet(false)} className="flex flex-col">
+					<div className="fy p-4 bg-skin-middleground">
+						<p className="text-lg text-center">{i18n.vitePassportIsLinking}</p>
+						<div className="mt-2 px-4 py-3 bg-skin-base rounded-full">
+							<p className="leading-3 text-lg break-words">{hostname}</p>
+						</div>
+						<p className="mt-2">{contacts[activeAccount.address]}</p>
+						<p className="font-medium text-sm">{shortenAddress(activeAccount.address)}</p>
+						<Button
+							theme="highlight"
+							label={i18n.disconnect}
+							className="mt-4"
+							onClick={async () => {
+								triggerEvent({
+									type: 'accountChange',
+									payload: { activeAddress: undefined },
+								});
+								const { connectedDomains } = await getValue('connectedDomains');
+								delete connectedDomains![activeAccount.address][hostname];
+								setValue({ connectedDomains });
+								setState({ connectedDomains });
+								viewingConnectedSet(false);
+							}}
+						/>
+					</div>
 				</Modal>
 			)}
 		</TabContainer>

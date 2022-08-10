@@ -1,5 +1,9 @@
-export const shortenString = (str: string, startCount = 8, endCount = 5) =>
-	str.slice(0, startCount) + '...' + str.slice(-endCount);
+export const shortenString = (str: string, startCount = 8, endCount = 8) => {
+	if (str.length <= startCount + endCount) {
+		return str;
+	}
+	return str.slice(0, startCount) + '...' + str.slice(-endCount);
+};
 export const shortenAddress = (address: string) => shortenString(address, 8, 5);
 export const shortenHash = (hash: string) => shortenString(hash, 5, 5);
 export const shortenTti = (hash: string) => shortenString(hash, 7, 5);

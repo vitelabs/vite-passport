@@ -26,9 +26,9 @@ const ListItem = ({
 }) => (
 	<button
 		onClick={onClick}
-		className="fx w-full bg-skin-base justify-between p-3 brightness-button"
+		className="fx w-full bg-skin-base justify-between p-4 brightness-button"
 	>
-		<p className="text-skin-input-label font-medium">{label}</p>
+		<p className="leading-3 text-skin-input-label font-medium">{label}</p>
 		{value && <p>{value}</p>}
 	</button>
 );

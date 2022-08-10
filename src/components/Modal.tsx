@@ -6,14 +6,16 @@ import { useKeyPress } from '../utils/hooks';
 
 type Props = {
 	fullscreen?: boolean;
+	bottom?: boolean;
 	noHeader?: boolean;
 	heading?: string;
 	subheading?: string;
-	onClose?: () => void;
+	onClose: () => void;
 	children: ReactNode;
 	className?: string;
 	buttonText?: string;
 	plusIcon?: boolean;
+	noBackArrow?: boolean;
 	onButtonClick?: () => void;
 };
 
@@ -24,12 +26,14 @@ const Modal = ({
 	noHeader,
 	heading,
 	subheading,
-	onClose = () => {},
+	onClose,
 	children,
 	className,
 	plusIcon,
 	buttonText,
 	onButtonClick,
+	bottom,
+	noBackArrow,
 }: Props) => {
 	const modalRef = useRef<HTMLDivElement | null>(null);
 	const mouseDraggingModal = useRef(false);
@@ -65,14 +69,21 @@ const Modal = ({
 					className="flex flex-col w-full h-full bg-skin-base"
 				>
 					<div className="xy flex-col h-12">
-						<button className="absolute left-3 w-8 h-8 xy" onClick={onClose}>
-							<ArrowNarrowLeftIcon className="w-5 text-skin-back-arrow-icon" />
-						</button>
+						{!noBackArrow && (
+							<button className="absolute left-3 w-8 h-8 xy" onClick={onClose}>
+								<ArrowNarrowLeftIcon className="w-5 text-skin-back-arrow-icon" />
+							</button>
+						)}
 						{heading && <p className="text-lg">{heading}</p>}
 						{subheading && (
 							<p className="mt-1 text-center leading-3 text-xs text-skin-secondary">{subheading}</p>
 						)}
 					</div>
+					<div className={`flex-1 ${className}`}>{children}</div>
+				</div>
+			) : bottom ? (
+				<div onClick={(e) => e.stopPropagation()} className="h-full flex flex-col">
+					<div className="flex-1" onClick={onClose} />
 					<div className={className}>{children}</div>
 				</div>
 			) : (

@@ -26,7 +26,7 @@ const Connect = ({
 	return (
 		<div className="h-full flex flex-col">
 			<div className="fy p-4 bg-skin-middleground">
-				<p className="mt-2 text-lg text-center">{i18n.vitePassportIsLinking}</p>
+				<p className="text-lg text-center">{i18n.vitePassportIsLinking}</p>
 				<div className="mt-2 px-4 py-3 bg-skin-base rounded-full">
 					<p className="leading-3 text-lg break-words">{hostname}</p>
 				</div>
@@ -59,8 +59,12 @@ const Connect = ({
 							payload: { activeAddress: accountList[lastActiveAccountIndex].address },
 						});
 						const { connectedDomains = {} } = await getValue('connectedDomains');
-						if (!connectedDomains?.[hostname]) {
-							connectedDomains[hostname] = {};
+						const activeAccount = accountList[activeAccountIndex].address;
+						if (!connectedDomains[activeAccount]) {
+							connectedDomains[activeAccount] = {};
+						}
+						if (!connectedDomains[activeAccount][hostname]) {
+							connectedDomains[activeAccount][hostname] = {};
 						}
 						await setValue({ connectedDomains, activeAccountIndex: lastActiveAccountIndex });
 						postPortMessage({ type: 'connectDomain', domain: hostname });

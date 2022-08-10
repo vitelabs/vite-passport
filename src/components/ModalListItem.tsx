@@ -34,7 +34,7 @@ const ModalListItem = ({
 				onClick={onClick}
 			>
 				{radio && (
-					<div className="w-12 xy relative">
+					<div className="w-14 xy relative">
 						{active && (
 							// This hack gives CheckCircleIcon a white checkmark
 							<div className="bg-white h-4 w-4 absolute rounded-full z-0" />

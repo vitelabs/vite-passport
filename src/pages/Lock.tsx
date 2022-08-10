@@ -67,7 +67,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 					}
 				}}
 			/>
-			<Button theme="highlight" label={i18n.unlock} onClick={attemptUnlock} />
+			<Button theme="highlight" className="mt-4" label={i18n.unlock} onClick={attemptUnlock} />
 			<button
 				className="mt-1 text-skin-highlight self-center"
 				onClick={() => resettingWalletSet(true)}

@@ -9,7 +9,7 @@ import { State, TokenApiInfo } from '../utils/types';
 
 type Props = State &
 	TokenApiInfo & {
-		onClick: () => void;
+		onClick?: () => void;
 	};
 
 const TokenCard = ({
@@ -34,6 +34,7 @@ Props) => {
 	return (
 		<button
 			className="fx rounded-sm w-full px-4 py-3 shadow cursor-pointer bg-skin-middleground brightness-button"
+			disabled={!onClick}
 			onClick={onClick}
 		>
 			{!icon ? (
