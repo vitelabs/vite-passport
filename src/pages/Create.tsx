@@ -4,11 +4,10 @@ import { State } from '../utils/types';
 import PageContainer from '../components/PageContainer';
 import Secrets from '../containers/Secrets';
 import { wallet } from '@vite/vitejs';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import A from '../components/A';
 
 const Create = ({ i18n }: State) => {
-	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState(wallet.createMnemonics());
 	const createMnemonics = useCallback((twelveWords = false) => {
 		mnemonicsSet(wallet.createMnemonics(twelveWords ? 128 : 256));

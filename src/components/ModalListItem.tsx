@@ -1,6 +1,6 @@
 import { XIcon } from '@heroicons/react/outline';
-import { CheckCircleIcon } from '@heroicons/react/solid';
 import { ReactNode } from 'react';
+import Checkbox from './Checkbox';
 
 type Props = {
 	radio?: boolean;
@@ -28,25 +28,13 @@ const ModalListItem = ({
 	return (
 		<div className="flex items-center">
 			<button
-				className={`p-4 ${radio ? 'pl-0' : ''} fx w-full ${
+				className={`p-4 fx w-full ${
 					base ? 'bg-skin-base' : 'bg-skin-middleground'
 				} brightness-button ${className}`}
 				onClick={onClick}
 			>
-				{radio && (
-					<div className="w-14 xy relative">
-						{active && (
-							// This hack gives CheckCircleIcon a white checkmark
-							<div className="bg-white h-4 w-4 absolute rounded-full z-0" />
-						)}
-						{active ? (
-							<CheckCircleIcon className="w-6 text-skin-lowlight z-10" />
-						) : (
-							<div className="w-5 h-5 border-2 border-skin-eye-icon rounded-full" />
-						)}
-					</div>
-				)}
-				<div className="text-left flex-1">
+				{radio && <Checkbox disabled radio value={active} />}
+				<div className={`text-left flex-1 ${radio ? 'ml-4' : ''}`}>
 					<p className="leading-4">{label}</p>
 					{sublabel && (
 						<p className="mt-1 leading-4 text-sm font-medium text-skin-secondary">{sublabel}</p>

@@ -1,7 +1,6 @@
-import { VitePassportMethodCall, BackgroundResponse } from './injectedScript';
+import { BackgroundResponse, VitePassportMethodCall } from './injectedScript';
 import { getValue } from './utils/storage';
 import { getHostname, toQueryString } from './utils/strings';
-import { MINUTE } from './utils/time';
 import { PortMessage } from './utils/types';
 
 // console.log('bg', Date.now());

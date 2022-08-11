@@ -1,14 +1,14 @@
 import { wallet } from '@vite/vitejs';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import TextInput, { useTextInputRef } from '../containers/TextInput';
+import ViteLogo from '../assets/ViteLogo';
+import Button from '../components/Button';
 import ResetWalletModal from '../containers/ResetWalletModal';
+import TextInput, { useTextInputRef } from '../containers/TextInput';
 import { decrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
 import { State } from '../utils/types';
-import ViteLogo from '../assets/ViteLogo';
-import Button from '../components/Button';
 // import { accountBlock } from '@vite/vitejs'
 // console.log('accountBlock:', accountBlock)
 
@@ -40,6 +40,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 		}
 	}, [
 		password,
+		passwordRef,
 		activeAccountIndex,
 		searchParams,
 		encryptedSecrets,

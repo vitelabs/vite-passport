@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { DocumentDuplicateIcon } from '@heroicons/react/outline';
+import { useState } from 'react';
 import { connect } from '../utils/global-context';
-import { isDarkMode } from '../utils/misc';
 import { State } from '../utils/types';
 
 type Props = State & {

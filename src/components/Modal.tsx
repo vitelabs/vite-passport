@@ -1,4 +1,3 @@
-import { XIcon } from '@heroicons/react/outline';
 import { ArrowNarrowLeftIcon, PlusIcon } from '@heroicons/react/solid';
 import { ReactNode, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';

@@ -1,7 +1,5 @@
-import { wallet } from '@vite/vitejs';
-import { accountBlock } from '@vite/vitejs';
+import { accountBlock, wallet } from '@vite/vitejs';
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
-import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { useMemo, useState } from 'react';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
@@ -18,21 +16,7 @@ type Props = State & {
 	onClose: () => void;
 };
 
-const SendTxFlow = ({
-	selectedToken,
-	onClose,
-	i18n,
-	toastError,
-	viteBalanceInfo,
-	displayedTokenIds,
-	viteApi,
-	vitePrice,
-	copyWithToast,
-	activeAccount,
-	contacts,
-	setState,
-	transactionHistory,
-}: Props) => {
+const SendTxFlow = ({ selectedToken, onClose, i18n, viteBalanceInfo, activeAccount }: Props) => {
 	const toAddressRef = useTextInputRef();
 	const amountRef = useTextInputRef();
 	const commentRef = useTextInputRef();

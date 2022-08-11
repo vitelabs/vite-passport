@@ -11,7 +11,6 @@ const Connect = ({
 	i18n,
 	postPortMessage,
 	contacts,
-	setState,
 	accountList,
 	activeAccountIndex,
 	triggerEvent,

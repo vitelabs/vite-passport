@@ -1,40 +1,29 @@
-import { useCallback, useEffect, useMemo } from 'react';
-import { MemoryRouter, Route, Routes, Navigate } from 'react-router-dom';
-import Start from '../pages/Start';
-import { connect } from '../utils/global-context';
-import { UnreceivedBlockMessage, State, ViteBalanceInfo } from '../utils/types';
-import WS_RPC from '@vite/vitejs-ws';
+import { accountBlock, ViteAPI } from '@vite/vitejs';
 import HTTP_RPC from '@vite/vitejs-http';
-import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
+import WS_RPC from '@vite/vitejs-ws';
+import { Transaction } from '@vite/vitejs/distSrc/utils/type';
+import { useCallback, useEffect, useMemo } from 'react';
+import { MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Toast from '../containers/Toast';
+import Connect from '../pages/Connect';
 import Create from '../pages/Create';
 import Create2 from '../pages/Create2';
-import Import from '../pages/Import';
 import Home from '../pages/Home';
+import Import from '../pages/Import';
+import Lock from '../pages/Lock';
 import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
-import Lock from '../pages/Lock';
-import Connect from '../pages/Connect';
 import SignTx from '../pages/SignTx';
-import { ViteAPI, accountBlock } from '@vite/vitejs';
-import { Transaction } from '@vite/vitejs/distSrc/utils/type';
+import Start from '../pages/Start';
+import { connect } from '../utils/global-context';
+import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
+import { State, UnreceivedBlockMessage, ViteBalanceInfo } from '../utils/types';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
 // new WS_RPC(networkRpcUrl, providerTimeout, providerOptions)
 
 type Props = State;
-
-const getVitePrice = async () => {
-	const res = await fetch(
-		'https://api.coingecko.com/api/v3/simple/price?ids=vite&vs_currencies=usd'
-	);
-	const {
-		vite: { usd },
-	} = await res.json();
-	// console.log('usd:', typeof usd, usd);
-	return usd;
-};
 
 const Router = ({
 	setState,
@@ -45,6 +34,8 @@ const Router = ({
 	activeNetwork,
 	transactionHistory,
 	toastInfo,
+	displayedTokenNames,
+	toastError,
 }: Props) => {
 	const initialEntries = useMemo(() => {
 		if (window.location.pathname === '/src/confirmation.html') {
@@ -93,10 +84,23 @@ const Router = ({
 	useEffect(() => setState({ viteApi }), [viteApi]); // eslint-disable-line
 
 	useEffect(() => {
-		getVitePrice().then((usd) => {
-			setState({ vitePrice: usd });
-		});
-	}, []); // eslint-disable-line
+		try {
+			(async () => {
+				const prices = await (
+					await fetch(
+						`https://api.coingecko.com/api/v3/simple/price?ids=${displayedTokenNames
+							.map((n) => n.replace(/ /g, ''))
+							.join(',')}&vs_currencies=usd`
+					)
+				).json();
+				console.log('prices:', prices);
+				setState({ prices });
+			})();
+		} catch (error) {
+			console.log('error:', error);
+			toastError(error);
+		}
+	}, [displayedTokenNames]); // eslint-disable-line
 
 	// Check if tti is listed on ViteX
 	// viteApi.request('dex_getTokenInfo', 'tti_5649544520544f4b454e6e40').then(

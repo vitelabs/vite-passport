@@ -1,20 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
 import {
 	CreditCardIcon,
-	DownloadIcon,
 	DocumentDuplicateIcon,
+	DownloadIcon,
 	UploadIcon,
-	// PencilIcon,
-	// LockClosedIcon,
-	// SortAscendingIcon,
 } from '@heroicons/react/outline';
+import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { wallet } from '@vite/vitejs';
+import { useEffect, useMemo, useState } from 'react';
+import ViteLogo from '../assets/ViteLogo';
+import A from '../components/A';
+import Button from '../components/Button';
 import Modal from '../components/Modal';
 import ModalListItem from '../components/ModalListItem';
+import QR from '../components/QR';
 import TabContainer from '../components/TabContainer';
+import SendTxFlow from '../containers/SendTxFlow';
 import TextInput, { useTextInputRef } from '../containers/TextInput';
+import TokenCard from '../containers/TokenCard';
+import TokenSearchBar from '../containers/TokenSearchBar';
+import WalletContents from '../containers/WalletContents';
 import { connect } from '../utils/global-context';
 import { getCurrentTab, getTokenApiInfo, validateInputs } from '../utils/misc';
+import { getValue, setValue } from '../utils/storage';
 import {
 	addIndexToTokenSymbol,
 	getHostname,
@@ -23,16 +30,6 @@ import {
 	validateWsUrl,
 } from '../utils/strings';
 import { State, TokenApiInfo } from '../utils/types';
-import { getValue, setValue } from '../utils/storage';
-import WalletContents from '../containers/WalletContents';
-import { ExternalLinkIcon } from '@heroicons/react/solid';
-import A from '../components/A';
-import ViteLogo from '../assets/ViteLogo';
-import QR from '../components/QR';
-import TokenSearchBar from '../containers/TokenSearchBar';
-import TokenCard from '../containers/TokenCard';
-import Button from '../components/Button';
-import SendTxFlow from '../containers/SendTxFlow';
 
 // constant.Contracts.StakeForQuota_V1
 // constant.Contracts.StakeForQuota
@@ -62,7 +59,6 @@ const Home = ({
 	const [editingNetwork, editingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
-	const [blockExplorerUrl, blockExplorerUrlSet] = useState('');
 	// const [votingModalOpen, votingModalOpenSet] = useState(false);
 	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
 	// const [quotaBeneficiary, quotaBeneficiarySet] = useState('');
@@ -223,8 +219,9 @@ const Home = ({
 										toastSuccess(i18n.networkChanged);
 										setState({
 											activeNetworkIndex: i,
-											viteBalanceInfo: undefined,
 											activeNetwork: networkList[i],
+											viteBalanceInfo: undefined,
+											transactionHistory: undefined,
 										});
 										setValue({ activeNetworkIndex: i });
 										triggerEvent({
@@ -298,7 +295,6 @@ const Home = ({
 							optional
 							_ref={blockExplorerUrlRef}
 							label={i18n.blockExplorerUrl}
-							onUserInput={(v) => blockExplorerUrlSet(v)}
 							getIssue={(v) => {
 								// console.log(v, validateHttpUrl(v));
 								if (!validateHttpUrl(v)) {

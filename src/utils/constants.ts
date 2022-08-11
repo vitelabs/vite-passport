@@ -29,6 +29,7 @@ export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> =
 	activeAccountIndex: 0,
 	contacts: {},
 	displayedTokenIds: ['tti_5649544520544f4b454e6e40'],
+	displayedTokenNames: ['vite'],
 	connectedDomains: {},
 };
 

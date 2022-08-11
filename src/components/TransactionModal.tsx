@@ -1,5 +1,4 @@
-import { ExternalLinkIcon } from '@heroicons/react/outline';
-import { DocumentDuplicateIcon } from '@heroicons/react/outline';
+import { DocumentDuplicateIcon, ExternalLinkIcon } from '@heroicons/react/outline';
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
@@ -76,15 +75,15 @@ const TransactionModal = ({
 		amount,
 		blockType,
 		data,
-		difficulty,
-		fee,
+		// difficulty,
+		// fee,
 		hash,
 		height,
-		nonce,
-		previousHash,
-		publicKey,
-		sendBlockHash,
-		signature,
+		// nonce,
+		// previousHash,
+		// publicKey,
+		// sendBlockHash,
+		// signature,
 		// @ts-ignore
 		_toAddress,
 		// accountBlock.createAccountBlock returns a block with _toAddress instead of toAddress idk y

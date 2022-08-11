@@ -11,13 +11,7 @@ export const validateInputs = (
 ) => {
 	let allRefsInputsAreValid = true;
 	for (const ref of inputRefs) {
-		let isValid = ref.isValid;
-		// if (typeof isValid === 'object') {
-		//   const issue = await isValid;
-		//   if (issue) {
-		//     allRefsInputsAreValid = false;
-		//   }
-		// }
+		const isValid = ref.isValid;
 		if (!isValid) {
 			allRefsInputsAreValid = false;
 		}

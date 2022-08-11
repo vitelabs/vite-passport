@@ -93,7 +93,9 @@ const TextInput = ({
 				htmlFor={id}
 				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}
 				className={`absolute transition-all pt-0.5 w-[calc(100%-1.2rem)] duration-200 ${
-					focused || internalValue ? 'top-0.5 left-2 font-bold text-xs' : 'text-md top-2.5 left-2.5'
+					focused || internalValue
+						? 'top-0.5 left-2 font-bold text-xs'
+						: 'text-md top-2.5 left-2.5 font-medium'
 				} 
 				${focused ? 'text-skin-highlight' : 'text-skin-input-label'} 
 				text-skin-input-label ${textarea ? 'bg-skin-middleground' : ''}`}

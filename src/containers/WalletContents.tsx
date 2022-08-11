@@ -1,34 +1,21 @@
-import React, { useMemo, useRef, useState, useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import Button from '../components/Button';
+import Checkbox from '../components/Checkbox';
+import DeterministicIcon from '../components/DeterministicIcon';
+import Modal from '../components/Modal';
+import QR from '../components/QR';
+import { defaultTokenList } from '../utils/constants';
 import { connect } from '../utils/global-context';
+import { debounce, getTokenApiInfo } from '../utils/misc';
+import { setValue } from '../utils/storage';
+import { addIndexToTokenSymbol, toQueryString } from '../utils/strings';
 import { State, TokenApiInfo } from '../utils/types';
 import FetchWidget from './FetchWidget';
-import TransactionModal from '../components/TransactionModal';
-import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
-// import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
-import { defaultTokenList } from '../utils/constants';
-import { getTokenApiInfo } from '../utils/misc';
-import { calculatePrice, debounce, validateInputs } from '../utils/misc';
-import {
-	addIndexToTokenSymbol,
-	shortenTti,
-	toBiggestUnit,
-	toQueryString,
-	toSmallestUnit,
-} from '../utils/strings';
-import TextInput, { useTextInputRef } from './TextInput';
-import { accountBlock, wallet } from '@vite/vitejs';
-import Checkbox from '../components/Checkbox';
-import QR from '../components/QR';
-import TransactionList from './TransactionList';
-import Modal from '../components/Modal';
-import { DocumentDuplicateIcon } from '@heroicons/react/outline';
-import { setValue } from '../utils/storage';
-import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
-import DeterministicIcon from '../components/DeterministicIcon';
-import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
-import Button from '../components/Button';
-import TokenCard from './TokenCard';
 import SendTxFlow from './SendTxFlow';
+import TextInput, { useTextInputRef } from './TextInput';
+import TokenCard from './TokenCard';
+import TokenSearchBar from './TokenSearchBar';
+import TransactionList from './TransactionList';
 
 const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
 	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
@@ -41,22 +28,9 @@ const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInf
 
 type Props = State;
 
-const WalletContents = ({
-	i18n,
-	toastError,
-	viteBalanceInfo,
-	displayedTokenIds,
-	viteApi,
-	vitePrice,
-	copyWithToast,
-	activeAccount,
-	contacts,
-	setState,
-	transactionHistory,
-}: Props) => {
+const WalletContents = ({ i18n, displayedTokenIds, activeAccount, setState }: Props) => {
 	const amountRef = useTextInputRef();
 	const commentRef = useTextInputRef();
-	const [tokenQuery, tokenQuerySet] = useState('');
 	const [checkedTokens, checkedTokensSet] = useState<{
 		[tti: string]: boolean;
 	}>({});
@@ -132,35 +106,28 @@ const WalletContents = ({
 				<Modal
 					fullscreen
 					heading={i18n.editTokenList}
-					onClose={() => {
-						editingTokenListSet(false);
-						tokenQuerySet('');
-					}}
+					onClose={() => editingTokenListSet(false)}
 					className="flex flex-col"
 				>
-					<input
-						placeholder={i18n.searchTokensBySymbolOrTti}
-						value={tokenQuery}
-						className="p-2 shadow z-10 w-full bg-skin-middleground"
-						onChange={(e) => {
-							tokenQuerySet(e.target.value);
+					<TokenSearchBar
+						onUserInput={(v) => {
 							if (availableTokens !== null) {
 								availableTokensSet(undefined);
 							}
-							if (!e.target.value) {
+							if (!v) {
 								availableTokensSet([
 									...displayedTokens!,
 									...defaultTokenList.filter(({ tokenAddress }) => !checkedTokens[tokenAddress]),
 								]);
 								return;
 							}
-							searchTokenApiInfo(e.target.value, (list: TokenApiInfo[]) => {
+							searchTokenApiInfo(v, (list: TokenApiInfo[]) => {
 								// console.log('list:', list);
 								availableTokensSet(list);
 							});
 						}}
 					/>
-					<div className="flex-1 overflow-scroll">
+					<div className="flex-1 overflow-scroll mt-4">
 						{!availableTokens ? (
 							<div className="xy min-h-8">
 								<p className="text-skin-secondary text-center">{i18n.loading}...</p>
@@ -184,10 +151,10 @@ const WalletContents = ({
 								const tokenName = addIndexToTokenSymbol(symbol, tokenIndex);
 								return (
 									<React.Fragment key={tti}>
-										{i === displayedTokenIds.length && (
-											<div className="h-0.5 bg-skin-eye-icon mt-2"></div>
+										{(i === 0 || i === displayedTokenIds.length) && (
+											<div className={`h-0.5 bg-skin-divider mx-4 ${i === 0 ? '' : 'mt-2'}`}></div>
 										)}
-										<div className="fx rounded-sm py-1 px-2 bg-skin-middleground">
+										<div className="fx rounded-sm py-2 px-4">
 											{!icon ? (
 												<DeterministicIcon tti={tti} className="h-8 w-8 rounded-full mr-2" />
 											) : (
@@ -200,14 +167,13 @@ const WalletContents = ({
 											<div className="flex-1 fx">
 												<div className="flex flex-col flex-1 items-start">
 													<p className="text-lg">{tokenName}</p>
-													<button className="group fx" onClick={() => copyWithToast(tti)}>
-														<p className="text-xs text-skin-secondary">{shortenTti(tti)}</p>
-														<DocumentDuplicateIcon className="ml-1 w-4 text-skin-secondary opacity-0 duration-200 group-hover:opacity-100" />
-													</button>
+													<p className="text-xs text-skin-tertiary">{tti}</p>
 												</div>
 												<Checkbox
+													radio
 													value={checkedTokens[tti]}
 													onUserInput={(checked) => {
+														console.log('checked:', checked);
 														checkedTokens[tti] = checked;
 														checkedTokensSet({ ...checkedTokens });
 													}}
@@ -219,17 +185,22 @@ const WalletContents = ({
 							})
 						)}
 					</div>
-					<div className="flex gap-2 p-2 shadow z-50">
+					<div className="flex gap-4 p-4 shadow z-50">
 						<Button theme="white" label={i18n.cancel} onClick={() => editingTokenListSet(false)} />
 						<Button
 							theme="highlight"
 							label={i18n.confirm}
-							onClick={() => {
+							onClick={async () => {
+								const displayedTokenIds = Object.entries(checkedTokens)
+									.filter(([, checked]) => checked)
+									.map(([tti]) => tti);
 								const data = {
-									displayedTokenIds: Object.entries(checkedTokens)
-										.filter(([, checked]) => checked)
-										.map(([tti]) => tti),
+									displayedTokenIds,
+									displayedTokenNames: (await getTokenApiInfo(displayedTokenIds)).map(({ name }) =>
+										name.toLowerCase()
+									),
 								};
+
 								setState(data);
 								setValue(data);
 								editingTokenListSet(false);

@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState, HTMLProps } from 'react';
 import QRCode from 'qrcode';
+import { useEffect, useRef, useState } from 'react';
 
 type Props = {
 	className?: string;

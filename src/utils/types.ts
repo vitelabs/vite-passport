@@ -21,6 +21,7 @@ export type Storage = {
 	activeAccountIndex: number;
 	contacts: { [address: string]: string };
 	displayedTokenIds: string[];
+	displayedTokenNames: string[];
 	connectedDomains: {
 		[address: string]: {
 			[domain: string]: {
@@ -41,13 +42,12 @@ export type State = Storage & {
 	triggerEvent: (event: PortEvent) => void;
 	setState: setStateType;
 	secrets?: Secrets;
-	vitePrice?: number;
 	activeNetwork: Network;
 	activeAccount: AddressObj; // caching cuz wallet.deriveAddress is very slow
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
 	toastWarning: (text: string) => void;
-	toastError: (text: string) => void;
+	toastError: (error: any) => void;
 	toastInfo: (text: string) => void;
 	i18n: typeof en;
 	viteApi: ViteAPI;
@@ -57,6 +57,11 @@ export type State = Storage & {
 		received?: Transaction[];
 		unreceived?: Transaction[];
 		[tti: string]: undefined | Transaction[]; // assume these only show received txs
+	};
+	prices: {
+		[symbol: string]: {
+			[currency: string]: number;
+		};
 	};
 };
 

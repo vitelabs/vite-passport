@@ -27,7 +27,7 @@ const TabContainer = ({ heading, children }: Props) => {
 					<p className="text-lg flex-1 text-center p-2">{heading}</p>
 				</div>
 			)}
-			<div className="top-0 flex-1 overflow-scroll">{children}</div>
+			<div className="top-0 flex-1 flex flex-col">{children}</div>
 			{/* <div className="top-0 flex-1 overflow-scroll bg-white">{null}</div> */}
 			<div className="h-10 flex shadow-lg shadow-white">
 				{[
