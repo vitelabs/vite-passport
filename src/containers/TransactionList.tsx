@@ -115,7 +115,7 @@ const TransactionList = ({
 						return (
 							<React.Fragment key={tx.hash}>
 								{!!transactionHistory?.unreceived?.length && i === 0 && (
-									<p className="">
+									<p className="leading-3">
 										{viteBalanceInfo!.unreceived.blockCount} {i18n.unreceived}
 									</p>
 								)}
@@ -141,7 +141,7 @@ const TransactionList = ({
 										{!!transactionHistory.unreceived?.length && (
 											<div className="h-0.5 bg-skin-divider"></div>
 										)}
-										<p className="">
+										<p className="leading-3">
 											{viteBalanceInfo!.balance.blockCount} {i18n.received}
 										</p>
 									</>

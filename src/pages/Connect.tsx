@@ -9,11 +9,11 @@ import { State } from '../utils/types';
 
 const Connect = ({
 	i18n,
-	postPortMessage,
+	sendBgScriptPortMessage,
 	contacts,
 	accountList,
 	activeAccountIndex,
-	triggerEvent,
+	triggerInjectedScriptEvent,
 }: State) => {
 	const [lastActiveAccountIndex, lastActiveAccountIndexSet] = useState(activeAccountIndex);
 	const [searchParams] = useSearchParams();
@@ -53,7 +53,7 @@ const Connect = ({
 					theme="highlight"
 					label={i18n.confirm}
 					onClick={async () => {
-						triggerEvent({
+						triggerInjectedScriptEvent({
 							type: 'accountChange',
 							payload: { activeAddress: accountList[lastActiveAccountIndex].address },
 						});
@@ -66,7 +66,7 @@ const Connect = ({
 							connectedDomains[activeAccount][hostname] = {};
 						}
 						await setValue({ connectedDomains, activeAccountIndex: lastActiveAccountIndex });
-						postPortMessage({ type: 'connectDomain', domain: hostname });
+						sendBgScriptPortMessage({ type: 'connectDomain', domain: hostname });
 						window.close();
 					}}
 				/>

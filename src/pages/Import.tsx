@@ -13,7 +13,7 @@ import { validateInputs } from '../utils/misc';
 import { setValue } from '../utils/storage';
 import { State } from '../utils/types';
 
-const Import = ({ i18n, postPortMessage, setState }: State) => {
+const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 	const navigate = useNavigate();
 	const [mnemonics, mnemonicsSet] = useState('');
 	const [agreesToTerms, agreesToTermsSet] = useState(false);
@@ -64,7 +64,7 @@ const Import = ({ i18n, postPortMessage, setState }: State) => {
 					}
 					if (valid) {
 						const secrets = { mnemonics: mnemonics.trim() };
-						postPortMessage({ secrets, type: 'updateSecrets' });
+						sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
 						const accountList = [
 							wallet.deriveAddress({

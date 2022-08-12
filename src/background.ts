@@ -1,7 +1,8 @@
 import { BackgroundResponse, VitePassportMethodCall } from './injectedScript';
-import { getValue } from './utils/storage';
+import { getCurrentTab } from './utils/misc';
+import { getValue, setValue } from './utils/storage';
 import { getHostname, toQueryString } from './utils/strings';
-import { PortMessage } from './utils/types';
+import { BgScriptPortMessage } from './utils/types';
 
 // console.log('bg', Date.now());
 
@@ -16,7 +17,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 // Have to make a replacement for `dispatch(Custom Event(...))` and `addEventListener` cuz
 // https://stackoverflow.com/questions/41266567/service-worker-warning-in-google-chrome
 let eventListeners: { [event: string]: ((data?: any) => void)[] } = {};
-const pushEventListener = (event: string, listener: (data?: object) => void) => {
+const pushEventListener = (event: string, listener: (data: BackgroundResponse) => void) => {
 	if (!Array.isArray(eventListeners[event])) {
 		eventListeners[event] = [];
 	}
@@ -33,8 +34,8 @@ const clearEventListeners = () => {
 // Below are messages from within the extension
 chrome.runtime.onConnect.addListener(async (chromePort) => {
 	const { secrets } = await chrome.storage.local.get(secretsKey);
-	chromePort.postMessage({ secrets, type: 'opening' } as PortMessage);
-	chromePort.onMessage.addListener((message: PortMessage) => {
+	chromePort.postMessage({ secrets, type: 'opening' } as BgScriptPortMessage);
+	chromePort.onMessage.addListener((message: BgScriptPortMessage) => {
 		switch (message.type) {
 			case 'reopen':
 				chrome.alarms.clear(lockingAlarmName);
@@ -77,9 +78,9 @@ chrome.runtime.onMessage.addListener(
 		reply: (res: Omit<BackgroundResponse, '_messageId'>) => void
 	) => {
 		// console.log('message:', message);
-		const replyOnEvent = (event: string, cb: (data?: object) => any) => {
-			const connectListener = (data?: object) => {
-				reply(cb(data));
+		const replyOnEvent = (event: string) => {
+			const connectListener = (data: BackgroundResponse) => {
+				reply(data);
 				clearEventListeners();
 			};
 			const disconnectListener = () => {
@@ -89,17 +90,20 @@ chrome.runtime.onMessage.addListener(
 			pushEventListener(event, connectListener);
 			pushEventListener('vitePassportChromePortDisconnect', disconnectListener);
 		};
+
 		(async () => {
-			if ((await getFocusedTabId()) !== sender.tab?.id) {
-				throw new Error('sender.tab?.id does not match focused tab Id');
+			if ((await getCurrentTab()).id !== sender.tab?.id) {
+				throw new Error('sender.tab?.id does not match focused tab id');
 			}
-			if (!sender.origin) {
-				throw new Error('sender.origin does not exist');
-			}
-			// The above ensures that only the focused tab can send messages to Vite Passport
+
 			const hostname = getHostname(sender.origin);
 			const { connectedDomains } = await getValue('connectedDomains');
-			const domainConnected = !!connectedDomains?.[hostname];
+			const { accountList, activeAccountIndex } = await getValue([
+				'accountList',
+				'activeAccountIndex',
+			]);
+			const activeAccount = accountList![activeAccountIndex!];
+			const domainConnected = !!connectedDomains?.[activeAccount.address]?.[hostname];
 
 			// Calling `reply` responds back to contentScript.ts
 			const connectError = () => {
@@ -110,18 +114,24 @@ chrome.runtime.onMessage.addListener(
 
 			switch (message.method) {
 				case 'getConnectedAddress':
-					if (!domainConnected) {
-						return reply({ result: undefined });
-					}
-					const { accountList, activeAccountIndex } = await getValue([
-						'accountList',
-						'activeAccountIndex',
-					]);
-					reply({ result: accountList![activeAccountIndex!].address });
+					if (!domainConnected) return reply({ result: undefined });
+					reply({ result: activeAccount.address });
 					break;
 				case 'connectWallet':
 					openPopup('/connect' + toQueryString({ hostname }));
-					replyOnEvent('vitePassportConnectDomain', () => ({ result: true }));
+					replyOnEvent('vitePassportConnectDomain');
+					break;
+				case 'disconnectWallet':
+					// OPTIMIZE: if popup is open and "connected", it should switch to disconnect
+					// Unlikely for it to be open since `disconnectWallet` is probably called from the dapp frontend (i.e. popup is closed)
+					if (!domainConnected) {
+						return reply({
+							error: `The active Vite Passport account is not connected to ${hostname}`,
+						});
+					}
+					delete connectedDomains[activeAccount.address][hostname];
+					setValue({ connectedDomains });
+					reply({ result: undefined });
 					break;
 				case 'getNetwork':
 					if (!domainConnected) return connectError();
@@ -134,6 +144,7 @@ chrome.runtime.onMessage.addListener(
 					break;
 				case 'writeAccountBlock':
 					if (!domainConnected) return connectError();
+					replyOnEvent('vitePassportWriteAccountBlock');
 					openPopup(
 						'/sign-tx' +
 							toQueryString({
@@ -141,10 +152,6 @@ chrome.runtime.onMessage.addListener(
 								params: JSON.stringify(message.args[1]),
 							})
 					);
-					replyOnEvent('vitePassportWriteAccountBlock', (data: any) => {
-						console.log('data:', data);
-						return { result: data.block };
-					});
 					break;
 				default:
 					break;
@@ -164,6 +171,7 @@ const openPopup = async (routeAfterUnlock: string) => {
 	const lastFocused = await chrome.windows.getCurrent();
 	// const {id} = await chrome.windows.create({
 	// OPTIMIZE: if a previous window is open, focus that instead of opening a new window
+	// I just used `window.onblur = window.close;`
 
 	chrome.windows.create({
 		url: host + toQueryString({ routeAfterUnlock }),
@@ -174,10 +182,4 @@ const openPopup = async (routeAfterUnlock: string) => {
 		left: lastFocused.left! + (lastFocused.width! - 18 * 16),
 	});
 	// console.log('id:', id);
-};
-
-const getFocusedTabId = () => {
-	return new Promise((resolve) => {
-		chrome.tabs.query({ currentWindow: true, active: true }, ([tab]) => resolve(tab.id));
-	});
 };

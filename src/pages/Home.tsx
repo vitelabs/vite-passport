@@ -14,7 +14,7 @@ import Modal from '../components/Modal';
 import ModalListItem from '../components/ModalListItem';
 import QR from '../components/QR';
 import TabContainer from '../components/TabContainer';
-import SendTxFlow from '../containers/SendTxFlow';
+import SendTokenFlow from '../containers/SendTokenFlow';
 import TextInput, { useTextInputRef } from '../containers/TextInput';
 import TokenCard from '../containers/TokenCard';
 import TokenSearchBar from '../containers/TokenSearchBar';
@@ -47,7 +47,7 @@ const Home = ({
 	contacts,
 	toastSuccess,
 	activeNetwork,
-	triggerEvent,
+	triggerInjectedScriptEvent,
 	connectedDomains,
 	viteBalanceInfo,
 }: State) => {
@@ -224,7 +224,7 @@ const Home = ({
 											transactionHistory: undefined,
 										});
 										setValue({ activeNetworkIndex: i });
-										triggerEvent({
+										triggerInjectedScriptEvent({
 											type: 'networkChange',
 											payload: { activeNetwork: network.rpcUrl },
 										});
@@ -347,7 +347,7 @@ const Home = ({
 								// 		</div>
 								// 	)
 								// }
-								onClick={() => {
+								onClick={async () => {
 									if (!active) {
 										toastSuccess(i18n.accountChanged);
 										const data = { activeAccountIndex: i };
@@ -358,9 +358,15 @@ const Home = ({
 											transactionHistory: undefined,
 										});
 										setValue(data);
-										triggerEvent({
+										const { connectedDomains } = await getValue('connectedDomains');
+										const activeAddress = accountList[i].address;
+										const newActiveAccountConnected =
+											!!connectedDomains?.[activeAddress]?.[hostname];
+										triggerInjectedScriptEvent({
 											type: 'accountChange',
-											payload: { activeAddress: accountList[i].address },
+											payload: {
+												activeAddress: !newActiveAccountConnected ? undefined : activeAddress,
+											},
 										});
 									}
 									changingActiveAccountSet(false);
@@ -438,7 +444,7 @@ const Home = ({
 				</Modal>
 			)}
 			{sendingToken && (
-				<SendTxFlow
+				<SendTokenFlow
 					selectedToken={sendingToken}
 					onClose={() => {
 						sendingSet(false);
@@ -460,7 +466,7 @@ const Home = ({
 							label={i18n.disconnect}
 							className="mt-4"
 							onClick={async () => {
-								triggerEvent({
+								triggerInjectedScriptEvent({
 									type: 'accountChange',
 									payload: { activeAddress: undefined },
 								});

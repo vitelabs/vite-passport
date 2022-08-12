@@ -13,7 +13,7 @@ import { defaultStorage } from '../utils/constants';
 import { useState } from 'react';
 import Button from '../components/Button';
 
-const Create2 = ({ i18n, postPortMessage, setState }: State) => {
+const Create2 = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 	const navigate = useNavigate();
 	const {
 		state: { mnemonics, routeAfterUnlock },
@@ -55,7 +55,7 @@ const Create2 = ({ i18n, postPortMessage, setState }: State) => {
 					}
 					if (valid) {
 						const secrets = { mnemonics };
-						postPortMessage({ secrets, type: 'updateSecrets' });
+						sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
 						const accountList = [
 							wallet.deriveAddress({

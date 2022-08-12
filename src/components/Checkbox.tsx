@@ -15,10 +15,11 @@ const Checkbox = ({ disabled, radio, onUserInput = () => {}, value, className }:
 	return radio ? (
 		<Tag disabled={disabled} className="p-2 -m-2 xy relative" onClick={() => onUserInput(!value)}>
 			{value ? (
-				// This hack gives CheckCircleIcon a white checkmark
 				<>
+					{/* This hack gives CheckCircleIcon a white checkmark */}
 					<div className="bg-white h-4 w-4 absolute rounded-full z-0" />
-					<CheckCircleIcon className="w-6 text-skin-lowlight z-10" />
+					{/* The scale is to offset the the padding of the icon... */}
+					<CheckCircleIcon className="w-5 text-skin-lowlight z-10 scale-[1.2]" />
 				</>
 			) : (
 				<div className="w-5 h-5 border-2 border-skin-eye-icon rounded-full" />

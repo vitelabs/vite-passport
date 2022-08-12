@@ -1,12 +1,15 @@
 import { joinWords, prefixName } from './utils/strings';
 
+type injectedScriptEvents = 'accountChange' | 'networkChange';
+
 type VitePassport = {
 	getConnectedAddress: () => Promise<undefined | string>;
 	connectWallet: () => Promise<undefined>;
+	disconnectWallet: () => Promise<undefined>;
 	getNetwork: () => Promise<string>;
 	writeAccountBlock: (type: string, params: object) => Promise<undefined>;
 	on: (
-		event: 'accountChange' | 'networkChange',
+		event: injectedScriptEvents,
 		callback: (payload: { activeAddress?: string; activeNetwork: string }) => void
 	) => () => void;
 };
@@ -16,6 +19,7 @@ const injectedObject: Partial<VitePassport> = {};
 const relayedMethods = [
 	'getConnectedAddress',
 	'connectWallet',
+	'disconnectWallet',
 	'getNetwork',
 	'writeAccountBlock',
 ] as const;
@@ -28,7 +32,7 @@ export type VitePassportMethodCall =
 	  }
 	| {
 			readonly _messageId: number;
-			method: 'getConnectedAddress' | 'connectWallet' | 'getNetwork';
+			method: 'getConnectedAddress' | 'connectWallet' | 'disconnectWallet' | 'getNetwork';
 			// args: any[];
 	  };
 
@@ -82,9 +86,9 @@ relayedMethods.forEach((method) => {
 	};
 });
 
-const eventList = ['accountChange', 'networkChange'];
+const eventList: injectedScriptEvents[] = ['accountChange', 'networkChange'];
 injectedObject.on = (
-	eventName: 'accountChange' | 'networkChange',
+	eventName: injectedScriptEvents,
 	callback: (payload: { activeAddress?: string; activeNetwork: string }) => void
 ) => {
 	if (!eventList.includes(eventName)) {

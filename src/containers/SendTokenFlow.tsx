@@ -16,7 +16,7 @@ type Props = State & {
 	onClose: () => void;
 };
 
-const SendTxFlow = ({ selectedToken, onClose, i18n, viteBalanceInfo, activeAccount }: Props) => {
+const SendTokenFlow = ({ selectedToken, onClose, i18n, viteBalanceInfo, activeAccount }: Props) => {
 	const toAddressRef = useTextInputRef();
 	const amountRef = useTextInputRef();
 	const commentRef = useTextInputRef();
@@ -127,4 +127,4 @@ const SendTxFlow = ({ selectedToken, onClose, i18n, viteBalanceInfo, activeAccou
 	);
 };
 
-export default connect(SendTxFlow);
+export default connect(SendTokenFlow);

@@ -19,9 +19,10 @@ import DeterministicIcon from './DeterministicIcon';
 import Modal from './Modal';
 
 type Props = State & {
+	noBackArrow?: boolean;
 	transaction?: Transaction;
 	contractFuncParams?: any[];
-	onBack: () => void;
+	onBack?: () => void;
 	onClose: () => void;
 	unsentBlock?: AccountBlockClass;
 };
@@ -52,6 +53,7 @@ const Field = ({
 	);
 
 const TransactionModal = ({
+	noBackArrow,
 	unsentBlock,
 	onBack,
 	onClose,
@@ -65,6 +67,7 @@ const TransactionModal = ({
 	activeAccount,
 	transactionHistory,
 	setState,
+	sendBgScriptPortMessage,
 }: Props) => {
 	const [sentTx, sentTxSet] = useState<undefined | AccountBlockBlock>();
 	const [tokenApiInfo, tokenApiInfoSet] = useState<undefined | TokenApiInfo>();
@@ -113,9 +116,9 @@ const TransactionModal = ({
 				(!!unsentBlock && (
 					<Modal
 						fullscreen
-						noBackArrow={sendingTx}
+						noBackArrow={noBackArrow || sendingTx}
 						heading={unsentBlock ? i18n.confirmTransaction : i18n.transaction}
-						onClose={onBack}
+						onClose={() => onBack && onBack()}
 						className="flex flex-col"
 					>
 						<div className="flex-1 px-4">
@@ -246,6 +249,31 @@ const TransactionModal = ({
 												unsentBlock.sign(activeAccount.privateKey);
 												const res: AccountBlockBlock = await unsentBlock.autoSendByPoW();
 												sentTxSet(res);
+
+												const sanitizedBlock = {
+													// Don't want to send `block: res` in case the type of `res` changes and includes `privateKey`
+													// This ensures the private key is never sent to the content script
+													blockType: res.blockType,
+													address: res.address,
+													fee: res.fee,
+													data: res.data,
+													sendBlockHash: res.sendBlockHash,
+													toAddress: res.toAddress,
+													tokenId: res.tokenId,
+													amount: res.amount,
+													height: res.height,
+													previousHash: res.previousHash,
+													difficulty: res.difficulty,
+													nonce: res.nonce,
+													signature: res.signature,
+													publicKey: res.publicKey,
+													hash: res.hash,
+												};
+												sendBgScriptPortMessage({
+													type: 'writeAccountBlock',
+													block: sanitizedBlock,
+												});
+
 												if (transactionHistory?.received) {
 													setState(
 														{

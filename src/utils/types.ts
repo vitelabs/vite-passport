@@ -23,6 +23,8 @@ export type Storage = {
 	displayedTokenIds: string[];
 	displayedTokenNames: string[];
 	connectedDomains: {
+		// connectedDomains.address.domain => easy to get an account's connect domains
+		// connectedDomains.domain.address => easy to get a connected domains across all accounts and remove domain access by account granularity
 		[address: string]: {
 			[domain: string]: {
 				[contractAddress: string]: boolean;
@@ -38,8 +40,8 @@ export type Secrets = {
 
 export type State = Storage & {
 	chromePort: chrome.runtime.Port;
-	postPortMessage: (message: PortMessage) => void;
-	triggerEvent: (event: PortEvent) => void;
+	sendBgScriptPortMessage: (message: BgScriptPortMessage) => void;
+	triggerInjectedScriptEvent: (event: injectedScriptEventData) => void;
 	setState: setStateType;
 	secrets?: Secrets;
 	activeNetwork: Network;
@@ -65,7 +67,7 @@ export type State = Storage & {
 	};
 };
 
-export type PortMessage =
+export type BgScriptPortMessage =
 	| {
 			type: 'approveContract' | 'reopen' | 'lock';
 	  }
@@ -82,7 +84,7 @@ export type PortMessage =
 			block: object;
 	  };
 
-export type PortEvent =
+export type injectedScriptEventData =
 	| {
 			type: 'accountChange';
 			payload: { activeAddress: undefined | string };

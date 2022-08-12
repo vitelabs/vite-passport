@@ -162,6 +162,7 @@ const en = {
 	disconnect: 'Disconnect',
 	searchTokensBySymbolOrTti: 'Search tokens by symbol or tti',
 	token: 'Token',
+	invalidTokenId: 'Invalid tokenId',
 	test: 'test',
 	'': '',
 };

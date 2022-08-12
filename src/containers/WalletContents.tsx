@@ -11,7 +11,7 @@ import { setValue } from '../utils/storage';
 import { addIndexToTokenSymbol, toQueryString } from '../utils/strings';
 import { State, TokenApiInfo } from '../utils/types';
 import FetchWidget from './FetchWidget';
-import SendTxFlow from './SendTxFlow';
+import SendTokenFlow from './SendTokenFlow';
 import TextInput, { useTextInputRef } from './TextInput';
 import TokenCard from './TokenCard';
 import TokenSearchBar from './TokenSearchBar';
@@ -268,7 +268,7 @@ const WalletContents = ({ i18n, displayedTokenIds, activeAccount, setState }: Pr
 				</Modal>
 			)}
 			{sendingFunds && (
-				<SendTxFlow selectedToken={selectedToken!} onClose={() => sendingFundsSet(false)} />
+				<SendTokenFlow selectedToken={selectedToken!} onClose={() => sendingFundsSet(false)} />
 			)}
 		</>
 	);

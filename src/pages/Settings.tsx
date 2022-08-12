@@ -34,7 +34,7 @@ const ListItem = ({
 );
 
 const Settings = ({
-	postPortMessage,
+	sendBgScriptPortMessage,
 	setState,
 	currencyConversion,
 	encryptedSecrets,
@@ -85,11 +85,11 @@ const Settings = ({
 					label={i18n.currencyConversion}
 					value={currencyConversion}
 				/> */}
-				<ListItem
+				{/* <ListItem
 					onClick={() => activeModalSet('language')}
 					label={i18n.language}
 					value={languages[language]}
-				/>
+				/> */}
 				{/* <ListItem
 					onClick={() => activeModalSet('contacts')}
 					label={i18n.contacts}
@@ -99,7 +99,7 @@ const Settings = ({
 				<ListItem onClick={() => activeModalSet('reset')} label={i18n.resetWallet} />
 				<ListItem
 					onClick={() => {
-						postPortMessage({ type: 'lock' });
+						sendBgScriptPortMessage({ type: 'lock' });
 						navigate('/lock', { replace: true });
 					}}
 					label={i18n.lockWallet}

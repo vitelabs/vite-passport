@@ -12,7 +12,13 @@ import { State } from '../utils/types';
 // import { accountBlock } from '@vite/vitejs'
 // console.log('accountBlock:', accountBlock)
 
-const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSecrets }: State) => {
+const Lock = ({
+	i18n,
+	activeAccountIndex,
+	setState,
+	sendBgScriptPortMessage,
+	encryptedSecrets,
+}: State) => {
 	const passwordRef = useTextInputRef();
 	const [resettingWallet, resettingWalletSet] = useState(false);
 	const [password, passwordSet] = useState('');
@@ -31,7 +37,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 						index: activeAccountIndex,
 					}),
 				});
-				postPortMessage({ secrets, type: 'updateSecrets' });
+				sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
 				const routeAfterUnlock = searchParams.get('routeAfterUnlock');
 				navigate(routeAfterUnlock || '/home', { replace: true });
 			} catch {
@@ -46,7 +52,7 @@ const Lock = ({ i18n, activeAccountIndex, setState, postPortMessage, encryptedSe
 		encryptedSecrets,
 		i18n.incorrectPassword,
 		navigate,
-		postPortMessage,
+		sendBgScriptPortMessage,
 		setState,
 	]);
 
