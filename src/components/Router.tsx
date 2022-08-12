@@ -133,7 +133,7 @@ const Router = ({
 							privateKey: activeAccount.privateKey,
 							provider: viteApi,
 						});
-						// receiveTask.start();
+						receiveTask.start();
 					}
 				})
 				.catch((err) => {
@@ -203,6 +203,7 @@ const Router = ({
 
 		return () => viteApi.unsubscribeAll();
 	}, [
+		i18n.newAccountBlock,
 		activeAccount,
 		toastInfo,
 		viteApi,
