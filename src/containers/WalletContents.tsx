@@ -1,3 +1,4 @@
+import { DocumentDuplicateIcon } from '@heroicons/react/outline';
 import React, { useCallback, useMemo, useState } from 'react';
 import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
@@ -8,7 +9,7 @@ import { defaultTokenList } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { debounce, getTokenApiInfo } from '../utils/misc';
 import { setValue } from '../utils/storage';
-import { addIndexToTokenSymbol, toQueryString } from '../utils/strings';
+import { addIndexToTokenSymbol, shortenAddress, toQueryString } from '../utils/strings';
 import { State, TokenApiInfo } from '../utils/types';
 import FetchWidget from './FetchWidget';
 import SendTokenFlow from './SendTokenFlow';
@@ -28,7 +29,13 @@ const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInf
 
 type Props = State;
 
-const WalletContents = ({ i18n, displayedTokenIds, activeAccount, setState }: Props) => {
+const WalletContents = ({
+	i18n,
+	displayedTokenIds,
+	copyWithToast,
+	activeAccount,
+	setState,
+}: Props) => {
 	const amountRef = useTextInputRef();
 	const commentRef = useTextInputRef();
 	const [checkedTokens, checkedTokensSet] = useState<{
@@ -39,8 +46,7 @@ const WalletContents = ({ i18n, displayedTokenIds, activeAccount, setState }: Pr
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
 	const [amount, amountSet] = useState('');
-	// const [comment, commentSet] = useState('');
-	const [comment, commentSet] = useState('test');
+	const [comment, commentSet] = useState('');
 	const [displayedTokens, displayedTokensSet] = useState<undefined | TokenApiInfo[]>();
 	const [availableTokens, availableTokensSet] = useState<undefined | TokenApiInfo[]>();
 	const activeAddress = useMemo(() => activeAccount.address, [activeAccount]);
@@ -83,7 +89,7 @@ const WalletContents = ({ i18n, displayedTokenIds, activeAccount, setState }: Pr
 							))
 						)}
 						<button
-							className="mx-auto block text-skin-highlight brightness-button leading-3"
+							className="mx-auto block text-skin-highlight leading-3"
 							onClick={() => {
 								const checkedTokens: { [tti: string]: boolean } = {};
 								displayedTokenIds.forEach((tti) => {
@@ -231,14 +237,18 @@ const WalletContents = ({ i18n, displayedTokenIds, activeAccount, setState }: Pr
 				</Modal>
 			)}
 			{receivingFunds && (
-				<Modal
-					onClose={() => receivingFundsSet(false)}
-					className="flex flex-col"
-					heading={`${i18n.receive} ${selectedToken?.symbol}`}
-					subheading={selectedToken?.tokenAddress}
-				>
+				<Modal bottom onClose={() => receivingFundsSet(false)} className="flex flex-col">
 					{!!selectedToken && (
-						<div className="flex-1 p-2 space-y-2 overflow-scroll bg-skin-base">
+						<div className="flex-1 p-4 space-y-4">
+							<div className="xy gap-2 px-4 py-3 bg-skin-base rounded-full">
+								<p className="text-lg">{shortenAddress(activeAccount.address)}</p>
+								<button
+									className="p-1.5 -m-1.5 xy"
+									onClick={() => copyWithToast(activeAccount.address)}
+								>
+									<DocumentDuplicateIcon className="w-5 text-skin-back-arrow-icon" />
+								</button>
+							</div>
 							{/* https://docs.vite.org/vite-docs/vep/vep-6.html */}
 							<QR
 								data={`vite:${activeAddress}${toQueryString({
@@ -268,7 +278,14 @@ const WalletContents = ({ i18n, displayedTokenIds, activeAccount, setState }: Pr
 				</Modal>
 			)}
 			{sendingFunds && (
-				<SendTokenFlow selectedToken={selectedToken!} onClose={() => sendingFundsSet(false)} />
+				<SendTokenFlow
+					selectedToken={selectedToken!}
+					onClose={() => sendingFundsSet(false)}
+					onCloseAfterSend={() => {
+						sendingFundsSet(false);
+						selectedTokenSet(undefined);
+					}}
+				/>
 			)}
 		</>
 	);

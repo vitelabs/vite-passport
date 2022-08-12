@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import TransactionModal from '../components/TransactionModal';
 import { connect } from '../utils/global-context';
-import { getTokenApiInfo } from '../utils/misc';
-import { State, TokenApiInfo } from '../utils/types';
+import { State } from '../utils/types';
 
 const SignTx = ({ activeAccount, viteBalanceInfo, i18n }: State) => {
 	const [searchParams] = useSearchParams();
@@ -53,7 +52,7 @@ const SignTx = ({ activeAccount, viteBalanceInfo, i18n }: State) => {
 			<p className="text-center">{i18n.loading}...</p>
 		</div>
 	) : (
-		<TransactionModal noBackArrow onClose={() => window.close()} unsentBlock={block} />
+		<TransactionModal noBackArrow onCancel={() => window.close()} unsentBlock={block} />
 	);
 };
 

@@ -30,13 +30,10 @@ Props) => {
 	);
 	const balance = balanceInfoMap?.[tti]?.balance || '0';
 	const biggestUnit = !balanceInfoMap ? null : toBiggestUnit(balance, decimal);
+	const Tag = useMemo(() => (onClick ? 'button' : 'div'), [onClick]);
 
 	return (
-		<button
-			className="fx rounded-sm w-full px-4 py-3 shadow cursor-pointer bg-skin-middleground brightness-button"
-			disabled={!onClick}
-			onClick={onClick}
-		>
+		<Tag className="fx rounded-sm w-full px-4 py-3 shadow bg-skin-middleground" onClick={onClick}>
 			{!icon ? (
 				<DeterministicIcon tti={tti} className="h-10 w-10 rounded-full" />
 			) : (
@@ -63,7 +60,7 @@ Props) => {
 					</p>
 				</div>
 			</div>
-		</button>
+		</Tag>
 	);
 };
 

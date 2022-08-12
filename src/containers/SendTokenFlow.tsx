@@ -14,9 +14,17 @@ import TokenCard from './TokenCard';
 type Props = State & {
 	selectedToken: TokenApiInfo;
 	onClose: () => void;
+	onCloseAfterSend?: () => void;
 };
 
-const SendTokenFlow = ({ selectedToken, onClose, i18n, viteBalanceInfo, activeAccount }: Props) => {
+const SendTokenFlow = ({
+	selectedToken,
+	onClose,
+	onCloseAfterSend = onClose,
+	i18n,
+	viteBalanceInfo,
+	activeAccount,
+}: Props) => {
 	const toAddressRef = useTextInputRef();
 	const amountRef = useTextInputRef();
 	const commentRef = useTextInputRef();
@@ -78,21 +86,15 @@ const SendTokenFlow = ({ selectedToken, onClose, i18n, viteBalanceInfo, activeAc
 					<TextInput
 						numeric
 						_ref={amountRef}
-						initialValue="0.002"
 						label={i18n.amount}
+						initialValue="0.0003"
 						getIssue={(v) => {
 							if (+v > +selectedTokenBalance!) {
 								return i18n.insufficientFunds;
 							}
 						}}
 					/>
-					<TextInput
-						optional
-						textarea
-						_ref={commentRef}
-						initialValue="s" //
-						label={i18n.comment}
-					/>
+					<TextInput optional textarea _ref={commentRef} label={i18n.comment} />
 				</div>
 				<Button
 					theme="highlight"
@@ -119,7 +121,8 @@ const SendTokenFlow = ({ selectedToken, onClose, i18n, viteBalanceInfo, activeAc
 			{unsentBlock && (
 				<TransactionModal
 					onBack={() => unsentBlockSet(undefined)}
-					onClose={onClose}
+					onCancel={onClose}
+					onCloseAfterSend={onCloseAfterSend}
 					unsentBlock={unsentBlock}
 				/>
 			)}

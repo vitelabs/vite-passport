@@ -83,7 +83,7 @@ const Modal = ({
 			) : bottom ? (
 				<div onClick={(e) => e.stopPropagation()} className="h-full flex flex-col">
 					<div className="flex-1" onClick={onClose} />
-					<div className={className}>{children}</div>
+					<div className={`bg-skin-middleground ${className}`}>{children}</div>
 				</div>
 			) : (
 				<>

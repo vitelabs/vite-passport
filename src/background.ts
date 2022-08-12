@@ -170,8 +170,8 @@ const openPopup = async (routeAfterUnlock: string) => {
 	// routeAfterUnlock is specified in the params cuz frontend routing doesn't work here (popup window would look for a file under host+routeAfterUnlock)
 	const lastFocused = await chrome.windows.getCurrent();
 	// const {id} = await chrome.windows.create({
-	// OPTIMIZE: if a previous window is open, focus that instead of opening a new window
-	// I just used `window.onblur = window.close;`
+
+	// TODO: chrome.windows.update window if it exists
 
 	chrome.windows.create({
 		url: host + toQueryString({ routeAfterUnlock }),

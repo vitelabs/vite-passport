@@ -147,10 +147,8 @@ const TransactionList = ({
 									</>
 								)}
 								<button
-									className="fx text-sm rounded w-full px-3 py-2.5 shadow cursor-pointer bg-skin-middleground brightness-button"
-									onClick={() => {
-										txInfoModalTxSet(tx);
-									}}
+									className="fx text-sm rounded w-full px-3 py-2.5 shadow bg-skin-middleground"
+									onClick={() => txInfoModalTxSet(tx)}
 								>
 									<div className="flex-1 flex justify-between">
 										<div className="fx">
@@ -216,7 +214,7 @@ const TransactionList = ({
 						);
 					})
 				)}
-				<TransactionModal transaction={txInfoModalTx} onClose={() => txInfoModalTxSet(undefined)} />
+				<TransactionModal transaction={txInfoModalTx} onBack={() => txInfoModalTxSet(undefined)} />
 			</FetchWidget>
 		</div>
 	);

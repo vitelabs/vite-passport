@@ -163,6 +163,7 @@ const en = {
 	searchTokensBySymbolOrTti: 'Search tokens by symbol or tti',
 	token: 'Token',
 	invalidTokenId: 'Invalid tokenId',
+	newAccountBlock: 'New account block',
 	test: 'test',
 	'': '',
 };

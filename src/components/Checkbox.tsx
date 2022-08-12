@@ -28,7 +28,7 @@ const Checkbox = ({ disabled, radio, onUserInput = () => {}, value, className }:
 	) : (
 		<button
 			disabled={disabled}
-			className={`brightness-button h-8 w-8 p-1.5 -m-1.5 -mr-2 ${className}`}
+			className={`h-8 w-8 p-1.5 -m-1.5 -mr-2 ${className}`}
 			onClick={() => onUserInput(!value)}
 		>
 			<div

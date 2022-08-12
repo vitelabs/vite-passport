@@ -48,10 +48,6 @@ const listen = async (message: BgScriptPortMessage) => {
 			state.sendBgScriptPortMessage!({ type: 'reopen' });
 		}
 
-		// For when `openPopup` is called from background.ts. Don't want to have multiple popup windows or a transaction waiting to be confirmed in the background. This is consistent behavior anyways with the popup window that opens when you click the icon.
-		// window.onblur = window.close;
-		// This also makes debugging with inspect impossible...
-
 		root.render(
 			// https://stackoverflow.com/a/65167384/13442719
 			// <React.StrictMode>

@@ -17,13 +17,15 @@ import SignTx from '../pages/SignTx';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
 import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
-import { State, UnreceivedBlockMessage, ViteBalanceInfo } from '../utils/types';
+import { NewAccountBlock, State, UnreceivedBlockMessage, ViteBalanceInfo } from '../utils/types';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
 // new WS_RPC(networkRpcUrl, providerTimeout, providerOptions)
 
 type Props = State;
+
+const blocksReceivedSinceOpening: { [hash: string]: boolean } = {};
 
 const Router = ({
 	setState,
@@ -93,7 +95,7 @@ const Router = ({
 							.join(',')}&vs_currencies=usd`
 					)
 				).json();
-				console.log('prices:', prices);
+				// console.log('prices:', prices);
 				setState({ prices });
 			})();
 		} catch (error) {
@@ -123,7 +125,7 @@ const Router = ({
 				.getBalanceInfo(activeAccount.address)
 				// @ts-ignore getBalanceInfo needs a more descriptive return type
 				.then((res: ViteBalanceInfo) => {
-					console.log('res:', res);
+					// console.log('res:', res);
 					setState({ viteBalanceInfo: res });
 					if (res.unreceived.blockCount !== '0') {
 						const receiveTask = new accountBlock.ReceiveAccountBlockTask({
@@ -145,47 +147,59 @@ const Router = ({
 
 	useEffect(updateViteBalanceInfo, [activeAccount, networkRpcUrl]); // eslint-disable-line
 
+	// TODO: This stuff is not working reliably
 	useEffect(() => {
-		if (activeAccount && toastInfo) {
-			// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
-			// viteApi
-			// 	.subscribe('newAccountBlockByAddress', activeAccount.address)
-			// 	.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
-			// 		event.on((newBlock) => {
-			// 			console.log('newBlock:', newBlock);
-			// 			//
-			// 		});
-			// 	})
-			// 	.catch((err: any) => {
-			// 		console.log(err);
-			// 		setState({ toast: [JSON.stringify(err), 'error'] });
-			// 	});
-			viteApi
-				.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
-				.then((event: { on: (callback: (result: UnreceivedBlockMessage[]) => void) => void }) => {
-					event.on((res) => {
-						console.log('transactionHistory?.unreceived:', transactionHistory?.unreceived, res);
-						toastInfo(i18n.newUnreceivedAccountBlock);
-						if (transactionHistory?.unreceived) {
-							res.forEach(async (block) => {
-								const tx: Transaction = await viteApi.request('ledger_getAccountBlockByHash');
-								const key = block.received ? 'received' : 'unreceived';
-								// console.log('transactionHistory[key]:', key, transactionHistory[key]);
-								setState(
-									{ transactionHistory: { [key]: [...transactionHistory[key]!, tx] } },
-									{ deepMerge: true }
-								);
-							});
-						}
-						// TODO: throttle updateViteBalanceInfo()
-						updateViteBalanceInfo();
-					});
-				})
-				.catch((err: any) => {
-					console.log(err);
-					setState({ toast: [JSON.stringify(err), 'error'] });
+		// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
+		viteApi
+			.subscribe('newAccountBlockByAddress', activeAccount.address)
+			.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
+				event.on(async (newBlock) => {
+					console.log('newAccountBlockByAddress:', newBlock);
+					const tx: Transaction = await viteApi.request(
+						'ledger_getAccountBlockByHash',
+						newBlock[0].hash
+					);
+					if (tx.blockType !== 2) {
+						// i.e. user probably sent this block from VP
+						toastInfo(i18n.newAccountBlock);
+					}
 				});
-		}
+			})
+			.catch((err: any) => {
+				console.log(err);
+				setState({ toast: [JSON.stringify(err), 'error'] });
+			});
+
+		viteApi
+			.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
+			.then((event: { on: (callback: (result: UnreceivedBlockMessage[]) => void) => void }) => {
+				event.on((res) => {
+					const { hash } = res[0];
+					if (blocksReceivedSinceOpening[hash]) return; // This cb run twice, when the block is unreceived and received
+					blocksReceivedSinceOpening[hash] = true;
+					// console.log('newUnreceivedBlockByAddress:', res);
+					// toastInfo(i18n.newUnreceivedAccountBlock);
+
+					// if (transactionHistory?.unreceived) {
+					// 	res.forEach(async (block) => {
+					// 		const tx: Transaction = await viteApi.request('ledger_getAccountBlockByHash');
+					// 		const key = block.received ? 'received' : 'unreceived';
+					// 		// console.log('transactionHistory[key]:', key, transactionHistory[key]);
+					// 		setState(
+					// 			{ transactionHistory: { [key]: [...transactionHistory[key]!, tx] } },
+					// 			{ deepMerge: true }
+					// 		);
+					// 	});
+					// }
+					// TODO: throttle updateViteBalanceInfo()
+					updateViteBalanceInfo();
+				});
+			})
+			.catch((err: any) => {
+				console.log(err);
+				setState({ toast: [JSON.stringify(err), 'error'] });
+			});
+
 		return () => viteApi.unsubscribeAll();
 	}, [
 		activeAccount,

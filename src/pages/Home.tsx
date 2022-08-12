@@ -69,21 +69,20 @@ const Home = ({
 	const [hostname, hostnameSet] = useState('');
 	const [tokensInWallet, tokensInWalletSet] = useState<TokenApiInfo[]>([]);
 	const [displayedTokens, displayedTokensSet] = useState<TokenApiInfo[]>([]);
-	const [sendingToken, sendingTokenSet] = useState<undefined | TokenApiInfo>();
+	const [tokenSendInfo, tokenSendInfoSet] = useState<undefined | TokenApiInfo>();
 
 	const balanceInfoMap = useMemo(
 		() => (viteBalanceInfo ? viteBalanceInfo?.balance?.balanceInfoMap || {} : undefined),
 		[viteBalanceInfo]
 	);
-
-	useEffect(() => {
-		console.log('run');
-		getCurrentTab().then((tab) => hostnameSet(getHostname(tab.url)));
-	}, [connectedDomains]);
 	const connected = useMemo(
 		() => (!hostname ? false : !!connectedDomains[activeAccount.address]?.[hostname]),
 		[connectedDomains, activeAccount, hostname]
 	);
+
+	useEffect(() => {
+		getCurrentTab().then((tab) => hostnameSet(getHostname(tab.url)));
+	}, []);
 
 	return (
 		<TabContainer>
@@ -436,25 +435,25 @@ const Home = ({
 								<TokenCard
 									{...tokenApiInfo}
 									key={tokenApiInfo.tokenAddress}
-									onClick={() => sendingTokenSet(tokenApiInfo)}
+									onClick={() => tokenSendInfoSet(tokenApiInfo)}
 								/>
 							))
 						)}
 					</div>
 				</Modal>
 			)}
-			{sendingToken && (
+			{tokenSendInfo && (
 				<SendTokenFlow
-					selectedToken={sendingToken}
+					selectedToken={tokenSendInfo}
 					onClose={() => {
 						sendingSet(false);
-						sendingTokenSet(undefined);
+						tokenSendInfoSet(undefined);
 					}}
 				/>
 			)}
 			{viewingConnected && (
 				<Modal bottom onClose={() => viewingConnectedSet(false)} className="flex flex-col">
-					<div className="fy p-4 bg-skin-middleground">
+					<div className="fy p-4">
 						<p className="text-lg text-center">{i18n.vitePassportIsLinking}</p>
 						<div className="mt-2 px-4 py-3 bg-skin-base rounded-full">
 							<p className="leading-3 text-lg break-words">{hostname}</p>

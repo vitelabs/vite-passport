@@ -28,9 +28,7 @@ const ModalListItem = ({
 	return (
 		<div className="flex items-center">
 			<button
-				className={`p-4 fx w-full ${
-					base ? 'bg-skin-base' : 'bg-skin-middleground'
-				} brightness-button ${className}`}
+				className={`p-4 fx w-full ${base ? 'bg-skin-base' : 'bg-skin-middleground'} ${className}`}
 				onClick={onClick}
 			>
 				{radio && <Checkbox disabled radio value={active} />}
@@ -44,7 +42,7 @@ const ModalListItem = ({
 			</button>
 			{onClose && (
 				<button
-					className="xy w-8 h-8 mr-2 overflow-hidden rounded-full bg-skin-middleground brightness-button"
+					className="xy w-8 h-8 mr-2 overflow-hidden rounded-full bg-skin-middleground"
 					onClick={onClose}
 				>
 					<XIcon className="w-5 text-skin-eye-icon" />
