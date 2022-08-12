@@ -56,6 +56,7 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 			<Button
 				theme="highlight"
 				label={i18n.next}
+				disabled={!agreesToTerms}
 				onClick={async () => {
 					let valid = validateInputs([mnemonicRef, passwordRef, confirmPasswordRef]);
 					if (passwordRef.value !== confirmPasswordRef.value) {

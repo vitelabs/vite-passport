@@ -1,12 +1,9 @@
-// import ViteLogo from '../assets/ViteLogo';
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ViteLogo from '../assets/ViteLogo';
 import A from '../components/A';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
-// import { accountBlock } from '@vite/vitejs'
-// console.log('accountBlock:', accountBlock)
 
 const Start = ({ i18n }: State) => {
 	const [searchParams] = useSearchParams();

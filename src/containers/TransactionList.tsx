@@ -56,7 +56,6 @@ const TransactionList = ({
 				shouldFetch={!transactions && !!viteApi}
 				getPromise={() => {
 					if (tti) {
-						// console.log('tti:', tti);
 						return viteApi.request(
 							'ledger_getAccountBlocks',
 							activeAccount.address,
@@ -85,7 +84,6 @@ const TransactionList = ({
 					// );
 				}}
 				onResolve={(data: any) => {
-					// console.log('data:', data);
 					// @ts-ignore
 					// data?.[1]?.[0] && txInfoModalTxSet(data[1][0]);
 					setState(

@@ -21,10 +21,7 @@ import TransactionList from './TransactionList';
 const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
 	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
 		.then((res) => res.json())
-		.then((data: { data: { VITE: TokenApiInfo[] } }) => {
-			// console.log('data:', data);
-			callback(data?.data?.VITE || []);
-		});
+		.then((data: { data: { VITE: TokenApiInfo[] } }) => callback(data?.data?.VITE || []));
 }, 300);
 
 type Props = State;
@@ -179,7 +176,6 @@ const WalletContents = ({
 													radio
 													value={checkedTokens[tti]}
 													onUserInput={(checked) => {
-														console.log('checked:', checked);
 														checkedTokens[tti] = checked;
 														checkedTokensSet({ ...checkedTokens });
 													}}

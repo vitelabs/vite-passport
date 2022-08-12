@@ -149,6 +149,7 @@ const Router = ({
 
 	// TODO: This stuff is not working reliably
 	useEffect(() => {
+		if (!activeAccount) return;
 		// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
 		viteApi
 			.subscribe('newAccountBlockByAddress', activeAccount.address)

@@ -46,6 +46,7 @@ const Create2 = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 			<div className="flex-1"></div>
 			<Button
 				theme="highlight"
+				disabled={!agreesToTerms}
 				label={i18n.next}
 				onClick={async () => {
 					let valid = validateInputs([passwordRef, confirmPasswordRef]);
