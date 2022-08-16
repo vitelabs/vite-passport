@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import DeterministicIcon from '../components/DeterministicIcon';
 import { connect } from '../utils/global-context';
-import { calculatePrice } from '../utils/misc';
+import { formatPrice } from '../utils/misc';
 import { addIndexToTokenSymbol, shortenTti, toBiggestUnit } from '../utils/strings';
 import { State, TokenApiInfo } from '../utils/types';
 
@@ -53,7 +53,7 @@ Props) => {
 					<p className="text-sm text-skin-secondary font-medium">
 						{!prices || biggestUnit === null
 							? '...'
-							: `≈${calculatePrice(
+							: `≈${formatPrice(
 									biggestUnit!,
 									prices?.[name.replace(/ /g, '').toLowerCase()]?.usd
 							  )}`}

@@ -19,12 +19,7 @@ export const validateInputs = (
 	return allRefsInputsAreValid;
 };
 
-export const calculatePrice = (
-	units: string | number,
-	price: number,
-	label = '$',
-	decimals = 2
-) => {
+export const formatPrice = (units: string | number, price = 1, label = '$', decimals = 2) => {
 	return `${label}${(+units * price).toFixed(decimals)}`;
 };
 

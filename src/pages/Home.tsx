@@ -20,7 +20,7 @@ import TokenCard from '../containers/TokenCard';
 import TokenSearchBar from '../containers/TokenSearchBar';
 import WalletContents from '../containers/WalletContents';
 import { connect } from '../utils/global-context';
-import { getCurrentTab, getTokenApiInfo, validateInputs } from '../utils/misc';
+import { formatPrice, getCurrentTab, getTokenApiInfo, validateInputs } from '../utils/misc';
 import { getValue, setValue } from '../utils/storage';
 import {
 	addIndexToTokenSymbol,
@@ -59,6 +59,7 @@ const Home = ({
 	const [editingNetwork, editingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
+	const [portfolioValue, portfolioValueSet] = useState<undefined | number>();
 	// const [votingModalOpen, votingModalOpenSet] = useState(false);
 	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
 	// const [quotaBeneficiary, quotaBeneficiarySet] = useState('');
@@ -139,6 +140,9 @@ const Home = ({
 				</div>
 			</div>
 			<div className="flex-1 p-4 space-y-4 overflow-scroll">
+				<p className="text-3xl text-center">
+					{portfolioValue ? formatPrice(portfolioValue) : '...'}
+				</p>
 				<div className="xy gap-16">
 					<div className="fy">
 						<button
@@ -167,7 +171,7 @@ const Home = ({
 					</div>
 				</div>
 				<div className="h-0.5 bg-skin-divider" />
-				<WalletContents />
+				<WalletContents onPortfolioValueChange={(v) => portfolioValueSet(v)} />
 			</div>
 			{/* <Modal
 				visible={votingModalOpen}

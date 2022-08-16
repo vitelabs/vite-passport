@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { State } from './types';
 
 // https://stackoverflow.com/a/51365037/13442719
@@ -23,25 +23,27 @@ const GlobalContext = React.createContext<HOCProps>(undefined!);
 type ProviderProps = {
 	children: React.ReactNode;
 	initialState?: Partial<State>;
-	onSetState?: setStateType;
 };
 
-export const Provider = ({ children, initialState = {}, onSetState }: ProviderProps) => {
+export const Provider = ({ children, initialState = {} }: ProviderProps) => {
 	const [state, setState] = useState(initialState);
+	const setStateFunc = useCallback(
+		(stateChanges: object, options: { deepMerge?: boolean } = {}) => {
+			setState((prevState) => {
+				const newState = options.deepMerge
+					? deepMerge({ ...prevState }, stateChanges)
+					: { ...prevState, ...stateChanges };
+				return newState;
+			});
+		},
+		[]
+	);
 
 	return (
 		<GlobalContext.Provider
 			value={{
 				state,
-				setState: (stateChanges: object, options: { deepMerge?: boolean } = {}) => {
-					setState((prevState) => {
-						const newState = options.deepMerge
-							? deepMerge({ ...prevState }, stateChanges)
-							: { ...prevState, ...stateChanges };
-						onSetState && onSetState(newState, options);
-						return newState;
-					});
-				},
+				setState: setStateFunc,
 			}}
 		>
 			{children}

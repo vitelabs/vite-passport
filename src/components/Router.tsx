@@ -17,15 +17,13 @@ import SignTx from '../pages/SignTx';
 import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
 import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
-import { NewAccountBlock, State, UnreceivedBlockMessage, ViteBalanceInfo } from '../utils/types';
+import { State, UnreceivedBlockMessage, ViteBalanceInfo } from '../utils/types';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
 // new WS_RPC(networkRpcUrl, providerTimeout, providerOptions)
 
 type Props = State;
-
-const blocksReceivedSinceOpening: { [hash: string]: boolean } = {};
 
 const Router = ({
 	setState,
@@ -35,9 +33,7 @@ const Router = ({
 	secrets,
 	activeNetwork,
 	transactionHistory,
-	toastInfo,
 	displayedTokenNames,
-	toastError,
 }: Props) => {
 	const initialEntries = useMemo(() => {
 		if (window.location.pathname === '/src/confirmation.html') {
@@ -70,7 +66,7 @@ const Router = ({
 			}
 		}
 		return ['/'];
-	}, []); // eslint-disable-line
+	}, [encryptedSecrets, secrets]);
 	const networkRpcUrl = useMemo(() => activeNetwork.rpcUrl, [activeNetwork]);
 	const rpc = useMemo(
 		() => (/^ws/.test(networkRpcUrl) ? new WS_RPC(networkRpcUrl) : new HTTP_RPC(networkRpcUrl)),
@@ -83,26 +79,21 @@ const Router = ({
 		});
 	}, [rpc]);
 
-	useEffect(() => setState({ viteApi }), [viteApi]); // eslint-disable-line
+	useEffect(() => setState({ viteApi }), [setState, viteApi]);
 
 	useEffect(() => {
-		try {
-			(async () => {
-				const prices = await (
-					await fetch(
-						`https://api.coingecko.com/api/v3/simple/price?ids=${displayedTokenNames
-							.map((n) => n.replace(/ /g, ''))
-							.join(',')}&vs_currencies=usd`
-					)
-				).json();
-				// console.log('prices:', prices);
-				setState({ prices });
-			})();
-		} catch (error) {
-			console.log('error:', error);
-			toastError(error);
-		}
-	}, [displayedTokenNames]); // eslint-disable-line
+		fetch(
+			`https://api.coingecko.com/api/v3/simple/price?ids=${displayedTokenNames
+				.map((n) => n.replace(/ /g, ''))
+				.join(',')}&vs_currencies=usd`
+		)
+			.then((res) => res.json())
+			.then((prices) => setState({ prices }))
+			.catch((e) => {
+				console.log('error:', e);
+				setState({ toast: [e, 'error'] });
+			});
+	}, [displayedTokenNames, setState]);
 
 	// Check if tti is listed on ViteX
 	// viteApi.request('dex_getTokenInfo', 'tti_5649544520544f4b454e6e40').then(
@@ -138,74 +129,80 @@ const Router = ({
 				})
 				.catch((err) => {
 					console.log(err);
-					setState({ toast: [JSON.stringify(err), 'error'] });
+					setState({ toast: [err, 'error'] });
 					// Sometimes on page load, this will catch with
 					// Error: CONNECTION ERROR: Couldn't connect to node wss://buidl.vite.net/gvite/ws.
 				});
 		}
-	}, [viteApi, activeAccount]); // eslint-disable-line
+	}, [viteApi, activeAccount, setState]);
 
-	useEffect(updateViteBalanceInfo, [activeAccount, networkRpcUrl]); // eslint-disable-line
+	useEffect(updateViteBalanceInfo, [activeAccount, networkRpcUrl, updateViteBalanceInfo]);
 
 	// TODO: This stuff is not working reliably
 	useEffect(() => {
 		if (!activeAccount) return;
-		// https://docs.vite.org/vite-docs/api/rpc/subscribe_v2.html#newaccountblockbyaddress
-		viteApi
-			.subscribe('newAccountBlockByAddress', activeAccount.address)
-			.then((event: { on: (callback: (result: NewAccountBlock) => void) => void }) => {
-				event.on(async (newBlock) => {
-					console.log('newAccountBlockByAddress:', newBlock);
-					const tx: Transaction = await viteApi.request(
-						'ledger_getAccountBlockByHash',
-						newBlock[0].hash
-					);
-					if (tx.blockType !== 2) {
-						// i.e. user probably sent this block from VP
-						toastInfo(i18n.newAccountBlock);
-					}
-				});
-			})
-			.catch((err: any) => {
-				console.log(err);
-				setState({ toast: [JSON.stringify(err), 'error'] });
-			});
-
 		viteApi
 			.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
 			.then((event: { on: (callback: (result: UnreceivedBlockMessage[]) => void) => void }) => {
 				event.on((res) => {
-					const { hash } = res[0];
-					if (blocksReceivedSinceOpening[hash]) return; // This cb run twice, when the block is unreceived and received
-					blocksReceivedSinceOpening[hash] = true;
-					// console.log('newUnreceivedBlockByAddress:', res);
-					// toastInfo(i18n.newUnreceivedAccountBlock);
+					const blockMessage = res[0];
+					if (!blockMessage.received) {
+						setState({ toast: [i18n.newUnreceivedAccountBlock, 'info'] });
+					}
 
-					// if (transactionHistory?.unreceived) {
-					// 	res.forEach(async (block) => {
-					// 		const tx: Transaction = await viteApi.request('ledger_getAccountBlockByHash');
-					// 		const key = block.received ? 'received' : 'unreceived';
-					// 		// console.log('transactionHistory[key]:', key, transactionHistory[key]);
-					// 		setState(
-					// 			{ transactionHistory: { [key]: [...transactionHistory[key]!, tx] } },
-					// 			{ deepMerge: true }
-					// 		);
-					// 	});
-					// }
+					viteApi
+						.request('ledger_getAccountBlockByHash', blockMessage.hash)
+						.then((sendTx: Transaction) => {
+							console.log('sendTx:', sendTx);
+							const history: {
+								[tti: string]: Transaction[] | undefined;
+								received?: Transaction[] | undefined;
+								unreceived?: Transaction[] | undefined;
+							} = {};
+							if (!blockMessage.received) {
+								if (transactionHistory?.unreceived) {
+									history.unreceived = [sendTx, ...transactionHistory.unreceived!];
+									setState({ transactionHistory: history }, { deepMerge: true });
+								}
+							} else {
+								setTimeout(() => {
+									viteApi
+										.request('ledger_getAccountBlockByHash', sendTx.receiveBlockHash)
+										.then((receiveTx: Transaction) => {
+											console.log('receiveTx:', receiveTx);
+											if (transactionHistory?.unreceived) {
+												history.received = [receiveTx, ...transactionHistory.received!];
+												history.unreceived = transactionHistory.unreceived!.filter(
+													(unreceivedBlock) => unreceivedBlock.hash !== blockMessage.hash
+												);
+											}
+											if (sendTx.tokenId && transactionHistory?.[sendTx.tokenId]) {
+												history[sendTx.tokenId] = [
+													receiveTx,
+													...transactionHistory[sendTx.tokenId]!,
+												];
+											}
+											setState({ transactionHistory: history }, { deepMerge: true });
+										})
+										.catch((err: any) => {
+											console.log(err);
+											setState({ toast: [err, 'error'] });
+										});
+								}, 1000); // HACK: without this timeout, the timestamp would be 0
+							}
+						});
 					// TODO: throttle updateViteBalanceInfo()
 					updateViteBalanceInfo();
 				});
 			})
 			.catch((err: any) => {
 				console.log(err);
-				setState({ toast: [JSON.stringify(err), 'error'] });
+				setState({ toast: [err, 'error'] });
 			});
 
 		return () => viteApi.unsubscribeAll();
 	}, [
-		i18n.newAccountBlock,
 		activeAccount,
-		toastInfo,
 		viteApi,
 		updateViteBalanceInfo,
 		i18n.newUnreceivedAccountBlock,
@@ -227,7 +224,7 @@ const Router = ({
 			toastError: (text = '') => setState({ toast: [text, 'error'] }),
 			toastInfo: (text = '') => setState({ toast: [text, 'info'] }),
 		});
-	}, [i18n]); // eslint-disable-line
+	}, [i18n, setState]);
 
 	return (
 		// https://v5.reactrouter.com/web/api/MemoryRouter

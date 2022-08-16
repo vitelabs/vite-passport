@@ -1,5 +1,5 @@
 import { DocumentDuplicateIcon } from '@heroicons/react/outline';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import DeterministicIcon from '../components/DeterministicIcon';
@@ -7,9 +7,14 @@ import Modal from '../components/Modal';
 import QR from '../components/QR';
 import { defaultTokenList } from '../utils/constants';
 import { connect } from '../utils/global-context';
-import { debounce, getTokenApiInfo } from '../utils/misc';
+import { debounce, formatPrice, getTokenApiInfo } from '../utils/misc';
 import { setValue } from '../utils/storage';
-import { addIndexToTokenSymbol, shortenAddress, toQueryString } from '../utils/strings';
+import {
+	addIndexToTokenSymbol,
+	shortenAddress,
+	toBiggestUnit,
+	toQueryString,
+} from '../utils/strings';
 import { State, TokenApiInfo } from '../utils/types';
 import FetchWidget from './FetchWidget';
 import SendTokenFlow from './SendTokenFlow';
@@ -24,14 +29,19 @@ const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInf
 		.then((data: { data: { VITE: TokenApiInfo[] } }) => callback(data?.data?.VITE || []));
 }, 300);
 
-type Props = State;
+type Props = State & {
+	onPortfolioValueChange: (number) => void;
+};
 
 const WalletContents = ({
 	i18n,
 	displayedTokenIds,
 	copyWithToast,
 	activeAccount,
+	prices,
 	setState,
+	onPortfolioValueChange,
+	viteBalanceInfo,
 }: Props) => {
 	const amountRef = useTextInputRef();
 	const commentRef = useTextInputRef();
@@ -42,7 +52,8 @@ const WalletContents = ({
 	const [editingTokenList, editingTokenListSet] = useState(false);
 	const [receivingFunds, receivingFundsSet] = useState(false);
 	const [sendingFunds, sendingFundsSet] = useState(false);
-	const [amount, amountSet] = useState('');
+	// const [amount, amountSet] = useState('');
+	const [amount, amountSet] = useState('0.0003');
 	const [comment, commentSet] = useState('');
 	const [displayedTokens, displayedTokensSet] = useState<undefined | TokenApiInfo[]>();
 	const [availableTokens, availableTokensSet] = useState<undefined | TokenApiInfo[]>();
@@ -56,8 +67,23 @@ const WalletContents = ({
 				a.symbol === 'VITE' ? -1 : b.symbol === 'VITE' ? 1 : a.symbol < b.symbol ? -1 : 1
 			)
 		);
-		// selectedTokenSet(list[0]);
 	}, []);
+
+	useEffect(() => {
+		if (displayedTokens && prices && viteBalanceInfo && onPortfolioValueChange) {
+			const balanceInfoMap = viteBalanceInfo
+				? viteBalanceInfo?.balance?.balanceInfoMap || {}
+				: undefined;
+			onPortfolioValueChange(
+				displayedTokens.reduce((value, token) => {
+					const balance = balanceInfoMap?.[token.tokenAddress]?.balance || '0';
+					const biggestUnit = !balanceInfoMap ? null : toBiggestUnit(balance, token.decimal);
+					const unitPrice = prices?.[token.name.replace(/ /g, '').toLowerCase()]?.usd;
+					return value + +formatPrice(biggestUnit!, unitPrice, '');
+				}, 0)
+			);
+		}
+	}, [displayedTokens, onPortfolioValueChange, prices, viteBalanceInfo]);
 
 	return (
 		<>
@@ -257,7 +283,7 @@ const WalletContents = ({
 								optional
 								numeric
 								_ref={amountRef}
-								label="Amount"
+								label={i18n.amount}
 								value={amount}
 								onUserInput={(v) => amountSet(v)}
 							/>
@@ -265,7 +291,7 @@ const WalletContents = ({
 								optional
 								textarea
 								_ref={commentRef}
-								label="Comment"
+								label={i18n.comment}
 								value={comment}
 								onUserInput={(v) => commentSet(v)}
 							/>

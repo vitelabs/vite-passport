@@ -111,13 +111,14 @@ const TransactionList = ({
 								4: DownloadIcon,
 							}[tx.blockType] || DotsCircleHorizontalIcon;
 						return (
+							// hide unreceived txs when viewing specific tokens (i.e. `tti` is truthy)
 							<React.Fragment key={tx.hash}>
-								{!!transactionHistory?.unreceived?.length && i === 0 && (
+								{!tti && !!transactionHistory?.unreceived?.length && i === 0 && (
 									<p className="leading-3">
 										{viteBalanceInfo!.unreceived.blockCount} {i18n.unreceived}
 									</p>
 								)}
-								{i === transactionHistory?.unreceived?.length && (
+								{!tti && i === transactionHistory?.unreceived?.length && (
 									<>
 										{!allUnreceivedTxsLoaded && (
 											<button
