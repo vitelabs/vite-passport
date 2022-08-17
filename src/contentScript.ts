@@ -27,19 +27,11 @@ window.addEventListener('vitePassportMethodCalled', ((
 	);
 }) as EventListener); // https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
 
-// addEventListener('message', (e) => {
-// 	console.log('e:', e);
-// });
-
-// const chromePort = chrome.runtime.connect();
-// chrome.runtime.onConnect.addListener((chromePort) => {
-// 	console.log('chromePort:', chromePort);
-// });
-// console.log('chromePort:', chromePort);
-
+// popup calls `triggerInjectedScriptEvent` which triggers this which relays the message to the injected script
 chrome.runtime.onMessage.addListener(
 	// (message: injectedScriptEventData, sender, reply: () => void) => {
 	(message: injectedScriptEventData) => {
+		// console.log('message:', message);
 		dispatchEvent(
 			new CustomEvent(prefixName(message.type), {
 				detail: message.payload,

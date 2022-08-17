@@ -46,7 +46,6 @@ const Home = ({
 	accountList,
 	contacts,
 	toastSuccess,
-	activeNetwork,
 	triggerInjectedScriptEvent,
 	connectedDomains,
 	viteBalanceInfo,
@@ -79,6 +78,10 @@ const Home = ({
 	const connected = useMemo(
 		() => (!hostname ? false : !!connectedDomains[activeAccount.address]?.[hostname]),
 		[connectedDomains, activeAccount, hostname]
+	);
+	const activeNetwork = useMemo(
+		() => networkList[activeNetworkIndex],
+		[networkList, activeNetworkIndex]
 	);
 
 	useEffect(() => {
@@ -141,7 +144,7 @@ const Home = ({
 			</div>
 			<div className="flex-1 p-4 space-y-4 overflow-scroll">
 				<p className="text-3xl text-center">
-					{portfolioValue ? formatPrice(portfolioValue) : '...'}
+					{portfolioValue !== undefined ? formatPrice(portfolioValue) : '...'}
 				</p>
 				<div className="xy gap-16">
 					<div className="fy">
@@ -222,14 +225,13 @@ const Home = ({
 										toastSuccess(i18n.networkChanged);
 										setState({
 											activeNetworkIndex: i,
-											activeNetwork: networkList[i],
 											viteBalanceInfo: undefined,
 											transactionHistory: undefined,
 										});
 										setValue({ activeNetworkIndex: i });
 										triggerInjectedScriptEvent({
 											type: 'networkChange',
-											payload: { activeNetwork: network.rpcUrl },
+											payload: { activeNetwork: network },
 										});
 									}
 									editingNetworkSet(false);
@@ -362,15 +364,22 @@ const Home = ({
 										});
 										setValue(data);
 										const { connectedDomains } = await getValue('connectedDomains');
-										const activeAddress = accountList[i].address;
+										const newActiveAddress = accountList[i].address;
+										const lastAccountWasConnected =
+											!!connectedDomains?.[activeAccount.address]?.[hostname];
 										const newActiveAccountConnected =
-											!!connectedDomains?.[activeAddress]?.[hostname];
-										triggerInjectedScriptEvent({
-											type: 'accountChange',
-											payload: {
-												activeAddress: !newActiveAccountConnected ? undefined : activeAddress,
-											},
-										});
+											!!connectedDomains?.[newActiveAddress]?.[hostname];
+										if (newActiveAccountConnected) {
+											triggerInjectedScriptEvent({
+												type: 'accountChange',
+												payload: { activeAddress: newActiveAddress },
+											});
+										} else if (lastAccountWasConnected) {
+											triggerInjectedScriptEvent({
+												type: 'accountChange',
+												payload: { activeAddress: undefined },
+											});
+										}
 									}
 									changingActiveAccountSet(false);
 								}}

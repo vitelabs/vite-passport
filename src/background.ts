@@ -8,32 +8,16 @@ import { BgScriptPortMessage } from './utils/types';
 
 const lockingAlarmName = 'clearSecrets';
 const secretsKey = 'secrets';
+const lastPopupIdKey = 'lastPopupId';
 chrome.alarms.onAlarm.addListener((alarm) => {
 	if (alarm.name === lockingAlarmName) {
-		chrome.storage.local.remove(secretsKey);
+		chrome.storage.session.remove(secretsKey);
 	}
 });
 
-// Have to make a replacement for `dispatch(Custom Event(...))` and `addEventListener` cuz
-// https://stackoverflow.com/questions/41266567/service-worker-warning-in-google-chrome
-let eventListeners: { [event: string]: ((data?: any) => void)[] } = {};
-const pushEventListener = (event: string, listener: (data: BackgroundResponse) => void) => {
-	if (!Array.isArray(eventListeners[event])) {
-		eventListeners[event] = [];
-	}
-	eventListeners[event].push(listener);
-};
-const runAndClearEventListener = (event: string, data?: object) => {
-	(eventListeners[event] || []).forEach((listener) => listener(data));
-	delete eventListeners[event];
-};
-const clearEventListeners = () => {
-	eventListeners = {};
-};
-
 // Below are messages from within the extension
 chrome.runtime.onConnect.addListener(async (chromePort) => {
-	const { secrets } = await chrome.storage.local.get(secretsKey);
+	const { secrets } = await chrome.storage.session.get(secretsKey);
 	chromePort.postMessage({ secrets, type: 'opening' } as BgScriptPortMessage);
 	chromePort.onMessage.addListener((message: BgScriptPortMessage) => {
 		switch (message.type) {
@@ -41,18 +25,10 @@ chrome.runtime.onConnect.addListener(async (chromePort) => {
 				chrome.alarms.clear(lockingAlarmName);
 				break;
 			case 'updateSecrets':
-				chrome.storage.local.set({ secrets: message.secrets });
-				break;
-			case 'connectDomain':
-				// message.domain isn't used for anything rn, but it may come in handy later
-				runAndClearEventListener('vitePassportConnectDomain', { domain: message.domain });
-				break;
-			case 'writeAccountBlock':
-				// message.domain isn't used for anything rn, but it may come in handy later
-				runAndClearEventListener('vitePassportWriteAccountBlock', { block: message.block });
+				chrome.storage.session.set({ secrets: message.secrets });
 				break;
 			case 'lock':
-				chrome.storage.local.remove(secretsKey);
+				chrome.storage.session.remove(secretsKey);
 				break;
 			default:
 				break;
@@ -66,7 +42,7 @@ chrome.runtime.onConnect.addListener(async (chromePort) => {
 		// https://discourse.mozilla.org/t/alarms-and-settimeout-setinterval-in-background-scripts/36662
 		// chrome.alarms.create(lockingAlarmName, { when: Date.now() + 30 * MINUTE });
 		chrome.alarms.create(lockingAlarmName, { delayInMinutes: 30 });
-		runAndClearEventListener('vitePassportChromePortDisconnect');
+		// runAndClearEventListener('vitePassportChromePortDisconnect');
 	});
 });
 
@@ -78,21 +54,8 @@ chrome.runtime.onMessage.addListener(
 		reply: (res: Omit<BackgroundResponse, '_messageId'>) => void
 	) => {
 		// console.log('message:', message);
-		const replyOnEvent = (event: string) => {
-			const connectListener = (data: BackgroundResponse) => {
-				reply(data);
-				clearEventListeners();
-			};
-			const disconnectListener = () => {
-				reply({ error: 'Vite Passport closed before user approved domain' });
-				clearEventListeners();
-			};
-			pushEventListener(event, connectListener);
-			pushEventListener('vitePassportChromePortDisconnect', disconnectListener);
-		};
-
 		(async () => {
-			if ((await getCurrentTab()).id !== sender.tab?.id) {
+			if ((await getCurrentTab())?.id !== sender.tab?.id) {
 				throw new Error('sender.tab?.id does not match focused tab id');
 			}
 
@@ -102,7 +65,10 @@ chrome.runtime.onMessage.addListener(
 				'accountList',
 				'activeAccountIndex',
 			]);
-			const activeAccount = accountList![activeAccountIndex!];
+			if (!accountList) {
+				return reply({ error: `Wallet hasn't been created yet` });
+			}
+			const activeAccount = accountList[activeAccountIndex!];
 			const domainConnected = !!connectedDomains?.[activeAccount.address]?.[hostname];
 
 			// Calling `reply` responds back to contentScript.ts
@@ -119,7 +85,6 @@ chrome.runtime.onMessage.addListener(
 					break;
 				case 'connectWallet':
 					openPopup('/connect' + toQueryString({ hostname }));
-					replyOnEvent('vitePassportConnectDomain');
 					break;
 				case 'disconnectWallet':
 					// OPTIMIZE: if popup is open and "connected", it should switch to disconnect
@@ -139,12 +104,10 @@ chrome.runtime.onMessage.addListener(
 						'networkList',
 						'activeNetworkIndex',
 					]);
-					const networkUrl = networkList![activeNetworkIndex!].rpcUrl;
-					reply({ result: networkUrl });
+					reply({ result: networkList![activeNetworkIndex!] });
 					break;
 				case 'writeAccountBlock':
 					if (!domainConnected) return connectError();
-					replyOnEvent('vitePassportWriteAccountBlock');
 					openPopup(
 						'/sign-tx' +
 							toQueryString({
@@ -169,17 +132,21 @@ const host = chrome.runtime.getURL('src/confirmation.html');
 const openPopup = async (routeAfterUnlock: string) => {
 	// routeAfterUnlock is specified in the params cuz frontend routing doesn't work here (popup window would look for a file under host+routeAfterUnlock)
 	const lastFocused = await chrome.windows.getCurrent();
-	// const {id} = await chrome.windows.create({
-
-	// TODO: chrome.windows.update window if it exists
-
-	chrome.windows.create({
-		url: host + toQueryString({ routeAfterUnlock }),
+	console.log('lastFocused:', lastFocused);
+	try {
+		const { lastPopupId } = await chrome.storage.session.get(lastPopupIdKey);
+		await chrome.windows.remove(lastPopupId);
+	} catch (error) {
+		// window with `lastPopupId` doesn't exist
+	}
+	const tab = await getCurrentTab();
+	const { id } = await chrome.windows.create({
+		url: host + toQueryString({ routeAfterUnlock, originTabId: tab.id }),
 		type: 'popup',
 		width: (10 / 16) * 35 * 16, // w-[calc(10/16*35rem)
 		height: 35 * 16 + 22, // h-[35rem] + frame header height (22px on macOS?)
 		top: lastFocused.top,
 		left: lastFocused.left! + (lastFocused.width! - 18 * 16),
 	});
-	// console.log('id:', id);
+	chrome.storage.session.set({ lastPopupId: id || 0 });
 };

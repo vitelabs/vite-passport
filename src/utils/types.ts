@@ -1,11 +1,11 @@
-import { AddressObj, ViteAPI } from '@vite/vitejs/distSrc/utils/type';
+import { AccountBlockBlock, AddressObj, ViteAPI } from '@vite/vitejs/distSrc/utils/type';
 import en from '../i18n/en';
 import { setStateType } from './global-context';
 import { currencyConversions, i18nDict } from '../utils/constants';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 
 export type CurrencyConversions = typeof currencyConversions[number];
-type Network = {
+export type Network = {
 	name: string;
 	rpcUrl: string;
 	explorerUrl?: string;
@@ -44,7 +44,6 @@ export type State = Storage & {
 	triggerInjectedScriptEvent: (event: injectedScriptEventData) => void;
 	setState: setStateType;
 	secrets?: Secrets;
-	activeNetwork: Network;
 	activeAccount: AddressObj; // caching cuz wallet.deriveAddress is very slow
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
@@ -76,7 +75,7 @@ export type BgScriptPortMessage =
 			secrets: Secrets;
 	  }
 	| {
-			type: 'connectDomain';
+			type: 'connectWallet';
 			domain: string;
 	  }
 	| {
@@ -90,8 +89,16 @@ export type injectedScriptEventData =
 			payload: { activeAddress: undefined | string };
 	  }
 	| {
+			type: 'writeAccountBlock';
+			payload: { block: AccountBlockBlock };
+	  }
+	| {
+			type: 'connectWallet';
+			payload: { domain: string };
+	  }
+	| {
 			type: 'networkChange';
-			payload: { activeNetwork: string };
+			payload: { activeNetwork: Network };
 	  };
 
 export type ViteBalanceInfo = {

@@ -31,7 +31,7 @@ const SignTx = ({ activeAccount, viteBalanceInfo, i18n }: State) => {
 
 	useEffect(() => {
 		if (viteBalanceInfo) {
-			const balanceInfoMap = viteBalanceInfo?.balance?.balanceInfoMap;
+			const balanceInfoMap = viteBalanceInfo?.balance?.balanceInfoMap || {};
 			if (block?.tokenId && balanceInfoMap) {
 				const balance = balanceInfoMap?.[block.tokenId]?.balance || '0';
 				if (+balance < +(block.amount || 0)) {

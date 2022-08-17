@@ -228,7 +228,6 @@ const WalletContents = ({
 										name.toLowerCase()
 									),
 								};
-
 								setState(data);
 								setValue(data);
 								editingTokenListSet(false);

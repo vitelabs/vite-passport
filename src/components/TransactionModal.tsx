@@ -62,14 +62,15 @@ const TransactionModal = ({
 	i18n,
 	transaction,
 	contractFuncParams,
-	activeNetwork,
 	toastError,
 	copyWithToast,
 	viteApi,
 	activeAccount,
 	transactionHistory,
 	setState,
-	sendBgScriptPortMessage,
+	triggerInjectedScriptEvent,
+	networkList,
+	activeNetworkIndex,
 }: Props) => {
 	const [sentTx, sentTxSet] = useState<undefined | AccountBlockBlock>();
 	const [tokenApiInfo, tokenApiInfoSet] = useState<undefined | TokenApiInfo>();
@@ -95,6 +96,11 @@ const TransactionModal = ({
 		toAddress = _toAddress,
 		tokenId,
 	} = transaction || sentTx || unsentBlock || {};
+
+	const activeNetwork = useMemo(
+		() => networkList[activeNetworkIndex],
+		[networkList, activeNetworkIndex]
+	);
 
 	useEffect(() => {
 		(async () => {
@@ -265,7 +271,7 @@ const TransactionModal = ({
 													);
 												}
 
-												const sanitizedBlock = {
+												const sanitizedBlock: AccountBlockBlock = {
 													// Don't want to send `block: res` in case the type of `res` changes and includes `privateKey`
 													// This ensures the private key is never sent to the content script
 													blockType: res.blockType,
@@ -284,9 +290,9 @@ const TransactionModal = ({
 													publicKey: res.publicKey,
 													hash: res.hash,
 												};
-												sendBgScriptPortMessage({
+												triggerInjectedScriptEvent({
 													type: 'writeAccountBlock',
-													block: sanitizedBlock,
+													payload: { block: sanitizedBlock },
 												});
 											} catch (e) {
 												console.log('error:', e);

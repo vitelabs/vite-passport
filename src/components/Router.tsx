@@ -31,9 +31,10 @@ const Router = ({
 	activeAccount,
 	encryptedSecrets,
 	secrets,
-	activeNetwork,
 	transactionHistory,
 	displayedTokenNames,
+	networkList,
+	activeNetworkIndex,
 }: Props) => {
 	const initialEntries = useMemo(() => {
 		if (window.location.pathname === '/src/confirmation.html') {
@@ -56,7 +57,7 @@ const Router = ({
 			}
 		}
 		if (encryptedSecrets) {
-			if (secrets) {
+			if (secrets && activeAccount) {
 				// return ['/create'];
 				return ['/home'];
 				// return ['/my-transactions'];
@@ -66,8 +67,11 @@ const Router = ({
 			}
 		}
 		return ['/'];
-	}, [encryptedSecrets, secrets]);
-	const networkRpcUrl = useMemo(() => activeNetwork.rpcUrl, [activeNetwork]);
+	}, []); // eslint-disable-line
+	const networkRpcUrl = useMemo(() => {
+		const activeNetwork = networkList[activeNetworkIndex];
+		return activeNetwork.rpcUrl;
+	}, [networkList, activeNetworkIndex]);
 	const rpc = useMemo(
 		() => (/^ws/.test(networkRpcUrl) ? new WS_RPC(networkRpcUrl) : new HTTP_RPC(networkRpcUrl)),
 		[networkRpcUrl]
@@ -138,61 +142,60 @@ const Router = ({
 
 	useEffect(updateViteBalanceInfo, [activeAccount, networkRpcUrl, updateViteBalanceInfo]);
 
-	// TODO: This stuff is not working reliably
 	useEffect(() => {
 		if (!activeAccount) return;
 		viteApi
 			.subscribe('newUnreceivedBlockByAddress', activeAccount.address)
 			.then((event: { on: (callback: (result: UnreceivedBlockMessage[]) => void) => void }) => {
-				event.on((res) => {
-					const blockMessage = res[0];
-					if (!blockMessage.received) {
-						setState({ toast: [i18n.newUnreceivedAccountBlock, 'info'] });
-					}
-
-					viteApi
-						.request('ledger_getAccountBlockByHash', blockMessage.hash)
-						.then((sendTx: Transaction) => {
-							console.log('sendTx:', sendTx);
-							const history: {
-								[tti: string]: Transaction[] | undefined;
-								received?: Transaction[] | undefined;
-								unreceived?: Transaction[] | undefined;
-							} = {};
-							if (!blockMessage.received) {
-								if (transactionHistory?.unreceived) {
-									history.unreceived = [sendTx, ...transactionHistory.unreceived!];
-									setState({ transactionHistory: history }, { deepMerge: true });
+				event.on((messages) => {
+					messages.forEach((blockMessage) => {
+						if (!blockMessage.received) {
+							setState({ toast: [i18n.newUnreceivedAccountBlock, 'info'] });
+						}
+						viteApi
+							.request('ledger_getAccountBlockByHash', blockMessage.hash)
+							.then((sendTx: Transaction) => {
+								// console.log('sendTx:', sendTx);
+								const history: {
+									[tti: string]: Transaction[] | undefined;
+									received?: Transaction[] | undefined;
+									unreceived?: Transaction[] | undefined;
+								} = {};
+								if (!blockMessage.received) {
+									if (transactionHistory?.unreceived) {
+										history.unreceived = [sendTx, ...transactionHistory.unreceived!];
+										setState({ transactionHistory: history }, { deepMerge: true });
+									}
+								} else {
+									setTimeout(() => {
+										viteApi
+											.request('ledger_getAccountBlockByHash', sendTx.receiveBlockHash)
+											.then((receiveTx: Transaction) => {
+												// console.log('receiveTx:', receiveTx);
+												if (transactionHistory?.unreceived) {
+													history.received = [receiveTx, ...transactionHistory.received!];
+													history.unreceived = transactionHistory.unreceived!.filter(
+														(unreceivedBlock) => unreceivedBlock.hash !== blockMessage.hash
+													);
+												}
+												if (sendTx.tokenId && transactionHistory?.[sendTx.tokenId]) {
+													history[sendTx.tokenId] = [
+														receiveTx,
+														...transactionHistory[sendTx.tokenId]!,
+													];
+												}
+												setState({ transactionHistory: history }, { deepMerge: true });
+											})
+											.catch((err: any) => {
+												console.log(err);
+												setState({ toast: [err, 'error'] });
+											});
+									}, 1000); // HACK: without this timeout, the timestamp would be 0
 								}
-							} else {
-								setTimeout(() => {
-									viteApi
-										.request('ledger_getAccountBlockByHash', sendTx.receiveBlockHash)
-										.then((receiveTx: Transaction) => {
-											console.log('receiveTx:', receiveTx);
-											if (transactionHistory?.unreceived) {
-												history.received = [receiveTx, ...transactionHistory.received!];
-												history.unreceived = transactionHistory.unreceived!.filter(
-													(unreceivedBlock) => unreceivedBlock.hash !== blockMessage.hash
-												);
-											}
-											if (sendTx.tokenId && transactionHistory?.[sendTx.tokenId]) {
-												history[sendTx.tokenId] = [
-													receiveTx,
-													...transactionHistory[sendTx.tokenId]!,
-												];
-											}
-											setState({ transactionHistory: history }, { deepMerge: true });
-										})
-										.catch((err: any) => {
-											console.log(err);
-											setState({ toast: [err, 'error'] });
-										});
-								}, 1000); // HACK: without this timeout, the timestamp would be 0
-							}
-						});
-					// TODO: throttle updateViteBalanceInfo()
-					updateViteBalanceInfo();
+							});
+						// TODO: throttle updateViteBalanceInfo()
+						updateViteBalanceInfo();
+					});
 				});
 			})
 			.catch((err: any) => {

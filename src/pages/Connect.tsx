@@ -53,6 +53,7 @@ const Connect = ({
 					theme="highlight"
 					label={i18n.confirm}
 					onClick={async () => {
+						triggerInjectedScriptEvent({ type: 'connectWallet', payload: { domain: hostname } });
 						triggerInjectedScriptEvent({
 							type: 'accountChange',
 							payload: { activeAddress: accountList[lastActiveAccountIndex].address },
@@ -66,7 +67,6 @@ const Connect = ({
 							connectedDomains[activeAccount][hostname] = {};
 						}
 						await setValue({ connectedDomains, activeAccountIndex: lastActiveAccountIndex });
-						sendBgScriptPortMessage({ type: 'connectDomain', domain: hostname });
 						window.close();
 					}}
 				/>

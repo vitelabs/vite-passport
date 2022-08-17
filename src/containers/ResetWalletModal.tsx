@@ -1,14 +1,15 @@
-import { getValue, removeKeys, StorageFields } from '../utils/storage';
+import { getValue, removeKeys, setValue, StorageFields } from '../utils/storage';
 import Modal from '../components/Modal';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
 import { useNavigate } from 'react-router-dom';
+import { defaultStorage } from '../utils/constants';
 
 type Props = State & {
 	onClose: () => void;
 };
 
-const ResetWalletModal = ({ onClose, i18n }: Props) => {
+const ResetWalletModal = ({ onClose, i18n, setState }: Props) => {
 	const navigate = useNavigate();
 	return (
 		<Modal
@@ -18,6 +19,8 @@ const ResetWalletModal = ({ onClose, i18n }: Props) => {
 			onButtonClick={async () => {
 				const storage = await getValue(null);
 				removeKeys(Object.keys(storage) as StorageFields[]);
+				setValue(defaultStorage);
+				setState(defaultStorage);
 				navigate('/', { replace: true });
 			}}
 		>

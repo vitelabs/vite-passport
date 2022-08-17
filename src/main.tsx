@@ -10,6 +10,7 @@ import { getValue, setValue } from './utils/storage';
 import { wallet } from '@vite/vitejs';
 import { defaultStorage, i18nDict } from './utils/constants';
 import { getCurrentTab } from './utils/misc';
+import { parseQueryString } from './utils/strings';
 
 const root = createRoot(document.getElementById('root')!);
 
@@ -27,18 +28,30 @@ const listen = async (message: BgScriptPortMessage) => {
 			}
 		});
 
+		// originTabId is the id of the tab that caused the confirmation.html popup to open
+		const originTabId = window.location.search
+			? +parseQueryString(window.location.search)?.originTabId
+			: undefined;
+		const tabIdToInteractWith = originTabId || (await getCurrentTab()).id!;
+
+		window.onbeforeunload = () => {
+			// this rejects any pending promises in injectedScript.ts
+			chrome.tabs.sendMessage(tabIdToInteractWith, { type: 'disconnect' });
+		};
+
 		const state: Partial<State> = {
 			...storage,
 			chromePort,
 			i18n: i18nDict[storage.language!],
-			activeNetwork: storage.networkList![storage.activeNetworkIndex!],
 			sendBgScriptPortMessage: (message: BgScriptPortMessage) => chromePort.postMessage(message),
 			triggerInjectedScriptEvent: async (event: injectedScriptEventData) => {
-				console.log('event:', event);
-				const tab = await getCurrentTab();
-				chrome.tabs.sendMessage(tab.id!, event);
+				// @ts-ignore
+				chrome.tabs.sendMessage(tabIdToInteractWith, event).catch((err) => {
+					console.log('err:', err);
+				});
 			},
 		};
+
 		if (message.secrets) {
 			state.activeAccount = wallet.deriveAddress({
 				...message.secrets,
