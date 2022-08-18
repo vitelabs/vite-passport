@@ -9,7 +9,6 @@ export type TextInputRefObject = {
 	readonly isValid: boolean;
 	value: string;
 	error: string;
-	autoFocus?: boolean;
 };
 
 export const useTextInputRef = () => {
@@ -42,6 +41,7 @@ type Props = State &
 		maxLength?: number;
 		getIssue?: (value: string) => string | void;
 		onKeyDown?: (key: string) => void;
+		compact?: boolean;
 	};
 
 const normalizeNumericInput = (str: string, decimals = 6, removeInsignificantZeros = false) => {
@@ -62,6 +62,7 @@ const TextInput = ({
 	i18n,
 	containerClassName,
 	autoFocus,
+	compact,
 	inputClassName,
 	textarea,
 	numeric,
@@ -92,16 +93,19 @@ const TextInput = ({
 			<label
 				htmlFor={id}
 				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}
-				className={`absolute transition-all pt-0.5 w-[calc(100%-1.2rem)] duration-200 ${
-					focused || internalValue
-						? 'top-0.5 left-2 font-bold text-xs'
-						: 'text-md top-2.5 left-2.5 font-medium'
-				} 
-				${focused ? 'text-skin-highlight' : 'text-skin-input-label'} 
-				text-skin-input-label ${textarea ? 'bg-skin-middleground' : ''}`}
+				className={
+					compact
+						? `absolute transition-all pt-0.5 w-[calc(100%-1.2rem)] duration-200 ${
+								focused || internalValue
+									? 'top-0.5 left-2 font-bold text-xs'
+									: 'text-md top-2.5 left-2.5 font-medium'
+						  } 
+							${focused ? 'text-skin-highlight' : 'text-skin-input-label'} 
+							text-skin-input-label ${textarea ? 'bg-skin-middleground' : ''}`
+						: `text-skin-input-label font-medium text-lg ${textarea ? '' : ''}`
+				}
 			>
 				{label}
-				{/* {optional && ' - optional'} */}
 				{optional && ' (?)'}
 			</label>
 			<Tag
@@ -111,13 +115,19 @@ const TextInput = ({
 				disabled={disabled}
 				autoFocus={autoFocus}
 				autoComplete="off"
-				className={`px-2 pt-4 w-full text-lg block transition duration-200 border-2 rounded-sm ${
-					password ? 'pr-10' : ''
-				} ${textarea ? 'bg-skin-middleground' : 'bg-skin-base'} ${
-					focused
-						? 'border-skin-lowlight shadow-md'
-						: 'shadow ' + (error ? 'border-skin-error' : 'border-skin-divider')
-				} ${resizable ? 'resize-y' : 'resize-none'} ${inputClassName}`}
+				className={
+					compact
+						? `px-2 pt-4 w-full text-lg block transition duration-200 border-2 rounded-sm ${
+								password ? 'pr-10' : ''
+						  } ${textarea ? 'bg-skin-middleground' : 'bg-skin-base'} ${
+								focused
+									? 'border-skin-lowlight shadow-md'
+									: 'shadow ' + (error ? 'border-skin-error' : 'border-skin-divider')
+						  } ${resizable ? 'resize-y' : 'resize-none'} ${inputClassName}`
+						: `w-full bg-transparent text-xl font-medium ${textarea ? 'h-24' : 'h-8'} ${
+								resizable ? 'resize-y' : 'resize-none'
+						  } ${password ? 'pr-8' : ''}`
+				}
 				type={password && !visible ? 'password' : 'text'}
 				onFocus={() => {
 					focusedSet(true);
@@ -182,7 +192,9 @@ const TextInput = ({
 			/>
 			{password && (
 				<button
-					className={`absolute right-3 top-4 h-8 w-8 p-1.5 -m-1.5 transition duration-200 ${
+					className={`absolute ${
+						compact ? 'right-3 top-4' : 'right-0 top-8'
+					} h-8 w-8 p-1.5 -m-1.5 transition duration-200 ${
 						focused ? 'text-skin-lowlight' : 'text-skin-eye-icon'
 					}`}
 					onMouseDown={(e) => e.preventDefault()}
@@ -196,6 +208,9 @@ const TextInput = ({
 				>
 					{visible ? <EyeOffIcon className="text-inherit" /> : <EyeIcon className="text-inherit" />}
 				</button>
+			)}
+			{!compact && (
+				<div className={`h-0.5 duration-200 ${focused ? 'bg-skin-lowlight' : 'bg-skin-divider'}`} />
 			)}
 			{error && <p className="mt-1 text-sm leading-3 font-bold text-red-500">{error}</p>}
 		</div>

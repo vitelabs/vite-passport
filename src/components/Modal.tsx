@@ -56,7 +56,7 @@ const Modal = ({
 	return ReactDOM.createPortal(
 		<div
 			ref={modalRef}
-			className="z-10 h-full w-full fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm overflow-scroll flex flex-col"
+			className="z-10 h-full w-full fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm overflow-scroll"
 			onClick={() => {
 				!mouseDraggingModal.current && onClose();
 				mouseDraggingModal.current = false;
@@ -86,11 +86,11 @@ const Modal = ({
 					<div className={`bg-skin-middleground ${className}`}>{children}</div>
 				</div>
 			) : (
-				<>
+				<div className="min-h-full flex flex-col">
 					<div className="flex-1 min-h-[3rem]" />
 					<div className="flex justify-center">
 						<div
-							className={`bg-skin-middleground w-full max-w-full mx-8 overflow-hidden rounded-sm shadow-md ${className}`}
+							className={`bg-skin-middleground w-full max-w-full mx-8 rounded-sm shadow-md ${className}`}
 							onClick={(e) => e.stopPropagation()}
 							onMouseDown={() => (mouseDraggingModal.current = true)}
 							onMouseUp={() => (mouseDraggingModal.current = false)}
@@ -120,7 +120,7 @@ const Modal = ({
 						</div>
 					</div>
 					<div className="flex-1 min-h-[2rem]"></div>
-				</>
+				</div>
 			)}
 		</div>,
 		modalParent!

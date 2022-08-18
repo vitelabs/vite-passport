@@ -237,11 +237,7 @@ const Home = ({
 									editingNetworkSet(false);
 								}}
 								onClose={
-									[
-										'wss://node.vite.net/gvite/ws',
-										'wss://buidl.vite.net/gvite/ws',
-										'ws://localhost:23457',
-									].includes(network.rpcUrl)
+									i < 3
 										? undefined
 										: () => {
 												const newNetworkList = [...networkList];
@@ -270,11 +266,14 @@ const Home = ({
 					onButtonClick={() => {
 						const valid = validateInputs([networkNameRef, rpcUrlRef, blockExplorerUrlRef]);
 						if (valid) {
+							if (networkList.find((n) => n.rpcUrl === rpcUrlRef.value)) {
+								return (rpcUrlRef.error = i18n.rpcUrlAlreadyInUse);
+							}
 							const newNetworkList = [
 								...networkList,
 								{
 									name: networkNameRef.value.trim(),
-									rpcUrl: networkNameRef.value.trim(),
+									rpcUrl: rpcUrlRef.value.trim(),
 									explorerUrl: blockExplorerUrlRef.value.trim() || undefined,
 								},
 							];
@@ -282,6 +281,7 @@ const Home = ({
 							setState(data);
 							setValue(data);
 							addingNetworkSet(false);
+							editingNetworkSet(true);
 						}
 					}}
 				>

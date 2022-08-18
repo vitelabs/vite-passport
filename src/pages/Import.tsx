@@ -18,8 +18,8 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 	const [mnemonics, mnemonicsSet] = useState('');
 	const [agreesToTerms, agreesToTermsSet] = useState(false);
 	const mnemonicRef = useTextInputRef();
-	const { state: { routeAfterUnlock } = {} } = useLocation() as {
-		state: { routeAfterUnlock?: string };
+	const { state } = useLocation() as {
+		state: null | { routeAfterUnlock?: string };
 	};
 	const passwordRef = useTextInputRef();
 	const confirmPasswordRef = useTextInputRef();
@@ -83,7 +83,7 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 							contacts,
 							activeAccount: accountList[0],
 						});
-						navigate(routeAfterUnlock || '/home');
+						navigate(state?.routeAfterUnlock || '/home');
 					}
 				}}
 			/>

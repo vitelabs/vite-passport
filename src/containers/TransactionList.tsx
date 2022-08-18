@@ -160,7 +160,9 @@ const TransactionList = ({
 											</p>
 										</div>
 										<div className="flex flex-col items-end font-medium">
-											<p className="text-skin-secondary">{shortenAddress(tx.address)}</p>
+											<p className="text-skin-secondary">
+												{shortenAddress(tx.blockType === 4 ? tx.fromAddress! : tx.toAddress!)}
+											</p>
 											<p className="text-skin-tertiary">{formatDate(+tx.timestamp!)}</p>
 										</div>
 									</div>

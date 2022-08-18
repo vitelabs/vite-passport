@@ -88,18 +88,18 @@ export const ExplorerURLs = {
 
 export const currencyConversions = [
 	'USD',
-	'AUD',
-	'BTC',
-	'CAD',
-	'EUR',
-	'HKD',
-	'INR',
-	'IDR',
-	'XMR',
-	'NZD',
-	'PHP',
-	'RUB',
-	'SGD',
+	// 'AUD',
+	// 'BTC',
+	// 'CAD',
+	// 'EUR',
+	// 'HKD',
+	// 'INR',
+	// 'IDR',
+	// 'XMR',
+	// 'NZD',
+	// 'PHP',
+	// 'RUB',
+	// 'SGD',
 ] as const;
 
 export const languages: { [key in keyof typeof i18nDict]: string } = {

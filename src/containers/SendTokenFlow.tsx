@@ -76,7 +76,6 @@ const SendTokenFlow = ({
 					<TextInput
 						_ref={toAddressRef}
 						label={i18n.toAddress}
-						initialValue="vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99"
 						getIssue={(v) => {
 							if (!wallet.isValidAddress(v)) {
 								return i18n.invalidAddress;
@@ -87,7 +86,6 @@ const SendTokenFlow = ({
 						numeric
 						_ref={amountRef}
 						label={i18n.amount}
-						initialValue="0.0003"
 						getIssue={(v) => {
 							if (+v > +selectedTokenBalance!) {
 								return i18n.insufficientFunds;

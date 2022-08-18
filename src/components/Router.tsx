@@ -60,12 +60,14 @@ const Router = ({
 			if (secrets && activeAccount) {
 				// return ['/create'];
 				return ['/home'];
+				// return ['/settings'];
 				// return ['/my-transactions'];
 				// return ['/connect?hostname=example.com'];
 			} else {
 				return ['/lock'];
 			}
 		}
+		// return ['/import'];
 		return ['/'];
 	}, []); // eslint-disable-line
 	const networkRpcUrl = useMemo(() => {

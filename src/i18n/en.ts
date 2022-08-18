@@ -164,6 +164,7 @@ const en = {
 	token: 'Token',
 	invalidTokenId: 'Invalid tokenId',
 	newAccountBlock: 'New account block',
+	rpcUrlAlreadyInUse: 'RPC URL already in use',
 	test: 'test',
 	'': '',
 };

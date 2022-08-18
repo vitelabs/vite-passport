@@ -14,20 +14,30 @@ import ResetWalletModal from '../containers/ResetWalletModal';
 import { validateInputs } from '../utils/misc';
 import { decrypt, encrypt } from '../utils/encryption';
 import { setValue } from '../utils/storage';
+import { ChevronRightIcon } from '@heroicons/react/outline';
 
 const ListItem = ({
 	label,
 	value,
 	onClick,
+	noLine,
 }: {
 	label: string;
 	value?: string;
 	onClick: () => void;
+	noLine?: boolean;
 }) => (
-	<button onClick={onClick} className="fx w-full bg-skin-base justify-between p-4">
-		<p className="leading-3 text-skin-input-label font-medium">{label}</p>
-		{value && <p>{value}</p>}
-	</button>
+	<>
+		{!noLine && <div className="h-0.5 mx-5 bg-skin-divider"></div>}
+		<button onClick={onClick} className="fx w-full bg-skin-base justify-between p-5">
+			<p className="leading-3 text-skin-input-label font-medium">{label}</p>
+			{value ? (
+				<p className="font-medium">{value}</p>
+			) : (
+				<ChevronRightIcon className="w-5 text-skin-eye-icon" />
+			)}
+		</button>
+	</>
 );
 
 const Settings = ({
@@ -77,16 +87,17 @@ const Settings = ({
 	return (
 		<TabContainer heading={i18n.settings}>
 			<div className="flex-1 overflow-scroll">
-				{/* <ListItem
+				<ListItem
+					noLine
 					onClick={() => activeModalSet('currency')}
 					label={i18n.currencyConversion}
 					value={currencyConversion}
-				/> */}
-				{/* <ListItem
+				/>
+				<ListItem
 					onClick={() => activeModalSet('language')}
 					label={i18n.language}
 					value={languages[language]}
-				/> */}
+				/>
 				{/* <ListItem
 					onClick={() => activeModalSet('contacts')}
 					label={i18n.contacts}
