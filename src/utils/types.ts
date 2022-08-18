@@ -14,7 +14,7 @@ export type Network = {
 export type Storage = {
 	encryptedSecrets: string;
 	language: keyof typeof i18nDict;
-	currencyConversion: CurrencyConversions;
+	currencyConversion: null | CurrencyConversions;
 	networkList: Network[];
 	activeNetworkIndex: number;
 	accountList: AddressObj[];

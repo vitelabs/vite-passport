@@ -84,7 +84,7 @@ const en = {
 	explorerChanged: 'Explorer Changed',
 	currencyConversion: 'Currency Conversion',
 	changePassword: 'Change Password',
-	oldPassword: 'Old Password',
+	currentPassword: 'Current Password',
 	newPassword: 'New Password',
 	resetWallet: 'Reset Wallet',
 	lockWallet: 'Lock Wallet',
@@ -93,6 +93,7 @@ const en = {
 	showSecrets: 'Show Secrets',
 	password: 'Password',
 	confirmPassword: 'Confirm Password',
+	confirmNewPassword: 'Confirm New Password',
 	language: 'Language',
 	secrets: 'Secrets',
 	languageChanged: 'Language Changed',
@@ -151,6 +152,7 @@ const en = {
 	sendBlockHash: 'SendBlockHash',
 	signature: 'Signature',
 	passwordsDoNotMatch: 'Passwords do not match',
+	newPasswordsDoNotMatch: 'New passwords do not match',
 	storeTheseWordsSomewhereSafe: 'Store these words somewhere safe',
 	mustContainAtLeast8Characters: 'Must contain at least 8 characters',
 	youAreAboutToViewYourMnemonicPhraseAnyoneWhoSeesItCanStealYourWalletSoMakeSureNoOneElseIsLooking:
@@ -165,6 +167,7 @@ const en = {
 	invalidTokenId: 'Invalid tokenId',
 	newAccountBlock: 'New account block',
 	rpcUrlAlreadyInUse: 'RPC URL already in use',
+	none: 'None',
 	test: 'test',
 	'': '',
 };

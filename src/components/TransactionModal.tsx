@@ -78,6 +78,7 @@ const TransactionModal = ({
 
 	const {
 		address,
+		fromAddress,
 		amount,
 		blockType,
 		data,
@@ -95,7 +96,12 @@ const TransactionModal = ({
 		// accountBlock.createAccountBlock returns a block with _toAddress instead of toAddress idk y
 		toAddress = _toAddress,
 		tokenId,
-	} = transaction || sentTx || unsentBlock || {};
+	} = {
+		...transaction,
+		...sentTx,
+		...unsentBlock,
+	};
+	console.log('transaction:', transaction);
 
 	const activeNetwork = useMemo(
 		() => networkList[activeNetworkIndex],
@@ -179,20 +185,10 @@ const TransactionModal = ({
 										format={shortenString}
 										onCopy={copyWithToast}
 									/>
-									<Field
-										label={i18n.from}
-										value={address}
-										format={shortenAddress}
-										onCopy={copyWithToast}
-									/>
-									<Field
-										label={i18n.to}
-										value={toAddress}
-										format={shortenAddress}
-										onCopy={copyWithToast}
-									/>
 									{(
 										[
+											[i18n.from, fromAddress || address, shortenAddress],
+											[i18n.to, toAddress, shortenAddress],
 											[i18n.data, data, shortenString],
 											// [i18n.difficulty, difficulty],
 											// [i18n.fee, fee],

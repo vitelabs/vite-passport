@@ -95,9 +95,7 @@ const WalletContents = ({
 				getPromise={getPromise}
 				onResolve={onResolve}
 			>
-				{!displayedTokens ? (
-					<p className="text-center text-skin-secondary">{i18n.loading}...</p>
-				) : (
+				{!displayedTokens ? null : (
 					<>
 						{!displayedTokens.length ? (
 							<p className="text-center text-skin-secondary">{i18n.yourWalletIsEmpty}</p>

@@ -51,9 +51,9 @@ const Settings = ({
 	toastSuccess,
 }: State) => {
 	const navigate = useNavigate();
-	const oldPasswordRef = useTextInputRef();
-	const newPasswordRef = useTextInputRef();
 	const passwordRef = useTextInputRef();
+	const newPasswordRef = useTextInputRef();
+	const confirmNewPasswordRef = useTextInputRef();
 	const [activeModal, activeModalSet] = useState<
 		'currency' | 'language' | 'contacts' | 'password' | 'secrets' | 'reset' | ''
 	>();
@@ -61,26 +61,20 @@ const Settings = ({
 
 	// TODO: toggle show prices
 
-	const verifyPassword = useCallback(
-		async (str: string) => {
-			try {
-				await decrypt(encryptedSecrets, str);
-				return true;
-			} catch {
-				passwordRef.error = i18n.incorrectPassword;
-				return false;
-			}
-		},
-		[encryptedSecrets, i18n.incorrectPassword]
-	);
+	const verifyPassword = useCallback(async () => {
+		try {
+			await decrypt(encryptedSecrets, passwordRef.value);
+			return true;
+		} catch {
+			passwordRef.error = i18n.incorrectPassword;
+			return false;
+		}
+	}, [encryptedSecrets, i18n.incorrectPassword]);
 
 	const attemptToShowSecrets = useCallback(async () => {
-		const valid = validateInputs([passwordRef]);
+		const valid = passwordRef.isValid && (await verifyPassword());
 		if (valid) {
-			const passwordIsCorrect = await verifyPassword(passwordRef.value);
-			if (passwordIsCorrect) {
-				showSecretsSet(true);
-			}
+			showSecretsSet(true);
 		}
 	}, [verifyPassword]);
 
@@ -91,7 +85,7 @@ const Settings = ({
 					noLine
 					onClick={() => activeModalSet('currency')}
 					label={i18n.currencyConversion}
-					value={currencyConversion}
+					value={currencyConversion || i18n.none}
 				/>
 				<ListItem
 					onClick={() => activeModalSet('language')}
@@ -127,12 +121,29 @@ const Settings = ({
 								onClick={() => {
 									if (!active) {
 										toastSuccess(i18n.currencyChanged);
+										const data = { currencyConversion: shorthand };
+										setValue(data);
+										setState(data);
 									}
 									activeModalSet('');
 								}}
 							/>
 						);
 					})}
+					<ModalListItem
+						radio
+						active={!currencyConversion}
+						label={i18n.none}
+						onClick={() => {
+							if (currencyConversion) {
+								toastSuccess(i18n.currencyChanged);
+								const data = { currencyConversion: null };
+								setValue(data);
+								setState(data);
+							}
+							activeModalSet('');
+						}}
+					/>
 				</Modal>
 			)}
 			{activeModal === 'language' && (
@@ -148,9 +159,9 @@ const Settings = ({
 								onClick={() => {
 									if (!active) {
 										toastSuccess(i18n.languageChanged);
-										setState({
-											i18n: i18nDict[shorthand as keyof typeof i18nDict],
-										});
+										const data = { language: shorthand as keyof typeof i18nDict };
+										setValue(data);
+										setState({ i18n: i18nDict[shorthand], ...data });
 									}
 									activeModalSet('');
 								}}
@@ -191,24 +202,28 @@ const Settings = ({
 					}}
 					buttonText={i18n.confirm}
 					onButtonClick={async () => {
-						const valid = validateInputs([oldPasswordRef]);
+						let valid = validateInputs([passwordRef, newPasswordRef, confirmNewPasswordRef]);
+						if (passwordRef.value) {
+							valid = (await verifyPassword()) && valid;
+						}
+						if (newPasswordRef.value !== confirmNewPasswordRef.value) {
+							confirmNewPasswordRef.error = i18n.newPasswordsDoNotMatch;
+							valid = false;
+						}
 						if (valid) {
-							const passwordIsCorrect = await verifyPassword(oldPasswordRef.value);
-							if (passwordIsCorrect) {
-								const encryptedSecrets = await encrypt(
-									JSON.stringify(secrets),
-									newPasswordRef.value
-								);
-								setValue({ encryptedSecrets });
-								activeModalSet('');
-								toastSuccess(i18n.passwordChanged);
-							}
+							const encryptedSecrets = await encrypt(JSON.stringify(secrets), newPasswordRef.value);
+							const data = { encryptedSecrets };
+							setState(data);
+							setValue(data);
+							activeModalSet('');
+							toastSuccess(i18n.passwordChanged);
 						}
 					}}
 				>
 					<div className="p-3 space-y-3">
-						<TextInput password _ref={oldPasswordRef} label={i18n.oldPassword} />
+						<TextInput password _ref={passwordRef} label={i18n.currentPassword} />
 						<TextInput password _ref={newPasswordRef} label={i18n.newPassword} />
+						<TextInput password _ref={confirmNewPasswordRef} label={i18n.confirmNewPassword} />
 					</div>
 				</Modal>
 			)}

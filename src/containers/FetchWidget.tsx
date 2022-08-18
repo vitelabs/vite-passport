@@ -18,6 +18,7 @@ const FetchWidget = ({ i18n, children, shouldFetch, getPromise, onResolve, onCat
 	const fetchData = useCallback(async () => {
 		errorSet('');
 		fetchingSet(true);
+		await new Promise((res) => setTimeout(res, 1000));
 		getPromise()
 			.then((result) => onResolve && onResolve(result))
 			.catch((err) => {

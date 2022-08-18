@@ -35,6 +35,7 @@ const Router = ({
 	displayedTokenNames,
 	networkList,
 	activeNetworkIndex,
+	currencyConversion,
 }: Props) => {
 	const initialEntries = useMemo(() => {
 		if (window.location.pathname === '/src/confirmation.html') {
@@ -88,6 +89,7 @@ const Router = ({
 	useEffect(() => setState({ viteApi }), [setState, viteApi]);
 
 	useEffect(() => {
+		if (!currencyConversion) return;
 		fetch(
 			`https://api.coingecko.com/api/v3/simple/price?ids=${displayedTokenNames
 				.map((n) => n.replace(/ /g, ''))
@@ -99,7 +101,7 @@ const Router = ({
 				console.log('error:', e);
 				setState({ toast: [e, 'error'] });
 			});
-	}, [displayedTokenNames, setState]);
+	}, [currencyConversion, displayedTokenNames, setState]);
 
 	// Check if tti is listed on ViteX
 	// viteApi.request('dex_getTokenInfo', 'tti_5649544520544f4b454e6e40').then(

@@ -57,7 +57,6 @@ export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<Toke
 		data.data.forEach((info) => (tokenApiInfoCache[info.tokenAddress] = info));
 		return data.data;
 	}
-	// TODO: fail gracefully
 	return [];
 };
 

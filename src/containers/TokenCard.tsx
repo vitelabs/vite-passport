@@ -14,6 +14,7 @@ type Props = State &
 
 const TokenCard = ({
 	prices,
+	currencyConversion,
 	viteBalanceInfo,
 	onClick,
 	symbol,
@@ -50,14 +51,16 @@ Props) => {
 				</div>
 				<div className="flex flex-col items-end mr-1.5">
 					<p className="text-lg">{biggestUnit === null ? '...' : biggestUnit}</p>
-					<p className="text-sm text-skin-secondary font-medium">
-						{!prices || biggestUnit === null
-							? '...'
-							: `≈${formatPrice(
-									biggestUnit!,
-									prices?.[name.replace(/ /g, '').toLowerCase()]?.usd
-							  )}`}
-					</p>
+					{currencyConversion && (
+						<p className="text-sm text-skin-secondary font-medium">
+							{!prices || biggestUnit === null
+								? '...'
+								: `≈${formatPrice(
+										biggestUnit!,
+										prices?.[name.replace(/ /g, '').toLowerCase()]?.usd
+								  )}`}
+						</p>
+					)}
 				</div>
 			</div>
 		</Tag>

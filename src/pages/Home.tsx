@@ -49,6 +49,7 @@ const Home = ({
 	triggerInjectedScriptEvent,
 	connectedDomains,
 	viteBalanceInfo,
+	currencyConversion,
 }: State) => {
 	// const quotaBeneficiaryRef = useTextInputRef();
 	// const lockedAmountRef = useTextInputRef();
@@ -143,9 +144,11 @@ const Home = ({
 				</div>
 			</div>
 			<div className="flex-1 p-4 space-y-4 overflow-scroll">
-				<p className="text-3xl text-center">
-					{portfolioValue !== undefined ? formatPrice(portfolioValue) : '...'}
-				</p>
+				{currencyConversion && (
+					<p className="text-3xl text-center">
+						{portfolioValue !== undefined ? formatPrice(portfolioValue) : '...'}
+					</p>
+				)}
 				<div className="xy gap-16">
 					<div className="fy">
 						<button
