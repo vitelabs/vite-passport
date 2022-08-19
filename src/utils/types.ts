@@ -20,8 +20,7 @@ export type Storage = {
 	accountList: AddressObj[];
 	activeAccountIndex: number;
 	contacts: { [address: string]: string };
-	displayedTokenIds: string[];
-	displayedTokenNames: string[];
+	displayedTokenIdsAndNames: [tti: string, name: string][]; // IMPORTANT: token names should be returned by `normalizeTokenName`
 	connectedDomains: {
 		// connectedDomains.address.domain => easy to get an account's connect domains
 		// connectedDomains.domain.address => easy to get a connected domains across all accounts and remove domain access by account granularity
@@ -54,13 +53,16 @@ export type State = Storage & {
 	viteApi: ViteAPI;
 	toast?: [string, 'success' | 'warning' | 'error' | 'info'];
 	viteBalanceInfo?: ViteBalanceInfo;
+	portfolioValue?: number;
+	displayedTokens?: TokenApiInfo[];
 	transactionHistory?: {
 		received?: Transaction[];
 		unreceived?: Transaction[];
 		[tti: string]: undefined | Transaction[]; // assume these only show received txs
 	};
 	prices: {
-		[symbol: string]: {
+		[name: string]: {
+			// IMPORTANT: token names should be returned by `normalizeTokenName`
 			[currency: string]: number;
 		};
 	};

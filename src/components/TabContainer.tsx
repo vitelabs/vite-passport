@@ -23,8 +23,8 @@ const TabContainer = ({ heading, children }: Props) => {
 	return (
 		<div className="h-full flex flex-col">
 			{heading && (
-				<div className="w-full top-12">
-					<p className="text-lg flex-1 text-center p-2">{heading}</p>
+				<div className="h-12 xy">
+					<p className="text-lg">{heading}</p>
 				</div>
 			)}
 			<div className="top-0 flex-1 flex flex-col">{children}</div>

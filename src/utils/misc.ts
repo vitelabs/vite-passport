@@ -19,8 +19,8 @@ export const validateInputs = (
 	return allRefsInputsAreValid;
 };
 
-export const formatPrice = (units: string | number, price = 1, label = '$', decimals = 2) => {
-	return `${label}${(+units * price).toFixed(decimals)}`;
+export const formatPrice = (units: string | number, unitPrice = 1, label = '$', decimals = 2) => {
+	return `${label}${(+units * unitPrice).toFixed(decimals)}`;
 };
 
 // https://www.30secondsofcode.org/js/s/debounce

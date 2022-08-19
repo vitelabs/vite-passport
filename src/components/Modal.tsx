@@ -73,7 +73,7 @@ const Modal = ({
 								<ArrowNarrowLeftIcon className="w-5 text-skin-back-arrow-icon" />
 							</button>
 						)}
-						{heading && <p className="text-lg">{heading}</p>}
+						{heading && <p className="text-lg leading-3">{heading}</p>}
 						{subheading && (
 							<p className="mt-1 text-center leading-3 text-xs text-skin-secondary">{subheading}</p>
 						)}

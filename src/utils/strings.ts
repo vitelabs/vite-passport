@@ -97,3 +97,5 @@ export const joinWords = (arr: string[], conjunction = 'or') => {
 
 // This is to avoid custom event naming collisions
 export const prefixName = (str: string) => 'vitePassport' + str[0].toUpperCase() + str.substring(1);
+
+export const normalizeTokenName = (str: string) => str.replace(/ /g, '').toLowerCase();

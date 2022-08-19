@@ -4,7 +4,12 @@ import { useMemo } from 'react';
 import DeterministicIcon from '../components/DeterministicIcon';
 import { connect } from '../utils/global-context';
 import { formatPrice } from '../utils/misc';
-import { addIndexToTokenSymbol, shortenTti, toBiggestUnit } from '../utils/strings';
+import {
+	addIndexToTokenSymbol,
+	normalizeTokenName,
+	shortenTti,
+	toBiggestUnit,
+} from '../utils/strings';
 import { State, TokenApiInfo } from '../utils/types';
 
 type Props = State &
@@ -23,8 +28,8 @@ const TokenCard = ({
 	tokenIndex,
 	icon,
 	decimal,
-}: // gatewayInfo,
-Props) => {
+	i18n,
+}: Props) => {
 	const balanceInfoMap = useMemo(
 		() => (viteBalanceInfo ? viteBalanceInfo?.balance?.balanceInfoMap || {} : undefined),
 		[viteBalanceInfo]
@@ -32,6 +37,7 @@ Props) => {
 	const balance = balanceInfoMap?.[tti]?.balance || '0';
 	const biggestUnit = !balanceInfoMap ? null : toBiggestUnit(balance, decimal);
 	const Tag = useMemo(() => (onClick ? 'button' : 'div'), [onClick]);
+	const unitPrice = useMemo(() => prices?.[normalizeTokenName(name)]?.usd, [prices, name]);
 
 	return (
 		<Tag className="fx rounded-sm w-full px-4 py-3 shadow bg-skin-middleground" onClick={onClick}>
@@ -55,10 +61,9 @@ Props) => {
 						<p className="text-sm text-skin-secondary font-medium">
 							{!prices || biggestUnit === null
 								? '...'
-								: `≈${formatPrice(
-										biggestUnit!,
-										prices?.[name.replace(/ /g, '').toLowerCase()]?.usd
-								  )}`}
+								: !unitPrice
+								? i18n.noPrice
+								: `≈${formatPrice(biggestUnit!, unitPrice)}`}
 						</p>
 					)}
 				</div>

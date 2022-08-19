@@ -168,6 +168,7 @@ const en = {
 	newAccountBlock: 'New account block',
 	rpcUrlAlreadyInUse: 'RPC URL already in use',
 	none: 'None',
+	noPrice: 'No Price',
 	test: 'test',
 	'': '',
 };

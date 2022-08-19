@@ -32,7 +32,7 @@ const Router = ({
 	encryptedSecrets,
 	secrets,
 	transactionHistory,
-	displayedTokenNames,
+	displayedTokenIdsAndNames,
 	networkList,
 	activeNetworkIndex,
 	currencyConversion,
@@ -90,18 +90,61 @@ const Router = ({
 
 	useEffect(() => {
 		if (!currencyConversion) return;
+		const ttiToNameMap: { [tti: string]: string } = {};
 		fetch(
-			`https://api.coingecko.com/api/v3/simple/price?ids=${displayedTokenNames
-				.map((n) => n.replace(/ /g, ''))
+			`https://api.coingecko.com/api/v3/simple/price?ids=${displayedTokenIdsAndNames
+				.map(([, name]) => name)
 				.join(',')}&vs_currencies=usd`
 		)
 			.then((res) => res.json())
-			.then((prices) => setState({ prices }))
+			.then(async (prices: State['prices']) => {
+				const tokenIdsWithMissingPrices = displayedTokenIdsAndNames
+					.filter(([tti, name]) => {
+						ttiToNameMap[tti] = name;
+						return !prices[name];
+					})
+					.map(([tti]) => tti);
+				if (tokenIdsWithMissingPrices.length) {
+					try {
+						const res = await fetch(
+							`https://api.vitex.net/api/v2/exchange-rate?tokenIds=${tokenIdsWithMissingPrices.join(
+								','
+							)}`
+						);
+						const {
+							data,
+						}: {
+							code: number; // 0
+							msg: string; // 'ok'
+							data: {
+								tokenId: string; // 'tti_72f4cbbed88a5902c78a896f'
+								tokenSymbol: string; // 'KAS-000'
+								usdRate: number; // 0.0042559459142507
+								cnyRate: number; // 0.0275329909030624
+								rubRate: string; // '0.3441996641185654'
+								krwRate: string; // '5.2923228587407548'
+								tryRate: string; // '0.0625824930042014'
+								vndRate: string; // '97.7591815998849374'
+								eurRate: string; // '0.0039259611477892'
+								gbpRate: string; // '0.0032689282175472'
+								inrRate: string; // '0.3246980517265688'
+								uahRate: string; // '0.1257728925549642'
+								btcRate: number; // 1.843110962e-7
+							}[];
+						} = await res.json();
+						// console.log('data:', data);
+						data.forEach(({ tokenId, usdRate }) => {
+							prices[ttiToNameMap[tokenId]] = { usd: usdRate };
+						});
+					} catch (error) {}
+				}
+				setState({ prices });
+			})
 			.catch((e) => {
 				console.log('error:', e);
 				setState({ toast: [e, 'error'] });
 			});
-	}, [currencyConversion, displayedTokenNames, setState]);
+	}, [currencyConversion, displayedTokenIdsAndNames, setState]);
 
 	// Check if tti is listed on ViteX
 	// viteApi.request('dex_getTokenInfo', 'tti_5649544520544f4b454e6e40').then(

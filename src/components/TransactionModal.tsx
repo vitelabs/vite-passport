@@ -101,7 +101,6 @@ const TransactionModal = ({
 		...sentTx,
 		...unsentBlock,
 	};
-	console.log('transaction:', transaction);
 
 	const activeNetwork = useMemo(
 		() => networkList[activeNetworkIndex],

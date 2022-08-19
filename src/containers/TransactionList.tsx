@@ -51,7 +51,7 @@ const TransactionList = ({
 	);
 
 	return (
-		<div className="flex-1 overflow-scroll p-4 space-y-4">
+		<div className="flex-1 overflow-scroll px-4 pb-4 space-y-4">
 			<FetchWidget
 				shouldFetch={!transactions && !!viteApi}
 				getPromise={() => {

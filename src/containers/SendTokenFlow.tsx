@@ -92,7 +92,7 @@ const SendTokenFlow = ({
 							}
 						}}
 					/>
-					<TextInput optional textarea _ref={commentRef} label={i18n.comment} />
+					<TextInput optional _ref={commentRef} label={i18n.comment} />
 				</div>
 				<Button
 					theme="highlight"

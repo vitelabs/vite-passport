@@ -50,6 +50,7 @@ const Home = ({
 	connectedDomains,
 	viteBalanceInfo,
 	currencyConversion,
+	portfolioValue,
 }: State) => {
 	// const quotaBeneficiaryRef = useTextInputRef();
 	// const lockedAmountRef = useTextInputRef();
@@ -59,7 +60,6 @@ const Home = ({
 	const [editingNetwork, editingNetworkSet] = useState(false);
 	const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
-	const [portfolioValue, portfolioValueSet] = useState<undefined | number>();
 	// const [votingModalOpen, votingModalOpenSet] = useState(false);
 	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
 	// const [quotaBeneficiary, quotaBeneficiarySet] = useState('');
@@ -177,7 +177,7 @@ const Home = ({
 					</div>
 				</div>
 				<div className="h-0.5 bg-skin-divider" />
-				<WalletContents onPortfolioValueChange={(v) => portfolioValueSet(v)} />
+				<WalletContents />
 			</div>
 			{/* <Modal
 				visible={votingModalOpen}
