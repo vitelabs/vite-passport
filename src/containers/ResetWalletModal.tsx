@@ -9,7 +9,7 @@ type Props = State & {
 	onClose: () => void;
 };
 
-const ResetWalletModal = ({ onClose, i18n, setState }: Props) => {
+const ResetWalletModal = ({ onClose, i18n, setState, triggerInjectedScriptEvent }: Props) => {
 	const navigate = useNavigate();
 	return (
 		<Modal
@@ -22,6 +22,10 @@ const ResetWalletModal = ({ onClose, i18n, setState }: Props) => {
 				setValue(defaultStorage);
 				setState(defaultStorage);
 				navigate('/', { replace: true });
+				triggerInjectedScriptEvent({
+					type: 'accountChange',
+					payload: { activeAddress: undefined },
+				});
 			}}
 		>
 			<p className="m-3">{i18n.youAreAboutToErase}</p>

@@ -65,11 +65,10 @@ chrome.runtime.onMessage.addListener(
 				'accountList',
 				'activeAccountIndex',
 			]);
-			if (!accountList) {
-				return reply({ error: `Wallet hasn't been created yet` });
-			}
-			const activeAccount = accountList[activeAccountIndex!];
-			const domainConnected = !!connectedDomains?.[activeAccount.address]?.[hostname];
+			const activeAccount = accountList ? accountList[activeAccountIndex!] : undefined;
+			const domainConnected = !activeAccount
+				? false
+				: !!connectedDomains?.[activeAccount.address]?.[hostname];
 
 			// Calling `reply` responds back to contentScript.ts
 			const connectError = () => {
@@ -80,7 +79,7 @@ chrome.runtime.onMessage.addListener(
 
 			switch (message.method) {
 				case 'getConnectedAddress':
-					if (!domainConnected) return reply({ result: undefined });
+					if (!domainConnected || !activeAccount) return reply({ result: undefined });
 					reply({ result: activeAccount.address });
 					break;
 				case 'connectWallet':
@@ -89,7 +88,7 @@ chrome.runtime.onMessage.addListener(
 				case 'disconnectWallet':
 					// OPTIMIZE: if popup is open and "connected", it should switch to disconnect
 					// Unlikely for it to be open since `disconnectWallet` is probably called from the dapp frontend (i.e. popup is closed)
-					if (!domainConnected) {
+					if (!domainConnected || !connectedDomains || !activeAccount) {
 						return reply({
 							error: `The active Vite Passport account is not connected to ${hostname}`,
 						});
@@ -132,7 +131,6 @@ const host = chrome.runtime.getURL('src/confirmation.html');
 const openPopup = async (routeAfterUnlock: string) => {
 	// routeAfterUnlock is specified in the params cuz frontend routing doesn't work here (popup window would look for a file under host+routeAfterUnlock)
 	const lastFocused = await chrome.windows.getCurrent();
-	console.log('lastFocused:', lastFocused);
 	try {
 		const { lastPopupId } = await chrome.storage.session.get(lastPopupIdKey);
 		await chrome.windows.remove(lastPopupId);
