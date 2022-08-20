@@ -363,6 +363,7 @@ const Home = ({
 											...data,
 											activeAccount: accountList[i],
 											viteBalanceInfo: undefined,
+											portfolioValue: undefined,
 											transactionHistory: undefined,
 										});
 										setValue(data);
