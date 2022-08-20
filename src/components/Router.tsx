@@ -106,6 +106,7 @@ const Router = ({
 					.map(([tti]) => tti);
 				if (tokenIdsWithMissingPrices.length) {
 					try {
+						// https://docs.vite.org/vite-docs/dex/api/rest-api.html#get-exchange-rate
 						const res = await fetch(
 							`https://api.vitex.net/api/v2/exchange-rate?tokenIds=${tokenIdsWithMissingPrices.join(
 								','

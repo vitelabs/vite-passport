@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, ReactNode } from 'react';
+import Spinner from '../components/Spinner';
 import { connect } from '../utils/global-context';
 import { makeReadable } from '../utils/strings';
 import { State } from '../utils/types';
@@ -6,21 +7,31 @@ import { State } from '../utils/types';
 type Props = State & {
 	children: ReactNode;
 	shouldFetch: boolean;
+	noSpinnerMargin?: boolean;
 	getPromise: () => Promise<any>;
 	onResolve?: (result: any) => void;
 	onCatch?: (err: string) => void;
 };
 
-const FetchWidget = ({ i18n, children, shouldFetch, getPromise, onResolve, onCatch }: Props) => {
+const FetchWidget = ({
+	i18n,
+	children,
+	shouldFetch,
+	noSpinnerMargin,
+	getPromise,
+	onResolve,
+	onCatch,
+}: Props) => {
 	const [error, errorSet] = useState('');
 	const [fetching, fetchingSet] = useState(false);
 
 	const fetchData = useCallback(async () => {
 		errorSet('');
 		fetchingSet(true);
-		await new Promise((res) => setTimeout(res, 1000));
 		getPromise()
-			.then((result) => onResolve && onResolve(result))
+			.then((result) => {
+				return onResolve && onResolve(result);
+			})
 			.catch((err) => {
 				console.log('err:', typeof err, err.constructor, err);
 				const errorString = makeReadable(err);
@@ -40,7 +51,7 @@ const FetchWidget = ({ i18n, children, shouldFetch, getPromise, onResolve, onCat
 
 	return fetching ? (
 		<div className="xy min-h-8">
-			<p className="text-skin-secondary text-center">{i18n.loading}...</p>
+			<Spinner className={noSpinnerMargin ? '' : 'mt-2'} />
 		</div>
 	) : error ? (
 		<div className="xy flex-col min-h-8">

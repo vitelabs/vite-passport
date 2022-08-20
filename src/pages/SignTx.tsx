@@ -2,6 +2,7 @@ import { accountBlock } from '@vite/vitejs';
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import Spinner from '../components/Spinner';
 import TransactionModal from '../components/TransactionModal';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
@@ -43,13 +44,14 @@ const SignTx = ({ activeAccount, viteBalanceInfo, i18n }: State) => {
 		}
 	}, [viteBalanceInfo, block, i18n]);
 
+	// TODO: make this look nicer
 	return error ? (
 		<div className="h-screen xy">
 			<p className="text-center">{error}</p>
 		</div>
 	) : !showTxModal ? (
 		<div className="h-screen xy">
-			<p className="text-center">{i18n.loading}...</p>
+			<Spinner />
 		</div>
 	) : (
 		<TransactionModal noBackArrow onCancel={() => window.close()} unsentBlock={block} />

@@ -7,7 +7,7 @@ import Modal from '../components/Modal';
 import QR from '../components/QR';
 import { defaultTokenList } from '../utils/constants';
 import { connect } from '../utils/global-context';
-import { debounce, formatPrice, getTokenApiInfo } from '../utils/misc';
+import { debounceAsync, formatPrice, getTokenApiInfo } from '../utils/misc';
 import { setValue } from '../utils/storage';
 import {
 	addIndexToTokenSymbol,
@@ -24,10 +24,10 @@ import TokenCard from './TokenCard';
 import TokenSearchBar from './TokenSearchBar';
 import TransactionList from './TransactionList';
 
-const searchTokenApiInfo = debounce((query: string, callback: (list: TokenApiInfo[]) => void) => {
+const searchTokenApiInfo = debounceAsync<TokenApiInfo[]>((query: string) => {
 	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
 		.then((res) => res.json())
-		.then((data: { data: { VITE: TokenApiInfo[] } }) => callback(data?.data?.VITE || []));
+		.then((data: { data: { VITE: TokenApiInfo[] } }) => data?.data?.VITE || []);
 }, 300);
 
 type Props = State;
@@ -53,6 +53,7 @@ const WalletContents = ({
 	const [sendingFunds, sendingFundsSet] = useState(false);
 	const [amount, amountSet] = useState('');
 	const [comment, commentSet] = useState('');
+	const [editTokenQuery, editTokenQuerySet] = useState('');
 	const [availableTokens, availableTokensSet] = useState<undefined | TokenApiInfo[]>();
 	const activeAddress = useMemo(() => activeAccount.address, [activeAccount]);
 	const getPromise = useCallback(
@@ -89,6 +90,7 @@ const WalletContents = ({
 	return (
 		<>
 			<FetchWidget
+				noSpinnerMargin
 				shouldFetch={
 					!displayedTokens ||
 					displayedTokens.length !== displayedTokenIdsAndNames.length ||
@@ -99,7 +101,7 @@ const WalletContents = ({
 				getPromise={getPromise}
 				onResolve={onResolve}
 			>
-				{!displayedTokens ? null : (
+				{displayedTokens && (
 					<>
 						{!displayedTokens.length ? (
 							<p className="text-center text-skin-secondary">{i18n.yourWalletIsEmpty}</p>
@@ -139,78 +141,77 @@ const WalletContents = ({
 				>
 					<TokenSearchBar
 						onUserInput={(v) => {
+							editTokenQuerySet(v);
 							if (availableTokens !== null) {
 								availableTokensSet(undefined);
 							}
 							if (!v) {
-								availableTokensSet([
+								return availableTokensSet([
 									...displayedTokens!,
 									...defaultTokenList.filter(({ tokenAddress }) => !checkedTokens[tokenAddress]),
 								]);
-								return;
 							}
-							searchTokenApiInfo(v, (list: TokenApiInfo[]) => {
-								// console.log('list:', list);
-								availableTokensSet(list);
-							});
 						}}
 					/>
 					<div className="flex-1 overflow-scroll mt-4">
-						{!availableTokens ? (
-							<div className="xy min-h-8">
-								<p className="text-skin-secondary text-center">{i18n.loading}...</p>
-							</div>
-						) : !availableTokens.length ? (
-							<div className="xy min-h-8">
-								<p className="text-skin-secondary text-center">{i18n.nothingFound}</p>
-							</div>
-						) : (
-							availableTokens.map((tokenApiInfo, i) => {
-								const {
-									symbol,
-									// name,
-									tokenAddress: tti,
-									tokenIndex,
-									icon,
-									// decimal,
-									// gatewayInfo,
-								} = tokenApiInfo;
-								// newlyAddedTokens
-								const tokenName = addIndexToTokenSymbol(symbol, tokenIndex);
-								return (
-									<React.Fragment key={tti}>
-										{(i === 0 || i === displayedTokenIdsAndNames.length) && (
-											<div className={`h-0.5 bg-skin-divider mx-4 ${i === 0 ? '' : 'mt-2'}`} />
-										)}
-										<div className="fx rounded-sm py-2 px-4">
-											{!icon ? (
-												<DeterministicIcon tti={tti} className="h-8 w-8 rounded-full mr-2" />
-											) : (
-												<img
-													src={icon}
-													alt={tokenName}
-													className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
-												/>
-											)}
-											<div className="flex-1 fx">
-												<div className="flex flex-col flex-1 items-start">
-													<p className="text-lg">{tokenName}</p>
-													<p className="text-xs text-skin-tertiary">{tti}</p>
+						<FetchWidget
+							shouldFetch={!availableTokens}
+							getPromise={() => searchTokenApiInfo(editTokenQuery)}
+							onResolve={(list: TokenApiInfo[]) => availableTokensSet(list)}
+						>
+							{availableTokens &&
+								(!availableTokens.length ? (
+									<div className="xy min-h-8">
+										<p className="text-skin-secondary text-center">{i18n.nothingFound}</p>
+									</div>
+								) : (
+									availableTokens.map((tokenApiInfo, i) => {
+										const {
+											symbol,
+											// name,
+											tokenAddress: tti,
+											tokenIndex,
+											icon,
+											// decimal,
+											// gatewayInfo,
+										} = tokenApiInfo;
+										// newlyAddedTokens
+										const tokenName = addIndexToTokenSymbol(symbol, tokenIndex);
+										return (
+											<React.Fragment key={tti}>
+												{(i === 0 || i === displayedTokenIdsAndNames.length) && (
+													<div className={`h-0.5 bg-skin-divider mx-4 ${i === 0 ? '' : 'mt-2'}`} />
+												)}
+												<div className="fx rounded-sm py-2 px-4">
+													{!icon ? (
+														<DeterministicIcon tti={tti} className="h-8 w-8 rounded-full mr-2" />
+													) : (
+														<img
+															src={icon}
+															alt={tokenName}
+															className="h-8 w-8 rounded-full mr-2 overflow-hidden bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
+														/>
+													)}
+													<div className="flex-1 fx">
+														<div className="flex flex-col flex-1 items-start">
+															<p className="text-lg">{tokenName}</p>
+															<p className="text-xs text-skin-tertiary">{tti}</p>
+														</div>
+														<Checkbox
+															radio
+															value={checkedTokens[tti]}
+															onUserInput={(checked) => {
+																checkedTokens[tti] = checked;
+																checkedTokensSet({ ...checkedTokens });
+															}}
+														/>
+													</div>
 												</div>
-												<Checkbox
-													radio
-													value={checkedTokens[tti]}
-													onUserInput={(checked) => {
-														checkedTokens[tti] = checked;
-														checkedTokensSet({ ...checkedTokens });
-													}}
-												/>
-											</div>
-										</div>
-									</React.Fragment>
-								);
-							})
-						)}
+											</React.Fragment>
+										);
+									})
+								))}
+						</FetchWidget>
 					</div>
 					<div className="flex gap-4 p-4 shadow z-50">
 						<Button theme="white" label={i18n.cancel} onClick={() => editingTokenListSet(false)} />

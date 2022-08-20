@@ -33,13 +33,28 @@ export const debounce = (fn: (...args: any) => any, ms = 0) => {
 	};
 };
 
+// https://stackoverflow.com/a/72350250/4975090
+export const debounceAsync = <T>(func, wait): ((...args) => Promise<T>) => {
+	let timeoutId: NodeJS.Timeout;
+	return (...args) => {
+		clearTimeout(timeoutId);
+		const promiseForFunc = new Promise((resolve) => {
+			timeoutId = setTimeout(resolve, wait);
+		});
+		return promiseForFunc.then(() => func(...args));
+	};
+};
+
 const tokenApiInfoCache: { [tti: string]: TokenApiInfo } = {};
 // getTokenApiInfo to differentiate from the `tokenInfo` returned from `viteApi.getBalanceInfo`
 export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<TokenApiInfo[]> => {
 	if (!tokenIds.length) {
 		return [];
 	}
-	if (Array.isArray(tokenIds) && tokenIds.every((tti) => !!tokenApiInfoCache[tti])) {
+	if (!Array.isArray(tokenIds)) {
+		tokenIds = [tokenIds];
+	}
+	if (tokenIds.every((tti) => !!tokenApiInfoCache[tti])) {
 		return tokenIds.map((tti) => tokenApiInfoCache[tti]);
 	}
 	const res = await fetch('https://vitex.vite.net/api/v1/cryptocurrency/info/platform/query', {
@@ -49,7 +64,7 @@ export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<Toke
 		},
 		body: JSON.stringify({
 			platformSymbol: 'VITE',
-			tokenAddresses: Array.isArray(tokenIds) ? tokenIds : [tokenIds],
+			tokenAddresses: tokenIds,
 		}),
 	});
 	const data: { msg: string; code: number; data: TokenApiInfo[] } = await res.json();

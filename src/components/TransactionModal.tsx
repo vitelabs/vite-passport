@@ -3,6 +3,7 @@ import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { useEffect, useMemo, useState } from 'react';
+import FetchWidget from '../containers/FetchWidget';
 import { connect } from '../utils/global-context';
 import { getTokenApiInfo } from '../utils/misc';
 import {
@@ -107,16 +108,6 @@ const TransactionModal = ({
 		[networkList, activeNetworkIndex]
 	);
 
-	useEffect(() => {
-		(async () => {
-			if (tokenId) {
-				const info = await getTokenApiInfo(tokenId);
-				if (info.length === 1) {
-					tokenApiInfoSet(info[0]);
-				}
-			}
-		})();
-	}, [tokenId]);
 	const tokenName = useMemo(
 		() =>
 			!tokenApiInfo ? '' : addIndexToTokenSymbol(tokenApiInfo.symbol, tokenApiInfo.tokenIndex),
@@ -134,93 +125,99 @@ const TransactionModal = ({
 					className="flex flex-col"
 				>
 					<div className="flex-1 px-4">
-						{!tokenApiInfo ? (
-							<div className="xy min-h-8">
-								<p className="text-skin-secondary text-center">{i18n.loading}...</p>
-							</div>
-						) : (
-							<>
-								<p className="">
-									{
+						<FetchWidget
+							shouldFetch={!!tokenId && !tokenApiInfo}
+							getPromise={() => getTokenApiInfo(tokenId!)}
+							onResolve={(info) => {
+								if (info.length === 1) {
+									tokenApiInfoSet(info[0]);
+								}
+							}}
+						>
+							{tokenApiInfo && (
+								<>
+									<p className="">
 										{
-											1: i18n.contractCreation, // request(create contract)
-											2: i18n.send, // request(transfer)
-											3: i18n.reissueToken, // request(re-issue token)
-											4: i18n.receive, // response
-											5: i18n.failedResponse, // response(failed)
-											6: i18n.contractRefund, // request(refund by contract)
-											7: i18n.genesis, // response(genesis)
-										}[blockType!]
-									}
-								</p>
-								<div className="flex flex-col mt-4 gap-4 p-4 bg-skin-middleground">
-									<div className="fx">
+											{
+												1: i18n.contractCreation, // request(create contract)
+												2: i18n.send, // request(transfer)
+												3: i18n.reissueToken, // request(re-issue token)
+												4: i18n.receive, // response
+												5: i18n.failedResponse, // response(failed)
+												6: i18n.contractRefund, // request(refund by contract)
+												7: i18n.genesis, // response(genesis)
+											}[blockType!]
+										}
+									</p>
+									<div className="flex flex-col mt-4 gap-4 p-4 bg-skin-middleground">
 										<div className="fx">
-											<p className="leading-5 break-words font-medium">
-												<span className="text-skin-secondary">{i18n.token}: </span>
-												{tokenName}
-											</p>
-											{!tokenApiInfo?.icon ? (
-												<DeterministicIcon tti={tokenId!} className="h-5 w-5 rounded-full ml-2" />
-											) : (
-												<img
-													src={tokenApiInfo?.icon}
-													// alt={tokenApiInfo.symbol}
-													alt={tokenName}
-													className="h-5 w-5 rounded-full ml-2 overflow-hidden bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
-												/>
-											)}
+											<div className="fx">
+												<p className="leading-5 break-words font-medium">
+													<span className="text-skin-secondary">{i18n.token}: </span>
+													{tokenName}
+												</p>
+												{!tokenApiInfo?.icon ? (
+													<DeterministicIcon tti={tokenId!} className="h-5 w-5 rounded-full ml-2" />
+												) : (
+													<img
+														src={tokenApiInfo?.icon}
+														// alt={tokenApiInfo.symbol}
+														alt={tokenName}
+														className="h-5 w-5 rounded-full ml-2 overflow-hidden bg-gradient-to-tr from-skin-eye-icon to-skin-bg-base"
+													/>
+												)}
+											</div>
 										</div>
-									</div>
-									<Field
-										label={i18n.amount}
-										value={toBiggestUnit(amount!, tokenApiInfo?.decimal)}
-									/>
-									<Field
-										label={i18n.params}
-										// @ts-ignore
-										value={contractFuncParams}
-										// format={(v) => JSON.stringify(v, null, 2)}
-										format={shortenString}
-										onCopy={copyWithToast}
-									/>
-									{(
-										[
-											[i18n.from, fromAddress || address, shortenAddress],
-											[i18n.to, toAddress, shortenAddress],
-											[i18n.data, data, shortenString],
-											// [i18n.difficulty, difficulty],
-											// [i18n.fee, fee],
-											[i18n.hash, hash, shortenHash],
-											[i18n.blockHeight, height],
-											// [i18n.nonce, nonce],
-											// [i18n.previousHash, previousHash, shortenHash],
-											// [i18n.publicKey, publicKey],
-											// [i18n.sendBlockHash, sendBlockHash, shortenHash],
-											// [i18n.signature, signature],
-										] as [string, string, () => string][]
-									).map(([key, value, format]) => (
 										<Field
-											key={key}
-											label={key}
-											value={value}
-											format={format}
+											label={i18n.amount}
+											value={toBiggestUnit(amount!, tokenApiInfo?.decimal)}
+										/>
+										<Field
+											label={i18n.params}
+											// @ts-ignore
+											value={contractFuncParams}
+											// format={(v) => JSON.stringify(v, null, 2)}
+											format={shortenString}
 											onCopy={copyWithToast}
 										/>
-									))}
-								</div>
-								{hash && (
-									<A
-										className="fx self-center mt-5"
-										// OPTIMIZE: Make this URL more flexible for different network URLs
-										href={`${activeNetwork.explorerUrl}/tx/${hash}`}
-									>
-										<p className="text-skin-lowlight">{i18n.viewOnViteScan}</p>
-										<ExternalLinkIcon className="w-6 ml-1 mr-2 text-skin-lowlight" />
-									</A>
-								)}
-							</>
-						)}
+										{(
+											[
+												[i18n.from, fromAddress || address, shortenAddress],
+												[i18n.to, toAddress, shortenAddress],
+												[i18n.data, data, shortenString],
+												// [i18n.difficulty, difficulty],
+												// [i18n.fee, fee],
+												[i18n.hash, hash, shortenHash],
+												[i18n.blockHeight, height],
+												// [i18n.nonce, nonce],
+												// [i18n.previousHash, previousHash, shortenHash],
+												// [i18n.publicKey, publicKey],
+												// [i18n.sendBlockHash, sendBlockHash, shortenHash],
+												// [i18n.signature, signature],
+											] as [string, string, () => string][]
+										).map(([key, value, format]) => (
+											<Field
+												key={key}
+												label={key}
+												value={value}
+												format={format}
+												onCopy={copyWithToast}
+											/>
+										))}
+									</div>
+									{hash && (
+										<A
+											className="fx self-center mt-5"
+											// OPTIMIZE: Make this URL more flexible for different network URLs
+											href={`${activeNetwork.explorerUrl}/tx/${hash}`}
+										>
+											<p className="text-skin-lowlight">{i18n.viewOnViteScan}</p>
+											<ExternalLinkIcon className="w-6 ml-1 mr-2 text-skin-lowlight" />
+										</A>
+									)}
+								</>
+							)}
+						</FetchWidget>
 					</div>
 					{!!unsentBlock && (
 						<div className="flex p-4 gap-4">
