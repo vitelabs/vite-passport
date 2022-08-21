@@ -2,7 +2,7 @@ import { DocumentDuplicateIcon, ExternalLinkIcon } from '@heroicons/react/outlin
 import AccountBlockClass from '@vite/vitejs/distSrc/accountBlock/accountBlock';
 import { Transaction } from '@vite/vitejs/distSrc/accountBlock/type';
 import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import FetchWidget from '../containers/FetchWidget';
 import { connect } from '../utils/global-context';
 import { getTokenApiInfo } from '../utils/misc';

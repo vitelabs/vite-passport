@@ -36,6 +36,7 @@ const Router = ({
 	networkList,
 	activeNetworkIndex,
 	currencyConversion,
+	toastError,
 }: Props) => {
 	const initialEntries = useMemo(() => {
 		if (window.location.pathname === '/src/confirmation.html') {
@@ -137,7 +138,9 @@ const Router = ({
 						data.forEach(({ tokenId, usdRate }) => {
 							prices[ttiToNameMap[tokenId]] = { usd: usdRate };
 						});
-					} catch (error) {}
+					} catch (error) {
+						toastError(error);
+					}
 				}
 				setState({ prices });
 			})
@@ -145,7 +148,7 @@ const Router = ({
 				console.log('error:', e);
 				setState({ toast: [e, 'error'] });
 			});
-	}, [currencyConversion, displayedTokenIdsAndNames, setState]);
+	}, [currencyConversion, displayedTokenIdsAndNames, setState, toastError]);
 
 	// Check if tti is listed on ViteX
 	// viteApi.request('dex_getTokenInfo', 'tti_5649544520544f4b454e6e40').then(

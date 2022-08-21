@@ -347,14 +347,6 @@ const Home = ({
 								className="flex-1"
 								label={contacts[address]}
 								sublabel={shortenAddress(address)}
-								// rightJSX={
-								// 	// not that useful a feature for the technical overhead it creates.
-								// 	false && (
-								// 		<div className="self-start border-2 border-skin-eye-icon px-1 text-skin-muted rounded-full text-xs">
-								// 			{i18n.new}
-								// 		</div>
-								// 	)
-								// }
 								onClick={async () => {
 									if (!active) {
 										toastSuccess(i18n.accountChanged);

@@ -9,7 +9,6 @@ import { State } from '../utils/types';
 
 const Connect = ({
 	i18n,
-	sendBgScriptPortMessage,
 	contacts,
 	accountList,
 	activeAccountIndex,

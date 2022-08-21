@@ -1,5 +1,4 @@
 import { XIcon } from '@heroicons/react/outline';
-import { ReactNode } from 'react';
 import Checkbox from './Checkbox';
 
 type Props = {
@@ -7,7 +6,6 @@ type Props = {
 	active?: boolean;
 	base?: boolean;
 	onClick: () => void;
-	rightJSX?: ReactNode;
 	label: string;
 	sublabel?: string;
 	className?: string;
@@ -21,7 +19,6 @@ const ModalListItem = ({
 	base,
 	label,
 	sublabel,
-	rightJSX,
 	className,
 	onClose,
 }: Props) => {
@@ -38,7 +35,6 @@ const ModalListItem = ({
 						<p className="mt-1 leading-4 text-sm font-medium text-skin-secondary">{sublabel}</p>
 					)}
 				</div>
-				{rightJSX}
 			</button>
 			{onClose && (
 				<button
