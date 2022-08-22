@@ -20,7 +20,7 @@ import DeterministicIcon from './DeterministicIcon';
 import Modal from './Modal';
 
 type Props = State & {
-	noBackArrow?: boolean;
+	thirdPartyTx?: boolean;
 	transaction?: Transaction;
 	contractFuncParams?: any[];
 	onBack?: () => void; // clicking back arrow
@@ -55,7 +55,7 @@ const Field = ({
 	);
 
 const TransactionModal = ({
-	noBackArrow,
+	thirdPartyTx,
 	unsentBlock,
 	onBack,
 	onCancel = onBack,
@@ -119,7 +119,7 @@ const TransactionModal = ({
 			{(!!transaction || !!unsentBlock) && (
 				<Modal
 					fullscreen
-					noBackArrow={noBackArrow || sendingTx}
+					noBackArrow={thirdPartyTx}
 					heading={unsentBlock ? i18n.confirmTransaction : i18n.transaction}
 					onClose={() => onBack && onBack()}
 					className="flex flex-col"
@@ -225,14 +225,8 @@ const TransactionModal = ({
 								<Button theme="highlight" label={i18n.close} onClick={onCloseAfterSend!} />
 							) : (
 								<>
+									<Button theme="foreground" label={i18n.cancel} onClick={onCancel!} />
 									<Button
-										disabled={!!sendingTx}
-										theme="foreground"
-										label={i18n.cancel}
-										onClick={onCancel!}
-									/>
-									<Button
-										disabled={!!sendingTx}
 										theme="highlight"
 										label={i18n.confirm}
 										onClick={async () => {
@@ -263,32 +257,35 @@ const TransactionModal = ({
 													);
 												}
 
-												const sanitizedBlock: AccountBlockBlock = {
-													// Don't want to send `block: res` in case the type of `res` changes and includes `privateKey`
-													// This ensures the private key is never sent to the content script
-													blockType: res.blockType,
-													address: res.address,
-													fee: res.fee,
-													data: res.data,
-													sendBlockHash: res.sendBlockHash,
-													toAddress: res.toAddress,
-													tokenId: res.tokenId,
-													amount: res.amount,
-													height: res.height,
-													previousHash: res.previousHash,
-													difficulty: res.difficulty,
-													nonce: res.nonce,
-													signature: res.signature,
-													publicKey: res.publicKey,
-													hash: res.hash,
-												};
-												triggerInjectedScriptEvent({
-													type: 'writeAccountBlock',
-													payload: { block: sanitizedBlock },
-												});
+												if (thirdPartyTx) {
+													const sanitizedBlock: AccountBlockBlock = {
+														// Don't want to send `block: res` in case the type of `res` changes and includes `privateKey`
+														// This ensures the private key is never sent to the content script
+														blockType: res.blockType,
+														address: res.address,
+														fee: res.fee,
+														data: res.data,
+														sendBlockHash: res.sendBlockHash,
+														toAddress: res.toAddress,
+														tokenId: res.tokenId,
+														amount: res.amount,
+														height: res.height,
+														previousHash: res.previousHash,
+														difficulty: res.difficulty,
+														nonce: res.nonce,
+														signature: res.signature,
+														publicKey: res.publicKey,
+														hash: res.hash,
+													};
+													triggerInjectedScriptEvent({
+														type: 'writeAccountBlock',
+														payload: { block: sanitizedBlock },
+													});
+												}
 											} catch (e) {
 												console.log('error:', e);
 												toastError(e);
+											} finally {
 												sendingTxSet(false);
 											}
 										}}
@@ -297,6 +294,11 @@ const TransactionModal = ({
 							)}
 						</div>
 					)}
+				</Modal>
+			)}
+			{sendingTx && (
+				<Modal spinner onClose={() => {}}>
+					{null}
 				</Modal>
 			)}
 		</>

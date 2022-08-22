@@ -169,6 +169,7 @@ const en = {
 	rpcUrlAlreadyInUse: 'RPC URL already in use',
 	none: 'None',
 	noPrice: 'No Price',
+	waitForWalletBalanceToLoad: 'Wait for wallet balance to load',
 	test: 'test',
 	'': '',
 };

@@ -54,7 +54,7 @@ const SignTx = ({ activeAccount, viteBalanceInfo, i18n }: State) => {
 			<Spinner />
 		</div>
 	) : (
-		<TransactionModal noBackArrow onCancel={() => window.close()} unsentBlock={block} />
+		<TransactionModal thirdPartyTx onCancel={() => window.close()} unsentBlock={block} />
 	);
 };
 

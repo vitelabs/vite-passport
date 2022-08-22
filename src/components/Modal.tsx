@@ -2,9 +2,11 @@ import { ArrowNarrowLeftIcon, PlusIcon } from '@heroicons/react/solid';
 import { ReactNode, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useKeyPress } from '../utils/hooks';
+import Spinner from './Spinner';
 
 type Props = {
 	fullscreen?: boolean;
+	spinner?: boolean;
 	bottom?: boolean;
 	noHeader?: boolean;
 	heading?: string;
@@ -31,6 +33,7 @@ const Modal = ({
 	plusIcon,
 	buttonText,
 	onButtonClick,
+	spinner,
 	bottom,
 	noBackArrow,
 }: Props) => {
@@ -62,7 +65,11 @@ const Modal = ({
 				mouseDraggingModal.current = false;
 			}}
 		>
-			{fullscreen ? (
+			{spinner ? (
+				<div className="w-full h-full xy">
+					<Spinner />
+				</div>
+			) : fullscreen ? (
 				<div
 					onClick={(e) => e.stopPropagation()}
 					className="flex flex-col w-full h-full bg-skin-base"

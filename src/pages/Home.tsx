@@ -51,6 +51,9 @@ const Home = ({
 	viteBalanceInfo,
 	currencyConversion,
 	portfolioValue,
+	toastInfo,
+	displayedTokenIdsAndNames,
+	toastError,
 }: State) => {
 	// const quotaBeneficiaryRef = useTextInputRef();
 	// const lockedAmountRef = useTextInputRef();
@@ -156,9 +159,11 @@ const Home = ({
 							onClick={async () => {
 								if (balanceInfoMap) {
 									sendingSet(true);
-									const arr = await getTokenApiInfo(Object.keys(balanceInfoMap));
+									const arr = await getTokenApiInfo(displayedTokenIdsAndNames.map(([tti]) => tti));
 									tokensInWalletSet(arr);
 									displayedTokensSet(arr);
+								} else {
+									toastInfo(i18n.waitForWalletBalanceToLoad);
 								}
 							}}
 						>
@@ -426,6 +431,7 @@ const Home = ({
 									tokensInWallet.filter((tokenApiInfo) => {
 										return (
 											tokenApiInfo.tokenAddress.includes(search) ||
+											tokenApiInfo.name.toLocaleLowerCase().includes(search) ||
 											addIndexToTokenSymbol(tokenApiInfo.symbol, tokenApiInfo.tokenIndex)
 												.toLocaleLowerCase()
 												.includes(search)
