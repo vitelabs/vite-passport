@@ -69,9 +69,7 @@ export type State = Storage & {
 };
 
 export type BgScriptPortMessage =
-	| {
-			type: 'approveContract' | 'reopen' | 'lock';
-	  }
+	| { type: 'reopen' | 'lock' }
 	| {
 			type: 'opening' | 'updateSecrets';
 			secrets: Secrets;
@@ -88,7 +86,7 @@ export type BgScriptPortMessage =
 export type injectedScriptEventData =
 	| {
 			type: 'accountChange';
-			payload: { activeAddress: undefined | string };
+			payload: { activeAddress?: string };
 	  }
 	| {
 			type: 'writeAccountBlock';

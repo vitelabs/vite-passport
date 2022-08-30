@@ -8,7 +8,6 @@ const App = ({ initialState }: Props) => {
 	return (
 		<Provider initialState={initialState}>
 			<Router />
-			{/* <p className="">test</p> */}
 		</Provider>
 	);
 };

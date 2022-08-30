@@ -13,16 +13,19 @@ export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> =
 		{
 			name: 'Mainnet',
 			rpcUrl: 'wss://node.vite.net/gvite/ws',
+			// http: 'https://node.vite.net/gvite',
 			explorerUrl: 'https://vitescan.io',
 		},
 		{
 			name: 'Testnet',
 			rpcUrl: 'wss://buidl.vite.net/gvite/ws',
+			// http: 'https://buidl.vite.net/gvite',
 			explorerUrl: 'https://test.vitescan.io',
 		},
 		{
 			name: 'Localnet',
 			rpcUrl: 'ws://localhost:23457',
+			// http: 'http://127.0.0.1:23456',
 		},
 	],
 	currencyConversion: 'USD',

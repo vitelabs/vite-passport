@@ -18,7 +18,7 @@ require('esbuild')
 		outdir: 'dist',
 		bundle: true,
 		platform: 'browser',
-		sourcemap: true,
+		sourcemap: false,
 		watch: !PROD,
 		minify: PROD,
 		treeShaking: PROD,

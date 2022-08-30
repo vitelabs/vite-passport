@@ -1,6 +1,6 @@
-import { BackgroundResponse, VitePassportMethodCall } from './injectedScript';
+import { VitePassportMethodCall } from './injectedScript';
 import { getCurrentTab } from './utils/misc';
-import { getValue, setValue } from './utils/storage';
+
 import { getHostname, toQueryString } from './utils/strings';
 import { BgScriptPortMessage } from './utils/types';
 
@@ -20,18 +20,12 @@ chrome.runtime.onConnect.addListener(async (chromePort) => {
 	const { secrets } = await chrome.storage.session.get(secretsKey);
 	chromePort.postMessage({ secrets, type: 'opening' } as BgScriptPortMessage);
 	chromePort.onMessage.addListener((message: BgScriptPortMessage) => {
-		switch (message.type) {
-			case 'reopen':
-				chrome.alarms.clear(lockingAlarmName);
-				break;
-			case 'updateSecrets':
-				chrome.storage.session.set({ secrets: message.secrets });
-				break;
-			case 'lock':
-				chrome.storage.session.remove(secretsKey);
-				break;
-			default:
-				break;
+		if (message.type === 'reopen') {
+			chrome.alarms.clear(lockingAlarmName);
+		} else if (message.type === 'updateSecrets') {
+			chrome.storage.session.set({ secrets: message.secrets });
+		} else if (message.type === 'lock') {
+			chrome.storage.session.remove(secretsKey);
 		}
 	});
 
@@ -50,73 +44,26 @@ chrome.runtime.onConnect.addListener(async (chromePort) => {
 chrome.runtime.onMessage.addListener(
 	(
 		message: VitePassportMethodCall,
-		sender,
-		reply: (res: Omit<BackgroundResponse, '_messageId'>) => void
+		sender
+		// reply // to contentScript.ts
 	) => {
 		// console.log('message:', message);
 		(async () => {
 			if ((await getCurrentTab())?.id !== sender.tab?.id) {
 				throw new Error('sender.tab?.id does not match focused tab id');
 			}
-
-			const hostname = getHostname(sender.origin);
-			const { connectedDomains } = await getValue('connectedDomains');
-			const { accountList, activeAccountIndex } = await getValue([
-				'accountList',
-				'activeAccountIndex',
-			]);
-			const activeAccount = accountList ? accountList[activeAccountIndex!] : undefined;
-			const domainConnected = !activeAccount
-				? false
-				: !!connectedDomains?.[activeAccount.address]?.[hostname];
-
-			// Calling `reply` responds back to contentScript.ts
-			const connectError = () => {
-				reply({
-					error: 'Wallet must connect via `vitePassport.connectWallet()` first',
-				});
-			};
-
-			switch (message.method) {
-				case 'getConnectedAddress':
-					if (!domainConnected || !activeAccount) return reply({ result: undefined });
-					reply({ result: activeAccount.address });
-					break;
-				case 'connectWallet':
-					openPopup('/connect' + toQueryString({ hostname }));
-					break;
-				case 'disconnectWallet':
-					// OPTIMIZE: if popup is open and "connected", it should switch to disconnect
-					// Unlikely for it to be open since `disconnectWallet` is probably called from the dapp frontend (i.e. popup is closed)
-					if (!domainConnected || !connectedDomains || !activeAccount) {
-						return reply({
-							error: `The active Vite Passport account is not connected to ${hostname}`,
-						});
-					}
-					delete connectedDomains[activeAccount.address][hostname];
-					setValue({ connectedDomains });
-					reply({ result: undefined });
-					break;
-				case 'getNetwork':
-					if (!domainConnected) return connectError();
-					const { networkList, activeNetworkIndex } = await getValue([
-						'networkList',
-						'activeNetworkIndex',
-					]);
-					reply({ result: networkList![activeNetworkIndex!] });
-					break;
-				case 'writeAccountBlock':
-					if (!domainConnected) return connectError();
-					openPopup(
-						'/sign-tx' +
-							toQueryString({
-								methodName: message.args[0],
-								params: JSON.stringify(message.args[1]),
-							})
-					);
-					break;
-				default:
-					break;
+			if (message.method === 'connectWallet') {
+				openPopup('/connect' + toQueryString({ hostname: getHostname(sender.origin) }));
+			} else if (message.method === 'writeAccountBlock') {
+				openPopup(
+					'/sign-tx' +
+						toQueryString({
+							methodName: message.args[0],
+							params: JSON.stringify(message.args[1]),
+						})
+				);
+			} else {
+				throw new Error(`"${message.method}" is not a valid vitePassport method`);
 			}
 		})();
 

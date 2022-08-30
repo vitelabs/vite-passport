@@ -150,6 +150,8 @@ const TransactionModal = ({
 										}
 									</p>
 									<div className="flex flex-col mt-4 gap-4 p-4 bg-skin-middleground">
+										<Field label={i18n.network} value={activeNetwork.name} />
+										<Field label={i18n.rpcUrl} value={activeNetwork.rpcUrl} />
 										<div className="fx">
 											<div className="fx">
 												<p className="leading-5 break-words font-medium">
@@ -283,6 +285,7 @@ const TransactionModal = ({
 													});
 												}
 											} catch (e) {
+												// On rare occasions I get {"code":"100001","message":"Missing parameter(s). Difficulty and nonce is required at the same time."}
 												console.log('error:', e);
 												toastError(e);
 											} finally {

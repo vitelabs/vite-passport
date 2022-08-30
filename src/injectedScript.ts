@@ -1,14 +1,19 @@
+import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { joinWords, prefixName } from './utils/strings';
 import { Network } from './utils/types';
 
 type injectedScriptEvents = 'accountChange' | 'networkChange';
-
 type VitePassport = {
+	// These methods are relayed from contentScript.ts => injectedScript.ts
 	getConnectedAddress: () => Promise<undefined | string>;
-	connectWallet: () => Promise<undefined>;
 	disconnectWallet: () => Promise<undefined>;
 	getNetwork: () => Promise<Network>;
-	writeAccountBlock: (type: string, params: object) => Promise<undefined>;
+
+	// These methods are relayed from contentScript.ts => background.ts => popup => contentScript.ts => injectedScript.ts
+	connectWallet: () => Promise<{ domain: string }>;
+	writeAccountBlock: (type: string, params: object) => Promise<{ block: AccountBlockBlock }>;
+
+	// `on` subscribes to `event` and returns an unsubscribe function
 	on: (
 		event: injectedScriptEvents,
 		callback: (payload: { activeAddress?: string; activeNetwork: Network }) => void
@@ -26,10 +31,9 @@ export type VitePassportMethodCall =
 	| {
 			readonly _messageId: number;
 			method: 'getConnectedAddress' | 'connectWallet' | 'disconnectWallet' | 'getNetwork';
-			// args: any[];
 	  };
 
-export type BackgroundResponse = {
+export type ContentResponse = {
 	readonly _messageId: number;
 	result?: any;
 	error?: string;
@@ -37,13 +41,7 @@ export type BackgroundResponse = {
 
 // Calling these methods are relayed like this:
 // injectedScript.ts => contentScript.ts => background.ts => contentScript.ts => injectedScript.ts
-[
-	'getConnectedAddress',
-	'disconnectWallet',
-	'getNetwork',
-	// 'connectWallet',
-	// 'writeAccountBlock',
-].forEach((method) => {
+['getConnectedAddress', 'disconnectWallet', 'getNetwork'].forEach((method) => {
 	// @ts-ignore
 	injectedObject[method] = (...args: any) => {
 		// https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
@@ -70,7 +68,7 @@ export type BackgroundResponse = {
 				// https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
 				// Triggered by window.postMessage in contentScript.ts
 				'message',
-				({ data }: MessageEvent<BackgroundResponse>) => {
+				({ data }: MessageEvent<ContentResponse>) => {
 					if (_messageId === data._messageId) {
 						if (data.error) {
 							reject(data.error);
@@ -78,8 +76,7 @@ export type BackgroundResponse = {
 							resolve(data.result);
 						}
 					}
-				},
-				{ once: true }
+				}
 			);
 		});
 	};
@@ -107,10 +104,10 @@ export type BackgroundResponse = {
 			}) as EventListener;
 			const rejectCallback = () => {
 				window.removeEventListener(resolveEventName, resolveCallback);
-				reject('Vite Passport closed before action could be confirmed');
+				reject('Vite Passport closed before an action could be confirmed');
 			};
-			window.addEventListener(rejectEventName, rejectCallback, { once: true });
 			window.addEventListener(resolveEventName, resolveCallback, { once: true });
+			window.addEventListener(rejectEventName, rejectCallback, { once: true });
 		});
 	};
 });
