@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 export const shortenString = (str: string, startCount = 8, endCount = 8) => {
 	if (str.length <= startCount + endCount) {
 		return str;
@@ -16,25 +18,12 @@ export const copyToClipboardAsync = (str = '') => {
 };
 
 export const toBiggestUnit = (num: string, decimals = 0) => {
-	// Assume num is a unsigned integer (i.e. positive with no decimals) and decimals is > 0
-	num = `${num.substring(0, num.length - decimals) || 0}.${'0'.repeat(
-		Math.max(0, decimals - num.length)
-	)}${num.substring(Math.max(0, num.length - decimals))}`;
-	return num.replace(/(0+|\.0+|\.)$/, '');
+	return new BigNumber(num).dividedBy(10 ** decimals).toFixed();
 };
 
 export const toSmallestUnit = (num: string, decimals = 0) => {
-	// Assume num is a positive number and decimals is > 0
-	const indexOfDot = num.indexOf('.');
-	if (indexOfDot === -1) {
-		return num + '0'.repeat(decimals);
-	}
-	const decimalPlaces = num.length - indexOfDot - 1;
-	return (num.substring(indexOfDot + 1) + '0'.repeat(decimals - decimalPlaces)).replace(/^0+/g, '');
+	return new BigNumber(num).multipliedBy(10 ** decimals).toFixed();
 };
-
-export const roundDownTo6Decimals = (balance: string) =>
-	Math.floor(+balance * 1000000) / 1000000 + '';
 
 // These don't check for what comes after the protocol
 export const validateWsUrl = (v = '') => /^(ws:\/\/|wss:\/\/)/.test(v);

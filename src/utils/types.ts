@@ -34,7 +34,7 @@ export type Storage = {
 
 export type Secrets = {
 	mnemonics: string;
-	passphrase?: string;
+	// passphrase?: string;
 };
 
 export type State = Storage & {

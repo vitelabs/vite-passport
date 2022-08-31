@@ -89,7 +89,7 @@ const TextInput = ({
 	const Tag = useMemo(() => (textarea ? 'textarea' : 'input'), [textarea]);
 
 	return (
-		<div className={`relative ${containerClassName}`}>
+		<div className={`relative ${error ? 'pb-0.5' : ''} ${containerClassName}`}>
 			<label
 				htmlFor={id}
 				onMouseDown={() => setTimeout(() => input.current!.focus(), 0)}

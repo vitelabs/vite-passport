@@ -99,7 +99,7 @@ const SendTokenFlow = ({
 					label={i18n.next}
 					onClick={() => {
 						const valid = validateInputs([toAddressRef, amountRef, commentRef]);
-						if (valid) {
+						if (valid && balanceInfoMap) {
 							unsentBlockSet(
 								accountBlock.createAccountBlock('send', {
 									address: activeAccount.address,
@@ -107,7 +107,7 @@ const SendTokenFlow = ({
 									tokenId: selectedToken.tokenAddress,
 									amount: toSmallestUnit(
 										amountRef.value,
-										balanceInfoMap![selectedToken.tokenAddress]?.tokenInfo?.decimals
+										balanceInfoMap[selectedToken.tokenAddress]?.tokenInfo?.decimals
 									),
 									data: btoa(commentRef.value),
 								})

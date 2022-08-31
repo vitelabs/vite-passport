@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';
 import PageContainer from '../components/PageContainer';
@@ -7,17 +7,28 @@ import { wallet } from '@vite/vitejs';
 import { useLocation } from 'react-router-dom';
 import A from '../components/A';
 
-const Create = ({ i18n }: State) => {
-	const [mnemonics, mnemonicsSet] = useState(wallet.createMnemonics());
-	const createMnemonics = useCallback((twelveWords = false) => {
-		mnemonicsSet(wallet.createMnemonics(twelveWords ? 128 : 256));
-	}, []);
+const Create = ({ i18n, secrets, setState }: State) => {
 	const { state } = useLocation() as {
 		state: { routeAfterUnlock?: string };
 	};
-	const mnemonicsLength = useMemo(() => mnemonics.split(' ').length, [mnemonics]);
+	const createMnemonics = useCallback(
+		(twelveWords = false) => {
+			const mnemonics = wallet.createMnemonics(twelveWords ? 128 : 256);
+			setState({ secrets: { mnemonics } });
+		},
+		[setState]
+	);
+	const mnemonicsLength = useMemo(
+		() => (!secrets?.mnemonics ? null : secrets.mnemonics.split(' ').length),
+		[secrets?.mnemonics]
+	);
+	useEffect(() => {
+		if (!secrets?.mnemonics) {
+			createMnemonics();
+		}
+	}, [secrets?.mnemonics, createMnemonics]);
 
-	return (
+	return !secrets?.mnemonics ? null : (
 		<PageContainer heading={i18n.createWallet}>
 			<div className="w-full flex flex-col">
 				<div className="self-start flex rounded-full border border-skin-divider">
@@ -43,13 +54,13 @@ const Create = ({ i18n }: State) => {
 					</button>
 				</div>
 			</div>
-			<Secrets mnemonics={mnemonics} className="mt-2 self-center" />
+			<Secrets mnemonics={secrets.mnemonics} className="mt-2 self-center" />
 			<p className="mt-1 text-skin-tertiary text-sm">{i18n.storeTheseWordsSomewhereSafe}</p>
 			<div className="flex-1"></div>
 			<A
 				to="/create2"
 				className="h-10 w-full xy rounded-sm bg-skin-highlight text-white"
-				state={{ ...state, mnemonics }}
+				state={state}
 			>
 				{i18n.next}
 			</A>

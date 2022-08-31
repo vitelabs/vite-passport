@@ -18,6 +18,7 @@ import Start from '../pages/Start';
 import { connect } from '../utils/global-context';
 import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
 import { State, UnreceivedBlockMessage, ViteBalanceInfo } from '../utils/types';
+// import HistoryListener from './HistoryListener';
 
 // const providerTimeout = 60000;
 // const providerOptions = { retryTimes: 5, retryInterval: 5000 };
@@ -60,11 +61,7 @@ const Router = ({
 		}
 		if (encryptedSecrets) {
 			if (secrets && activeAccount) {
-				// return ['/create'];
 				return ['/home'];
-				// return ['/settings'];
-				// return ['/my-transactions'];
-				// return ['/connect?hostname=example.com'];
 			} else {
 				return ['/lock'];
 			}
@@ -297,6 +294,7 @@ const Router = ({
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
 			<Toast />
+			{/* <HistoryListener /> */}
 		</MemoryRouter>
 	);
 };

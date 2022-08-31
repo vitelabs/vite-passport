@@ -80,7 +80,7 @@ const TransactionModal = ({
 	const {
 		address,
 		fromAddress,
-		amount,
+		amount = '0',
 		blockType,
 		data,
 		// difficulty,
@@ -172,7 +172,7 @@ const TransactionModal = ({
 										</div>
 										<Field
 											label={i18n.amount}
-											value={toBiggestUnit(amount!, tokenApiInfo?.decimal)}
+											value={toBiggestUnit(amount, tokenApiInfo?.decimal)}
 										/>
 										<Field
 											label={i18n.params}

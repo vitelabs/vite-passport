@@ -53,7 +53,6 @@ const Home = ({
 	portfolioValue,
 	toastInfo,
 	displayedTokenIdsAndNames,
-	toastError,
 }: State) => {
 	// const quotaBeneficiaryRef = useTextInputRef();
 	// const lockedAmountRef = useTextInputRef();

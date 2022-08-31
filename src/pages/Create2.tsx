@@ -13,27 +13,39 @@ import { defaultStorage } from '../utils/constants';
 import { useState } from 'react';
 import Button from '../components/Button';
 
-const Create2 = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
+const Create2 = ({ i18n, sendBgScriptPortMessage, setState, secrets }: State) => {
 	const navigate = useNavigate();
 	const {
-		state: { mnemonics, routeAfterUnlock },
+		state: { routeAfterUnlock },
 	} = useLocation() as {
-		state: { mnemonics: string; routeAfterUnlock?: string };
+		state: { routeAfterUnlock?: string };
 	};
 	const [agreesToTerms, agreesToTermsSet] = useState(false);
+	const mnemonicRef = useTextInputRef();
 	const passwordRef = useTextInputRef();
 	const confirmPasswordRef = useTextInputRef();
 
-	return (
+	return !secrets ? null : (
 		<PageContainer heading={i18n.createWallet}>
-			<TextInput password autoFocus _ref={passwordRef} label={i18n.password} />
+			<TextInput
+				optional
+				autoFocus
+				textarea
+				_ref={mnemonicRef}
+				label={i18n.confirmMnemonicPhrase}
+				getIssue={(v) => {
+					if (v !== secrets.mnemonics) {
+						return i18n.incorrectMnemonicPhrase;
+					}
+				}}
+			/>
+			<TextInput password containerClassName="mt-4" _ref={passwordRef} label={i18n.password} />
 			<TextInput
 				password
 				containerClassName="mt-4"
 				_ref={confirmPasswordRef}
 				label={i18n.confirmPassword}
 			/>
-			{/* <p className="mt-1 text-skin-tertiary text-sm">{i18n.mustContainAtLeast8Characters}</p> */}
 			<div className="mt-4 fx">
 				<Checkbox value={agreesToTerms} onUserInput={(v) => agreesToTermsSet(v)} />
 				<p className="text-skin-tertiary text-xs">
@@ -49,13 +61,12 @@ const Create2 = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 				disabled={!agreesToTerms}
 				label={i18n.next}
 				onClick={async () => {
-					let valid = validateInputs([passwordRef, confirmPasswordRef]);
+					let valid = validateInputs([mnemonicRef, passwordRef, confirmPasswordRef]);
 					if (passwordRef.value !== confirmPasswordRef.value) {
 						confirmPasswordRef.error = i18n.passwordsDoNotMatch;
 						valid = false;
 					}
 					if (valid) {
-						const secrets = { mnemonics };
 						sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
 						const accountList = [
