@@ -56,7 +56,7 @@ require('esbuild')
 				},
 			}),
 		],
-		watch: {
+		watch: !PROD && {
 			onRebuild(error, result) {
 				const time = Date.now();
 				if (error) console.error(`watch build failed ${time}:`, error);
