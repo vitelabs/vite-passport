@@ -34,7 +34,7 @@ const QR = ({ data, className }: Props) => {
 				{...{
 					dangerouslySetInnerHTML: { __html: src },
 				}}
-				className="bg-white p-1.5 dark:invert"
+				className="bg-white p-1.5"
 			/>
 		</div>
 	);
