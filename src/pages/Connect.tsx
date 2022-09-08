@@ -13,6 +13,7 @@ const Connect = ({
 	accountList,
 	activeAccountIndex,
 	triggerInjectedScriptEvent,
+	connectedDomains,
 }: State) => {
 	const [lastActiveAccountIndex, lastActiveAccountIndexSet] = useState(activeAccountIndex);
 	const [searchParams] = useSearchParams();
@@ -57,7 +58,6 @@ const Connect = ({
 							type: 'accountChange',
 							payload: { activeAddress: accountList[lastActiveAccountIndex].address },
 						});
-						const { connectedDomains = {} } = await getValue('connectedDomains');
 						const activeAccount = accountList[activeAccountIndex].address;
 						if (!connectedDomains[activeAccount]) {
 							connectedDomains[activeAccount] = {};
