@@ -40,7 +40,7 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 					}
 				}}
 			/>
-			<TextInput password _ref={passwordRef} label={i18n.password} />
+			<TextInput password showPasswordRequirements _ref={passwordRef} label={i18n.password} />
 			<TextInput password _ref={confirmPasswordRef} label={i18n.confirmPassword} />
 			{/* <p className="mt-1 text-skin-tertiary text-sm">{i18n.mustContainAtLeast8Characters}</p> */}
 			<div className="fx">

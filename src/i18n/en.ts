@@ -174,6 +174,9 @@ const en = {
 	none: 'None',
 	noPrice: 'No Price',
 	waitForWalletBalanceToLoad: 'Wait for wallet balance to load',
+	mustContainAtLeast8Characters1UppercaseLetterAnd1Number:
+		'Must contain at least 8 characters, 1 uppercase letter, and 1 number.',
+	invalidPassword: 'Invalid password',
 	test: 'test',
 	'': '',
 };

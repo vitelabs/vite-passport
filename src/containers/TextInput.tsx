@@ -38,6 +38,7 @@ type Props = State &
 		onMetaEnter?: () => void;
 		placeholder?: string;
 		optional?: boolean;
+		showPasswordRequirements?: boolean;
 		maxLength?: number;
 		getIssue?: (value: string) => string | void;
 		onKeyDown?: (key: string) => void;
@@ -67,6 +68,7 @@ const TextInput = ({
 	textarea,
 	numeric,
 	password,
+	showPasswordRequirements,
 	initialValue,
 	resizable,
 	maxDecimals,
@@ -180,6 +182,15 @@ const TextInput = ({
 							if (!optional && !trimmedValue) {
 								errorSet(i18n.thisFieldCannotBeBlank);
 								return false;
+							} else if (password) {
+								if (
+									internalValue.length < 8 ||
+									!/[A-Z]/.test(internalValue) ||
+									!/[0-9]/.test(internalValue)
+								) {
+									errorSet(i18n.invalidPassword);
+									return false;
+								}
 							} else if (trimmedValue && getIssue) {
 								const newIssue = getIssue(trimmedValue) || '';
 								errorSet(newIssue);
@@ -213,6 +224,11 @@ const TextInput = ({
 				<div className={`h-0.5 duration-200 ${focused ? 'bg-skin-lowlight' : 'bg-skin-divider'}`} />
 			)}
 			{error && <p className="mt-1 text-sm leading-3 font-bold text-red-500">{error}</p>}
+			{showPasswordRequirements && (
+				<p className="mt-1 text-xs text-skin-tertiary">
+					{i18n.mustContainAtLeast8Characters1UppercaseLetterAnd1Number}
+				</p>
+			)}
 		</div>
 	);
 };

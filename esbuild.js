@@ -36,6 +36,7 @@ require('esbuild')
 			'.json': 'copy',
 			'.png': 'copy',
 		},
+		drop: PROD ? ['console'] : [],
 		// logLevel: 'debug',
 		// logLevel: 'silent',
 		plugins: [

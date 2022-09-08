@@ -221,7 +221,12 @@ const Settings = ({
 					}}
 				>
 					<div className="p-3 space-y-3">
-						<TextInput password _ref={passwordRef} label={i18n.currentPassword} />
+						<TextInput
+							password
+							showPasswordRequirements
+							_ref={passwordRef}
+							label={i18n.currentPassword}
+						/>
 						<TextInput password _ref={newPasswordRef} label={i18n.newPassword} />
 						<TextInput password _ref={confirmNewPasswordRef} label={i18n.confirmNewPassword} />
 					</div>

@@ -39,7 +39,13 @@ const Create2 = ({ i18n, sendBgScriptPortMessage, setState, secrets }: State) =>
 					}
 				}}
 			/>
-			<TextInput password containerClassName="mt-4" _ref={passwordRef} label={i18n.password} />
+			<TextInput
+				password
+				showPasswordRequirements
+				containerClassName="mt-4"
+				_ref={passwordRef}
+				label={i18n.password}
+			/>
 			<TextInput
 				password
 				containerClassName="mt-4"
