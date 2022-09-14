@@ -87,7 +87,6 @@ const Router = ({
 		)
 			.then((res) => res.json())
 			.then(async (prices: NonNullable<State['prices']>) => {
-				console.log('prices:', prices);
 				const tokenIdsWithMissingPrices = homePageTokenIdsAndNames
 					.filter(([tti, name]) => {
 						ttiToNameMap[tti] = name;

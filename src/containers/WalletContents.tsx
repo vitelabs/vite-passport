@@ -5,7 +5,7 @@ import Checkbox from '../components/Checkbox';
 import DeterministicIcon from '../components/DeterministicIcon';
 import Modal from '../components/Modal';
 import QR from '../components/QR';
-import { defaultTokenList } from '../utils/constants';
+import { defaultStorage, defaultTokenList } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { debounceAsync, formatPrice, getTokenApiInfo } from '../utils/misc';
 import { setValue } from '../utils/storage';
@@ -24,8 +24,21 @@ import TokenCard from './TokenCard';
 import TokenSearchBar from './TokenSearchBar';
 import TransactionList from './TransactionList';
 
-const searchTokenApiInfo = debounceAsync<TokenApiInfo[]>((query: string) => {
-	return fetch(`https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=${query}`)
+const searchTokenApiInfo = debounceAsync<TokenApiInfo[]>((rpcURL: string, query: string) => {
+	const url = {
+		// mainnet
+		[defaultStorage.networkList[0].rpcUrl]:
+			'https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=',
+		// testnet
+		[defaultStorage.networkList[1].rpcUrl]:
+			'https://buidl.vite.net/vitex/api/v1/cryptocurrency/info/search?fuzzy=',
+	}[rpcURL];
+
+	if (!url) {
+		return [];
+	}
+
+	return fetch(`${url}${query}`)
 		.then((res) => res.json())
 		.then((data: { data: { VITE: TokenApiInfo[] } }) => data?.data?.VITE || []);
 }, 300);
@@ -147,11 +160,11 @@ const WalletContents = ({
 					<TokenSearchBar
 						onUserInput={(v) => {
 							editTokenQuerySet(v);
-							if (availableTokens !== null) {
+							if (availableTokens) {
 								availableTokensSet(undefined);
 							}
 							if (!v) {
-								return availableTokensSet([
+								availableTokensSet([
 									...homePageTokens!,
 									...defaultTokenList.filter(({ tokenAddress }) => !checkedTokens[tokenAddress]),
 								]);
@@ -161,7 +174,7 @@ const WalletContents = ({
 					<div className="flex-1 overflow-scroll mt-4">
 						<FetchWidget
 							shouldFetch={!availableTokens}
-							getPromise={() => searchTokenApiInfo(editTokenQuery)}
+							getPromise={() => searchTokenApiInfo(activeNetwork.rpcUrl, editTokenQuery)}
 							onResolve={(list: TokenApiInfo[]) => availableTokensSet(list)}
 						>
 							{availableTokens &&
