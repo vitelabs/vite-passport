@@ -35,6 +35,37 @@ export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> =
 	connectedDomains: {},
 };
 
+export const getCoinGeckoPriceApiUrl = (tokenNames: string[]) => {
+	// IMPORTANT: token names should be returned by `normalizeTokenName`
+	return (
+		`https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=` + tokenNames.join(',')
+	);
+};
+
+export const getTokenFuzzySearchApiUrl = (networkRpcUrl: string, query: string) => {
+	const url = {
+		// mainnet
+		[defaultStorage.networkList[0].rpcUrl]:
+			'https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=',
+		// testnet
+		[defaultStorage.networkList[1].rpcUrl]:
+			'https://buidl.vite.net/vitex/api/v1/cryptocurrency/info/search?fuzzy=',
+	}[networkRpcUrl];
+	return url + encodeURIComponent(query);
+};
+
+export const getTokenIdSearchApiUrl = (networkRpcUrl: string) => {
+	const url = {
+		// mainnet
+		[defaultStorage.networkList[0].rpcUrl]:
+			'https://vitex.vite.net/api/v1/cryptocurrency/info/platform/query',
+		// testnet
+		[defaultStorage.networkList[1].rpcUrl]:
+			'https://buidl.vite.net/vitex/api/v1/cryptocurrency/info/platform/query',
+	}[networkRpcUrl];
+	return url;
+};
+
 export const ExplorerURLs = {
 	vitescan: {
 		mainnet: {

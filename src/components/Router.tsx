@@ -15,14 +15,10 @@ import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 import SignTx from '../pages/SignTx';
 import Start from '../pages/Start';
+import { getCoinGeckoPriceApiUrl } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
 import { State, UnreceivedBlockMessage, ViteBalanceInfo } from '../utils/types';
-// import HistoryListener from './HistoryListener';
-
-// const providerTimeout = 60000;
-// const providerOptions = { retryTimes: 5, retryInterval: 5000 };
-// new WS_RPC(activeNetwork.rpcUrl, providerTimeout, providerOptions)
 
 type Props = State;
 
@@ -80,11 +76,7 @@ const Router = ({
 	useEffect(() => {
 		if (!currencyConversion) return;
 		const ttiToNameMap: { [tti: string]: string } = {};
-		fetch(
-			`https://api.coingecko.com/api/v3/simple/price?ids=${homePageTokenIdsAndNames
-				.map(([, name]) => name)
-				.join(',')}&vs_currencies=usd`
-		)
+		fetch(getCoinGeckoPriceApiUrl(homePageTokenIdsAndNames.map(([, name]) => name)))
 			.then((res) => res.json())
 			.then(async (prices: NonNullable<State['prices']>) => {
 				const tokenIdsWithMissingPrices = homePageTokenIdsAndNames

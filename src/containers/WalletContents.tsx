@@ -5,7 +5,7 @@ import Checkbox from '../components/Checkbox';
 import DeterministicIcon from '../components/DeterministicIcon';
 import Modal from '../components/Modal';
 import QR from '../components/QR';
-import { defaultStorage, defaultTokenList } from '../utils/constants';
+import { defaultStorage, defaultTokenList, getTokenFuzzySearchApiUrl } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { debounceAsync, formatPrice, getTokenApiInfo } from '../utils/misc';
 import { setValue } from '../utils/storage';
@@ -25,20 +25,12 @@ import TokenSearchBar from './TokenSearchBar';
 import TransactionList from './TransactionList';
 
 const searchTokenApiInfo = debounceAsync<TokenApiInfo[]>((rpcURL: string, query: string) => {
-	const url = {
-		// mainnet
-		[defaultStorage.networkList[0].rpcUrl]:
-			'https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=',
-		// testnet
-		[defaultStorage.networkList[1].rpcUrl]:
-			'https://buidl.vite.net/vitex/api/v1/cryptocurrency/info/search?fuzzy=',
-	}[rpcURL];
-
-	if (!url) {
+	if (!query) {
 		return [];
 	}
-
-	return fetch(`${url}${query}`)
+	const url = getTokenFuzzySearchApiUrl(rpcURL, query);
+	console.log('url:', url);
+	return fetch(url)
 		.then((res) => res.json())
 		.then((data: { data: { VITE: TokenApiInfo[] } }) => data?.data?.VITE || []);
 }, 300);

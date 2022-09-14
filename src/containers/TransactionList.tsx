@@ -184,7 +184,6 @@ const TransactionList = ({
 													)
 												).slice(1);
 												const list = [...currentList, ...additionalTxs];
-												console.log('additionalTxs:', additionalTxs);
 												if (additionalTxs.length === 0) {
 													// OPTIMIZE: save this globally so it doesn't reset on component mount
 													ttiEndReachedSet(true);

@@ -1,5 +1,5 @@
 import { TextInputRefObject } from '../containers/TextInput';
-import { defaultStorage } from './constants';
+import { defaultStorage, getTokenIdSearchApiUrl } from './constants';
 import { TokenApiInfo } from './types';
 
 export const isDarkMode = () => document.documentElement.classList.contains('dark');
@@ -54,28 +54,16 @@ export const getTokenApiInfo = async (
 	if (!Array.isArray(tokenIds)) {
 		tokenIds = [tokenIds];
 	}
-
-	const url = {
-		// mainnet
-		[defaultStorage.networkList[0].rpcUrl]:
-			'https://vitex.vite.net/api/v1/cryptocurrency/info/platform/query',
-		// testnet
-		[defaultStorage.networkList[1].rpcUrl]:
-			'https://buidl.vite.net/vitex/api/v1/cryptocurrency/info/platform/query',
-	}[rpcURL];
-
+	const url = getTokenIdSearchApiUrl(rpcURL);
 	if (!url) {
 		return [];
 	}
-
 	if (!tokenApiInfoCache[url]) {
 		tokenApiInfoCache[url] = {};
 	}
-
 	if (tokenIds.every((tti) => !!tokenApiInfoCache[url][tti])) {
 		return tokenIds.map((tti) => tokenApiInfoCache[url][tti]);
 	}
-
 	const res = await fetch(url, {
 		method: 'POST',
 		headers: {
