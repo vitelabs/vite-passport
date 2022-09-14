@@ -21,20 +21,6 @@ const TokenSearchBar = ({ i18n, onUserInput }: Props) => {
 				onChange={(e) => {
 					valueSet(e.target.value);
 					onUserInput(e.target.value);
-					// if (availableTokens !== null) {
-					// 	availableTokensSet(undefined);
-					// }
-					// if (!e.target.value) {
-					// 	availableTokensSet([
-					// 		...displayedTokens!,
-					// 		...defaultTokenList.filter(({ tokenAddress }) => !checkedTokens[tokenAddress]),
-					// 	]);
-					// 	return;
-					// }
-					// searchTokenApiInfo(e.target.value, (list: TokenApiInfo[]) => {
-					// 	// console.log('list:', list);
-					// 	availableTokensSet(list);
-					// });
 				}}
 			/>
 		</div>

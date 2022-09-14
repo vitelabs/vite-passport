@@ -1,4 +1,5 @@
 import { TextInputRefObject } from '../containers/TextInput';
+import { defaultStorage } from './constants';
 import { TokenApiInfo } from './types';
 
 export const isDarkMode = () => document.documentElement.classList.contains('dark');
@@ -15,7 +16,7 @@ export const validateInputs = (inputRefs: TextInputRefObject[]) => {
 	return allRefsInputsAreValid;
 };
 
-export const formatPrice = (units: string | number, unitPrice = 1, label = '$', decimals = 2) => {
+export const formatPrice = (units: string | number, unitPrice = 0, label = '', decimals = 2) => {
 	return `${label}${(+units * unitPrice).toFixed(decimals)}`;
 };
 
@@ -41,19 +42,41 @@ export const debounceAsync = <T>(func, wait): ((...args) => Promise<T>) => {
 	};
 };
 
-const tokenApiInfoCache: { [tti: string]: TokenApiInfo } = {};
+const tokenApiInfoCache: { [url: string]: { [tti: string]: TokenApiInfo } } = {};
 // getTokenApiInfo to differentiate from the `tokenInfo` returned from `viteApi.getBalanceInfo`
-export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<TokenApiInfo[]> => {
+export const getTokenApiInfo = async (
+	rpcURL: string,
+	tokenIds: string | string[]
+): Promise<TokenApiInfo[]> => {
 	if (!tokenIds.length) {
 		return [];
 	}
 	if (!Array.isArray(tokenIds)) {
 		tokenIds = [tokenIds];
 	}
-	if (tokenIds.every((tti) => !!tokenApiInfoCache[tti])) {
-		return tokenIds.map((tti) => tokenApiInfoCache[tti]);
+
+	const url = {
+		// mainnet
+		[defaultStorage.networkList[0].rpcUrl]:
+			'https://vitex.vite.net/api/v1/cryptocurrency/info/platform/query',
+		// testnet
+		[defaultStorage.networkList[1].rpcUrl]:
+			'https://buidl.vite.net/vitex/api/v1/cryptocurrency/info/platform/query',
+	}[rpcURL];
+
+	if (!url) {
+		return [];
 	}
-	const res = await fetch('https://vitex.vite.net/api/v1/cryptocurrency/info/platform/query', {
+
+	if (!tokenApiInfoCache[url]) {
+		tokenApiInfoCache[url] = {};
+	}
+
+	if (tokenIds.every((tti) => !!tokenApiInfoCache[url][tti])) {
+		return tokenIds.map((tti) => tokenApiInfoCache[url][tti]);
+	}
+
+	const res = await fetch(url, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -65,7 +88,7 @@ export const getTokenApiInfo = async (tokenIds: string | string[]): Promise<Toke
 	});
 	const data: { msg: string; code: number; data: TokenApiInfo[] } = await res.json();
 	if (data.msg === 'ok' && data.code === 0) {
-		data.data.forEach((info) => (tokenApiInfoCache[info.tokenAddress] = info));
+		data.data.forEach((info) => (tokenApiInfoCache[url][info.tokenAddress] = info));
 		return data.data;
 	}
 	return [];

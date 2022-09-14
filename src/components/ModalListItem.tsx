@@ -9,7 +9,7 @@ type Props = {
 	label: string;
 	sublabel?: string;
 	className?: string;
-	onClose?: () => void;
+	onX?: () => void;
 };
 
 const ModalListItem = ({
@@ -20,7 +20,7 @@ const ModalListItem = ({
 	label,
 	sublabel,
 	className,
-	onClose,
+	onX,
 }: Props) => {
 	return (
 		<div className="flex items-center">
@@ -36,10 +36,10 @@ const ModalListItem = ({
 					)}
 				</div>
 			</button>
-			{onClose && (
+			{onX && (
 				<button
 					className="xy w-8 h-8 mr-2 overflow-hidden rounded-full bg-skin-middleground"
-					onClick={onClose}
+					onClick={onX}
 				>
 					<XIcon className="w-5 text-skin-eye-icon" />
 				</button>

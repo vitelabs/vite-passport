@@ -34,13 +34,14 @@ type Props = State;
 
 const WalletContents = ({
 	i18n,
-	displayedTokenIdsAndNames,
+	homePageTokenIdsAndNames,
 	copyWithToast,
 	activeAccount,
+	activeNetwork,
 	prices,
 	setState,
 	viteBalanceInfo,
-	displayedTokens,
+	homePageTokens,
 }: Props) => {
 	const amountRef = useTextInputRef();
 	const commentRef = useTextInputRef();
@@ -57,13 +58,17 @@ const WalletContents = ({
 	const [availableTokens, availableTokensSet] = useState<undefined | TokenApiInfo[]>();
 	const activeAddress = useMemo(() => activeAccount.address, [activeAccount]);
 	const getPromise = useCallback(
-		() => getTokenApiInfo(displayedTokenIdsAndNames.map(([tti]) => tti)),
-		[displayedTokenIdsAndNames]
+		() =>
+			getTokenApiInfo(
+				activeNetwork.rpcUrl,
+				homePageTokenIdsAndNames.map(([tti]) => tti)
+			),
+		[activeNetwork.rpcUrl, homePageTokenIdsAndNames]
 	);
 	const onResolve = useCallback(
 		(list: TokenApiInfo[]) => {
 			setState({
-				displayedTokens: list.sort((a, b) =>
+				homePageTokens: list.sort((a, b) =>
 					a.symbol === 'VITE' ? -1 : b.symbol === 'VITE' ? 1 : a.symbol < b.symbol ? -1 : 1
 				),
 			});
@@ -72,41 +77,41 @@ const WalletContents = ({
 	);
 
 	useEffect(() => {
-		if (displayedTokens && prices && viteBalanceInfo) {
+		if (homePageTokens && prices && viteBalanceInfo) {
 			const balanceInfoMap = viteBalanceInfo
 				? viteBalanceInfo?.balance?.balanceInfoMap || {}
 				: undefined;
 			setState({
-				portfolioValue: displayedTokens.reduce((value, token) => {
+				portfolioValue: homePageTokens.reduce((value, token) => {
 					const balance = balanceInfoMap?.[token.tokenAddress]?.balance || '0';
 					const biggestUnit = !balanceInfoMap ? null : toBiggestUnit(balance, token.decimal);
 					const unitPrice = prices?.[normalizeTokenName(token.name)]?.usd;
-					return value + +formatPrice(biggestUnit!, unitPrice, '');
+					return value + +formatPrice(biggestUnit!, unitPrice);
 				}, 0),
 			});
 		}
-	}, [displayedTokens, setState, prices, viteBalanceInfo]);
+	}, [homePageTokens, setState, prices, viteBalanceInfo]);
 
 	return (
 		<>
 			<FetchWidget
 				noSpinnerMargin
 				shouldFetch={
-					!displayedTokens ||
-					displayedTokens.length !== displayedTokenIdsAndNames.length ||
-					!displayedTokens.every((token) =>
-						displayedTokenIdsAndNames.find(([tti]) => tti === token.tokenAddress)
-					) // used using `find` cuz getTokenApiInfo API doesn't return token info in order of displayedTokenIdsAndNames
+					!homePageTokens ||
+					homePageTokens.length !== homePageTokenIdsAndNames.length ||
+					!homePageTokens.every((token) =>
+						homePageTokenIdsAndNames.find(([tti]) => tti === token.tokenAddress)
+					) // used using `find` cuz getTokenApiInfo API doesn't return token info in order of homePageTokenIdsAndNames
 				}
 				getPromise={getPromise}
 				onResolve={onResolve}
 			>
-				{displayedTokens && (
+				{homePageTokens && (
 					<>
-						{!displayedTokens.length ? (
+						{!homePageTokens.length ? (
 							<p className="text-center text-skin-secondary">{i18n.yourWalletIsEmpty}</p>
 						) : (
-							displayedTokens.map((tokenApiInfo) => (
+							homePageTokens.map((tokenApiInfo) => (
 								<TokenCard
 									{...tokenApiInfo}
 									key={tokenApiInfo.tokenAddress}
@@ -118,10 +123,10 @@ const WalletContents = ({
 							className="mx-auto block text-skin-highlight leading-3"
 							onClick={() => {
 								const checkedTokens: { [tti: string]: boolean } = {};
-								displayedTokenIdsAndNames.forEach(([tti]) => (checkedTokens[tti] = true));
+								homePageTokenIdsAndNames.forEach(([tti]) => (checkedTokens[tti] = true));
 								checkedTokensSet(checkedTokens);
 								availableTokensSet([
-									...displayedTokens!,
+									...homePageTokens!,
 									...defaultTokenList.filter(({ tokenAddress }) => !checkedTokens[tokenAddress]),
 								]);
 								editingTokenListSet(true);
@@ -147,7 +152,7 @@ const WalletContents = ({
 							}
 							if (!v) {
 								return availableTokensSet([
-									...displayedTokens!,
+									...homePageTokens!,
 									...defaultTokenList.filter(({ tokenAddress }) => !checkedTokens[tokenAddress]),
 								]);
 							}
@@ -179,7 +184,7 @@ const WalletContents = ({
 										const tokenName = addIndexToTokenSymbol(symbol, tokenIndex);
 										return (
 											<React.Fragment key={tti}>
-												{(i === 0 || i === displayedTokenIdsAndNames.length) && (
+												{(i === 0 || i === homePageTokenIdsAndNames.length) && (
 													<div className={`h-0.5 bg-skin-divider mx-4 ${i === 0 ? '' : 'mt-2'}`} />
 												)}
 												<div className="fx rounded-sm py-2 px-4">
@@ -222,10 +227,10 @@ const WalletContents = ({
 								const displayedTokenIds = Object.entries(checkedTokens)
 									.filter(([, checked]) => checked)
 									.map(([tti]) => tti);
-								const data: Pick<State, 'displayedTokenIdsAndNames'> = {
-									displayedTokenIdsAndNames: (await getTokenApiInfo(displayedTokenIds)).map(
-										({ tokenAddress, name }) => [tokenAddress, normalizeTokenName(name)]
-									),
+								const data: Pick<State, 'homePageTokenIdsAndNames'> = {
+									homePageTokenIdsAndNames: (
+										await getTokenApiInfo(activeNetwork.rpcUrl, displayedTokenIds)
+									).map(({ tokenAddress, name }) => [tokenAddress, normalizeTokenName(name)]),
 								};
 								setState(data);
 								setValue(data);

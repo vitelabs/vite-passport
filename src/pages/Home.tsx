@@ -40,6 +40,7 @@ const Home = ({
 	secrets,
 	activeAccountIndex,
 	activeAccount,
+	activeNetwork,
 	copyWithToast,
 	networkList,
 	activeNetworkIndex,
@@ -52,7 +53,7 @@ const Home = ({
 	currencyConversion,
 	portfolioValue,
 	toastInfo,
-	displayedTokenIdsAndNames,
+	homePageTokenIdsAndNames,
 }: State) => {
 	// const quotaBeneficiaryRef = useTextInputRef();
 	// const lockedAmountRef = useTextInputRef();
@@ -71,7 +72,7 @@ const Home = ({
 	const [viewingConnected, viewingConnectedSet] = useState(false);
 	const [hostname, hostnameSet] = useState('');
 	const [tokensInWallet, tokensInWalletSet] = useState<TokenApiInfo[]>([]);
-	const [displayedTokens, displayedTokensSet] = useState<TokenApiInfo[]>([]);
+	const [filteredTokensInWallet, filteredTokensInWalletSet] = useState<TokenApiInfo[]>([]);
 	const [tokenSendInfo, tokenSendInfoSet] = useState<undefined | TokenApiInfo>();
 
 	const balanceInfoMap = useMemo(
@@ -81,10 +82,6 @@ const Home = ({
 	const connected = useMemo(
 		() => (!hostname ? false : !!connectedDomains[activeAccount.address]?.[hostname]),
 		[connectedDomains, activeAccount, hostname]
-	);
-	const activeNetwork = useMemo(
-		() => networkList[activeNetworkIndex],
-		[networkList, activeNetworkIndex]
 	);
 
 	useEffect(() => {
@@ -148,7 +145,7 @@ const Home = ({
 			<div className="flex-1 p-4 space-y-4 overflow-scroll">
 				{currencyConversion && (
 					<p className="text-3xl text-center">
-						{portfolioValue !== undefined ? formatPrice(portfolioValue) : '...'}
+						{portfolioValue !== undefined ? formatPrice(portfolioValue, 1, '$') : '...'}
 					</p>
 				)}
 				<div className="xy gap-16">
@@ -158,9 +155,12 @@ const Home = ({
 							onClick={async () => {
 								if (balanceInfoMap) {
 									sendingSet(true);
-									const arr = await getTokenApiInfo(displayedTokenIdsAndNames.map(([tti]) => tti));
+									const arr = await getTokenApiInfo(
+										activeNetwork.rpcUrl,
+										homePageTokenIdsAndNames.map(([tti]) => tti)
+									);
 									tokensInWalletSet(arr);
-									displayedTokensSet(arr);
+									filteredTokensInWalletSet(arr);
 								} else {
 									toastInfo(i18n.waitForWalletBalanceToLoad);
 								}
@@ -232,8 +232,10 @@ const Home = ({
 										toastSuccess(i18n.networkChanged);
 										setState({
 											activeNetworkIndex: i,
+											activeNetwork: networkList[i],
 											viteBalanceInfo: undefined,
 											transactionHistory: undefined,
+											homePageTokens: undefined,
 										});
 										setValue({ activeNetworkIndex: i });
 										triggerInjectedScriptEvent({
@@ -243,7 +245,7 @@ const Home = ({
 									}
 									editingNetworkSet(false);
 								}}
-								onClose={
+								onX={
 									i < 3
 										? undefined
 										: () => {
@@ -328,6 +330,7 @@ const Home = ({
 							...secrets!,
 							index: accountList.length,
 						});
+						delete newAccount.privateKey;
 						const newAccountList = [...accountList, newAccount];
 						const newContacts = {
 							...contacts,
@@ -357,7 +360,10 @@ const Home = ({
 										const data = { activeAccountIndex: i };
 										setState({
 											...data,
-											activeAccount: accountList[i],
+											activeAccount: wallet.deriveAddress({
+												...secrets!,
+												index: i,
+											}),
 											viteBalanceInfo: undefined,
 											portfolioValue: undefined,
 											transactionHistory: undefined,
@@ -365,10 +371,10 @@ const Home = ({
 										setValue(data);
 										const { connectedDomains } = await getValue('connectedDomains');
 										const newActiveAddress = accountList[i].address;
-										const lastAccountWasConnected =
-											!!connectedDomains?.[activeAccount.address]?.[hostname];
 										const newActiveAccountConnected =
 											!!connectedDomains?.[newActiveAddress]?.[hostname];
+										const lastAccountWasConnected =
+											!!connectedDomains?.[activeAccount.address]?.[hostname];
 										if (newActiveAccountConnected) {
 											triggerInjectedScriptEvent({
 												type: 'accountChange',
@@ -383,7 +389,7 @@ const Home = ({
 									}
 									changingActiveAccountSet(false);
 								}}
-								onClose={
+								onX={
 									i + 1 !== accountList.length || i === 0
 										? undefined
 										: () => {
@@ -392,7 +398,7 @@ const Home = ({
 													activeAccountIndex:
 														activeAccountIndex === accountList.length - 1 ? 0 : activeAccountIndex,
 												};
-												setState({ ...data, activeAccount: accountList[data.activeAccountIndex] });
+												setState(data);
 												setValue(data);
 										  }
 								}
@@ -426,7 +432,7 @@ const Home = ({
 						onUserInput={(v) => {
 							if (balanceInfoMap) {
 								const search = v.toLocaleLowerCase();
-								displayedTokensSet(
+								filteredTokensInWalletSet(
 									tokensInWallet.filter((tokenApiInfo) => {
 										return (
 											tokenApiInfo.tokenAddress.includes(search) ||
@@ -442,10 +448,10 @@ const Home = ({
 					/>
 					<div className="px-4 pb-4 mt-4 space-y-4 flex-1 overflow-scroll">
 						<div className="h-0.5 bg-skin-divider" />
-						{!displayedTokens.length ? (
+						{!filteredTokensInWallet.length ? (
 							<p className="leading-3 text-skin-secondary text-center">{i18n.nothingFound}</p>
 						) : (
-							displayedTokens.map((tokenApiInfo) => (
+							filteredTokensInWallet.map((tokenApiInfo) => (
 								<TokenCard
 									{...tokenApiInfo}
 									key={tokenApiInfo.tokenAddress}

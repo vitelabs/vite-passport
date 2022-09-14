@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import Button from '../components/Button';
 import ModalListItem from '../components/ModalListItem';
 import { connect } from '../utils/global-context';
-import { getValue, setValue } from '../utils/storage';
+import { setValue } from '../utils/storage';
 import { shortenAddress } from '../utils/strings';
 import { State } from '../utils/types';
 
@@ -53,17 +53,17 @@ const Connect = ({
 					theme="highlight"
 					label={i18n.confirm}
 					onClick={async () => {
+						const activeAddress = accountList[lastActiveAccountIndex].address;
 						triggerInjectedScriptEvent({ type: 'connectWallet', payload: { domain: hostname } });
 						triggerInjectedScriptEvent({
 							type: 'accountChange',
-							payload: { activeAddress: accountList[lastActiveAccountIndex].address },
+							payload: { activeAddress },
 						});
-						const activeAccount = accountList[activeAccountIndex].address;
-						if (!connectedDomains[activeAccount]) {
-							connectedDomains[activeAccount] = {};
+						if (!connectedDomains[activeAddress]) {
+							connectedDomains[activeAddress] = {};
 						}
-						if (!connectedDomains[activeAccount][hostname]) {
-							connectedDomains[activeAccount][hostname] = {};
+						if (!connectedDomains[activeAddress][hostname]) {
+							connectedDomains[activeAddress][hostname] = {};
 						}
 						await setValue({ connectedDomains, activeAccountIndex: lastActiveAccountIndex });
 						window.close();

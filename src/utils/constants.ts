@@ -31,7 +31,7 @@ export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> =
 	currencyConversion: 'USD',
 	activeAccountIndex: 0,
 	contacts: {},
-	displayedTokenIdsAndNames: [['tti_5649544520544f4b454e6e40', 'vite']],
+	homePageTokenIdsAndNames: [['tti_5649544520544f4b454e6e40', 'vite']],
 	connectedDomains: {},
 };
 

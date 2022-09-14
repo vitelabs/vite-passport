@@ -36,19 +36,19 @@ const listen = async (message: BgScriptPortMessage) => {
 
 		window.onbeforeunload = () => {
 			// this rejects any pending promises in injectedScript.ts
-			chrome.tabs.sendMessage(tabIdToInteractWith, { type: 'disconnect' });
+			// @ts-ignore
+			chrome.tabs.sendMessage(tabIdToInteractWith, { type: 'disconnect' }).catch((e) => {});
 		};
 
 		const state: Partial<State> = {
 			...storage,
 			chromePort,
 			i18n: i18nDict[storage.language!],
+			activeNetwork: storage.networkList![storage.activeNetworkIndex!],
 			sendBgScriptPortMessage: (message: BgScriptPortMessage) => chromePort.postMessage(message),
 			triggerInjectedScriptEvent: async (event: injectedScriptEventData) => {
 				// @ts-ignore
-				chrome.tabs.sendMessage(tabIdToInteractWith, event).catch((err) => {
-					console.log('err:', err);
-				});
+				chrome.tabs.sendMessage(tabIdToInteractWith, event).catch((e) => {});
 			},
 		};
 

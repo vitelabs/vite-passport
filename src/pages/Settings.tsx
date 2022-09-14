@@ -59,8 +59,6 @@ const Settings = ({
 	>();
 	const [showSecrets, showSecretsSet] = useState(false);
 
-	// TODO: toggle show prices
-
 	const verifyPassword = useCallback(async () => {
 		try {
 			await decrypt(encryptedSecrets, passwordRef.value);

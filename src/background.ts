@@ -23,7 +23,7 @@ chrome.runtime.onConnect.addListener(async (chromePort) => {
 		if (message.type === 'reopen') {
 			chrome.alarms.clear(lockingAlarmName);
 		} else if (message.type === 'updateSecrets') {
-			chrome.storage.session.set({ secrets: message.secrets });
+			chrome.storage.session.set({ [secretsKey]: message.secrets });
 		} else if (message.type === 'lock') {
 			chrome.storage.session.remove(secretsKey);
 		}
@@ -93,5 +93,5 @@ const openPopup = async (routeAfterUnlock: string) => {
 		top: lastFocused.top,
 		left: lastFocused.left! + (lastFocused.width! - 18 * 16),
 	});
-	chrome.storage.session.set({ lastPopupId: id || 0 });
+	chrome.storage.session.set({ [lastPopupIdKey]: id || 0 });
 };

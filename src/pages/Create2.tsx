@@ -75,13 +75,14 @@ const Create2 = ({ i18n, sendBgScriptPortMessage, setState, secrets }: State) =>
 					if (valid) {
 						sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
-						const accountList = [
-							wallet.deriveAddress({
-								...secrets,
-								index: 0,
-							}),
-						];
-						const contacts = { [accountList[0].address]: 'Account 0' };
+						const account = wallet.deriveAddress({
+							...secrets,
+							index: 0,
+						});
+						const { privateKey } = account;
+						delete account.privateKey;
+						const accountList = [account];
+						const contacts = { [account.address]: 'Account 0' };
 						setValue({ ...defaultStorage, encryptedSecrets, accountList, contacts });
 						setState({
 							...defaultStorage,
@@ -89,7 +90,7 @@ const Create2 = ({ i18n, sendBgScriptPortMessage, setState, secrets }: State) =>
 							encryptedSecrets,
 							accountList,
 							contacts,
-							activeAccount: accountList[0],
+							activeAccount: { ...account, privateKey },
 						});
 						navigate(routeAfterUnlock || '/home');
 					}

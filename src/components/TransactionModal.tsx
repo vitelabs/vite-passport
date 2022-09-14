@@ -67,11 +67,10 @@ const TransactionModal = ({
 	copyWithToast,
 	viteApi,
 	activeAccount,
+	activeNetwork,
 	transactionHistory,
 	setState,
 	triggerInjectedScriptEvent,
-	networkList,
-	activeNetworkIndex,
 }: Props) => {
 	const [sentTx, sentTxSet] = useState<undefined | AccountBlockBlock>();
 	const [tokenApiInfo, tokenApiInfoSet] = useState<undefined | TokenApiInfo>();
@@ -103,11 +102,6 @@ const TransactionModal = ({
 		...unsentBlock,
 	};
 
-	const activeNetwork = useMemo(
-		() => networkList[activeNetworkIndex],
-		[networkList, activeNetworkIndex]
-	);
-
 	const tokenName = useMemo(
 		() =>
 			!tokenApiInfo ? '' : addIndexToTokenSymbol(tokenApiInfo.symbol, tokenApiInfo.tokenIndex),
@@ -127,7 +121,7 @@ const TransactionModal = ({
 					<div className="flex-1 px-4">
 						<FetchWidget
 							shouldFetch={!!tokenId && !tokenApiInfo}
-							getPromise={() => getTokenApiInfo(tokenId!)}
+							getPromise={() => getTokenApiInfo(activeNetwork.rpcUrl, tokenId!)}
 							onResolve={(info) => {
 								if (info.length === 1) {
 									tokenApiInfoSet(info[0]);
