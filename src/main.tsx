@@ -6,7 +6,7 @@ import './styles/classes.css';
 import './styles/theme.ts';
 
 import { injectedScriptEventData, BgScriptPortMessage, State } from './utils/types';
-import { getValue, setValue } from './utils/storage';
+import { getValue, removeKeys, setValue } from './utils/storage';
 import { wallet } from '@vite/vitejs';
 import { defaultStorage, i18nDict } from './utils/constants';
 import { getCurrentTab } from './utils/misc';
@@ -20,9 +20,13 @@ const listen = async (message: BgScriptPortMessage) => {
 		chromePort.onMessage.removeListener(listen);
 		const storage = await getValue(null);
 
-		(Object.keys(defaultStorage) as (keyof typeof defaultStorage)[]).forEach((key) => {
+		Object.keys(storage).forEach((key) => {
+			if (!(key in defaultStorage)) {
+				removeKeys(key);
+			}
+		});
+		Object.keys(defaultStorage).forEach((key) => {
 			if (storage[key] === undefined) {
-				// @ts-ignore
 				storage[key] = defaultStorage[key];
 				setValue({ [key]: defaultStorage[key] });
 			}
@@ -37,10 +41,11 @@ const listen = async (message: BgScriptPortMessage) => {
 		window.onbeforeunload = () => {
 			// this rejects any pending promises in injectedScript.ts
 			// @ts-ignore
-			chrome.tabs.sendMessage(tabIdToInteractWith, { type: 'disconnect' }).catch((e) => {});
+			chrome.tabs.sendMessage(tabIdToInteractWith, { type: 'disconnect' }).catch(() => {});
 		};
 
 		const state: Partial<State> = {
+			...defaultStorage,
 			...storage,
 			chromePort,
 			i18n: i18nDict[storage.language!],
@@ -48,7 +53,7 @@ const listen = async (message: BgScriptPortMessage) => {
 			sendBgScriptPortMessage: (message: BgScriptPortMessage) => chromePort.postMessage(message),
 			triggerInjectedScriptEvent: async (event: injectedScriptEventData) => {
 				// @ts-ignore
-				chrome.tabs.sendMessage(tabIdToInteractWith, event).catch((e) => {});
+				chrome.tabs.sendMessage(tabIdToInteractWith, event).catch(() => {});
 			},
 		};
 
@@ -59,6 +64,17 @@ const listen = async (message: BgScriptPortMessage) => {
 			});
 			state.secrets = message.secrets;
 			state.sendBgScriptPortMessage!({ type: 'reopen' });
+			// NOTE: eventually this `if` block can be deleted. It's necessary now for
+			// the users of v1.0.4 and before when derivedAddresses didn't exist
+			if (!storage.derivedAddresses) {
+				const addressEndIndex = storage.activeAccountIndex || defaultStorage.activeAccountIndex;
+				const derivedAddresses: string[] = [];
+				for (let i = 0; i <= addressEndIndex; i++) {
+					derivedAddresses.push(wallet.deriveAddress({ ...message.secrets, index: i }).address);
+				}
+				state.derivedAddresses = derivedAddresses;
+				setValue({ derivedAddresses });
+			}
 		}
 
 		root.render(

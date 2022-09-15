@@ -5,7 +5,7 @@ import Checkbox from '../components/Checkbox';
 import DeterministicIcon from '../components/DeterministicIcon';
 import Modal from '../components/Modal';
 import QR from '../components/QR';
-import { defaultStorage, defaultTokenList, getTokenFuzzySearchApiUrl } from '../utils/constants';
+import { defaultTokenList, getTokenFuzzySearchApiUrl } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { debounceAsync, formatPrice, getTokenApiInfo } from '../utils/misc';
 import { setValue } from '../utils/storage';

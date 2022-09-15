@@ -16,6 +16,6 @@ export const getValue = (keys: StorageFields | StorageFields[] | null): Promise<
 	return chrome.storage.local.get(keys);
 };
 
-export const removeKeys = (keys: StorageFields | StorageFields[]): Promise<void> => {
+export const removeKeys = (keys: string | string[]): Promise<void> => {
 	return chrome.storage.local.remove(keys);
 };

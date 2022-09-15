@@ -6,7 +6,9 @@ export const i18nDict = { en };
 
 // export const PROD = process.env.NODE_ENV === 'production';
 
-export const defaultStorage: Omit<Storage, 'encryptedSecrets' | 'accountList'> = {
+export const defaultStorage: Storage = {
+	encryptedSecrets: undefined,
+	derivedAddresses: undefined,
 	language: 'en',
 	activeNetworkIndex: 0,
 	networkList: [

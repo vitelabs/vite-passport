@@ -228,13 +228,6 @@ const TransactionModal = ({
 										onClick={async () => {
 											try {
 												sendingTxSet(true);
-												// await vitePassport.writeAccountBlock('send', {
-												// address: 'vite_2daedeee8d0a41085dee136e36052f48d8e6122b9fec075639',
-												// toAddress: 'vite_f30697191707a723c70d0652ab80304195e5928dcf71fcab99',
-												// tokenId: 'tti_5649544520544f4b454e6e40',
-												// amount: 1 + '0'.repeat(17), // 0.1 VITE
-												// });
-
 												unsentBlock.setProvider(viteApi);
 												unsentBlock.setPrivateKey(activeAccount.privateKey);
 												await unsentBlock.autoSetPreviousAccountBlock();

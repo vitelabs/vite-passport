@@ -12,12 +12,12 @@ export type Network = {
 };
 
 export type Storage = {
-	encryptedSecrets: string;
+	encryptedSecrets?: string;
+	derivedAddresses?: string[]; // caching cuz wallet.deriveAddress is very slow
 	language: keyof typeof i18nDict;
 	currencyConversion: null | CurrencyConversions;
 	networkList: Network[];
 	activeNetworkIndex: number;
-	accountList: Omit<AddressObj, 'privateKey'>[]; // caching cuz wallet.deriveAddress is very slow
 	activeAccountIndex: number;
 	contacts: { [address: string]: string };
 	homePageTokenIdsAndNames: [tti: string, name: string][]; // IMPORTANT: token names should be returned by `normalizeTokenName`
