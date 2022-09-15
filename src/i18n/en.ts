@@ -113,13 +113,8 @@ const en = {
 	incorrectMnemonicPhrase: 'Incorrect mnemonic phrase',
 
 	//
-	// youAreAboutToErase:
-	// 	"You are about to erase all settings and secrets from your wallet. If you don't have your mnemonic phrase saved somewhere else, your funds will be lost forever.",
 	youAreAboutToErase:
-		"You are about to erase all settings and secrets from your wallet. If you don't have your mnemonic phrase and BIP-39 passphrase saved somewhere else, your funds will be lost forever.",
-	whatsTheDifference: `What's the difference?`,
-	loading: 'Loading',
-	retry: 'Retry',
+		"You are about to erase all settings and secrets from your wallet. If you don't have your mnemonic phrase saved somewhere else, your funds will be lost forever.",
 	error: 'Error',
 	noTransactionHistory: 'No transaction history',
 	yourWalletIsEmpty: 'Your wallet is empty',

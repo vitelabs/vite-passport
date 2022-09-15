@@ -9,7 +9,13 @@ type Props = State & {
 	onClose: () => void;
 };
 
-const ResetWalletModal = ({ onClose, i18n, setState, triggerInjectedScriptEvent }: Props) => {
+const ResetWalletModal = ({
+	onClose,
+	i18n,
+	setState,
+	triggerInjectedScriptEvent,
+	sendBgScriptPortMessage,
+}: Props) => {
 	const navigate = useNavigate();
 	return (
 		<Modal
@@ -20,7 +26,13 @@ const ResetWalletModal = ({ onClose, i18n, setState, triggerInjectedScriptEvent 
 				const storage = await getValue(null);
 				removeKeys(Object.keys(storage) as StorageFields[]);
 				setValue(defaultStorage);
-				setState(defaultStorage);
+				setState({
+					...defaultStorage,
+					secrets: undefined,
+					activeAccount: undefined,
+					accountList: undefined,
+				});
+				sendBgScriptPortMessage({ type: 'lock' });
 				navigate('/', { replace: true });
 				triggerInjectedScriptEvent({
 					type: 'accountChange',

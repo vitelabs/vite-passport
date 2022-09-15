@@ -14,14 +14,13 @@ import { State } from '../utils/types';
 
 const Lock = ({
 	i18n,
-	activeAccountIndex,
 	setState,
 	sendBgScriptPortMessage,
 	encryptedSecrets,
+	activeAccountIndex,
 }: State) => {
 	const passwordRef = useTextInputRef();
 	const [resettingWallet, resettingWalletSet] = useState(false);
-	const [password, passwordSet] = useState('');
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
 
@@ -29,7 +28,7 @@ const Lock = ({
 		const valid = validateInputs([passwordRef]);
 		if (valid) {
 			try {
-				const secrets = JSON.parse(await decrypt(encryptedSecrets, password));
+				const secrets = JSON.parse(await decrypt(encryptedSecrets, passwordRef.value));
 				setState({
 					secrets,
 					activeAccount: wallet.deriveAddress({
@@ -38,16 +37,14 @@ const Lock = ({
 					}),
 				});
 				sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
-				const routeAfterUnlock = searchParams.get('routeAfterUnlock');
-				navigate(routeAfterUnlock || '/home', { replace: true });
+				navigate(searchParams.get('routeAfterUnlock') || '/home', { replace: true });
 			} catch {
 				passwordRef.error = i18n.incorrectPassword;
 			}
 		}
 	}, [
-		password,
-		passwordRef,
 		activeAccountIndex,
+		passwordRef,
 		searchParams,
 		encryptedSecrets,
 		i18n.incorrectPassword,
@@ -66,8 +63,6 @@ const Lock = ({
 				autoFocus
 				_ref={passwordRef}
 				label={i18n.password}
-				value={password}
-				onUserInput={(v) => passwordSet(v)}
 				onKeyDown={(key) => {
 					if (key === 'Enter') {
 						attemptUnlock();

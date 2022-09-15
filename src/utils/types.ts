@@ -17,10 +17,10 @@ export type Storage = {
 	currencyConversion: null | CurrencyConversions;
 	networkList: Network[];
 	activeNetworkIndex: number;
-	accountList: AddressObj[];
+	accountList: Omit<AddressObj, 'privateKey'>[]; // caching cuz wallet.deriveAddress is very slow
 	activeAccountIndex: number;
 	contacts: { [address: string]: string };
-	displayedTokenIdsAndNames: [tti: string, name: string][]; // IMPORTANT: token names should be returned by `normalizeTokenName`
+	homePageTokenIdsAndNames: [tti: string, name: string][]; // IMPORTANT: token names should be returned by `normalizeTokenName`
 	connectedDomains: {
 		// connectedDomains.address.domain => easy to get an account's connect domains
 		// connectedDomains.domain.address => easy to get a connected domains across all accounts and remove domain access by account granularity
@@ -43,7 +43,8 @@ export type State = Storage & {
 	triggerInjectedScriptEvent: (event: injectedScriptEventData) => void;
 	setState: setStateType;
 	secrets?: Secrets;
-	activeAccount: AddressObj; // caching cuz wallet.deriveAddress is very slow
+	activeAccount: AddressObj;
+	activeNetwork: Network;
 	copyWithToast: (text: string) => void;
 	toastSuccess: (text: string) => void;
 	toastWarning: (text: string) => void;
@@ -54,13 +55,13 @@ export type State = Storage & {
 	toast?: [string, 'success' | 'warning' | 'error' | 'info'];
 	viteBalanceInfo?: ViteBalanceInfo;
 	portfolioValue?: number;
-	displayedTokens?: TokenApiInfo[];
+	homePageTokens?: TokenApiInfo[];
 	transactionHistory?: {
 		received?: Transaction[];
 		unreceived?: Transaction[];
 		[tti: string]: undefined | Transaction[]; // assume these only show received txs
 	};
-	prices: {
+	prices?: {
 		[name: string]: {
 			// IMPORTANT: token names should be returned by `normalizeTokenName`
 			[currency: string]: number;
@@ -162,7 +163,7 @@ export type TokenApiInfo = {
 	standard: string | null;
 	url: string | null;
 	tokenIndex: number | null;
-	icon: string;
+	icon: null | string;
 	decimal: number;
 	gatewayInfo: null | {
 		name: string;

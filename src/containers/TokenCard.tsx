@@ -63,7 +63,7 @@ const TokenCard = ({
 								? '...'
 								: !unitPrice
 								? i18n.noPrice
-								: `≈${formatPrice(biggestUnit!, unitPrice)}`}
+								: `≈${formatPrice(biggestUnit!, unitPrice, '$')}`}
 						</p>
 					)}
 				</div>

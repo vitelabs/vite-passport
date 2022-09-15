@@ -15,14 +15,10 @@ import MyTransactions from '../pages/MyTransactions';
 import Settings from '../pages/Settings';
 import SignTx from '../pages/SignTx';
 import Start from '../pages/Start';
+import { getCoinGeckoPriceApiUrl } from '../utils/constants';
 import { connect } from '../utils/global-context';
 import { copyToClipboardAsync, parseQueryString, toQueryString } from '../utils/strings';
 import { State, UnreceivedBlockMessage, ViteBalanceInfo } from '../utils/types';
-// import HistoryListener from './HistoryListener';
-
-// const providerTimeout = 60000;
-// const providerOptions = { retryTimes: 5, retryInterval: 5000 };
-// new WS_RPC(networkRpcUrl, providerTimeout, providerOptions)
 
 type Props = State;
 
@@ -33,9 +29,8 @@ const Router = ({
 	encryptedSecrets,
 	secrets,
 	transactionHistory,
-	displayedTokenIdsAndNames,
-	networkList,
-	activeNetworkIndex,
+	homePageTokenIdsAndNames,
+	activeNetwork,
 	currencyConversion,
 	toastError,
 }: Props) => {
@@ -69,34 +64,22 @@ const Router = ({
 		// return ['/import'];
 		return ['/'];
 	}, []); // eslint-disable-line
-	const networkRpcUrl = useMemo(() => {
-		const activeNetwork = networkList[activeNetworkIndex];
-		return activeNetwork.rpcUrl;
-	}, [networkList, activeNetworkIndex]);
-	const rpc = useMemo(
-		() => (/^ws/.test(networkRpcUrl) ? new WS_RPC(networkRpcUrl) : new HTTP_RPC(networkRpcUrl)),
-		[networkRpcUrl]
-	);
 
 	const viteApi = useMemo(() => {
-		return new ViteAPI(rpc, () => {
-			console.log('client connected');
-		});
-	}, [rpc]);
+		const url = activeNetwork.rpcUrl;
+		const rpc = /^ws/.test(url) ? new WS_RPC(url) : new HTTP_RPC(url);
+		return new ViteAPI(rpc, () => {});
+	}, [activeNetwork]);
 
 	useEffect(() => setState({ viteApi }), [setState, viteApi]);
 
 	useEffect(() => {
 		if (!currencyConversion) return;
 		const ttiToNameMap: { [tti: string]: string } = {};
-		fetch(
-			`https://api.coingecko.com/api/v3/simple/price?ids=${displayedTokenIdsAndNames
-				.map(([, name]) => name)
-				.join(',')}&vs_currencies=usd`
-		)
+		fetch(getCoinGeckoPriceApiUrl(homePageTokenIdsAndNames.map(([, name]) => name)))
 			.then((res) => res.json())
-			.then(async (prices: State['prices']) => {
-				const tokenIdsWithMissingPrices = displayedTokenIdsAndNames
+			.then(async (prices: NonNullable<State['prices']>) => {
+				const tokenIdsWithMissingPrices = homePageTokenIdsAndNames
 					.filter(([tti, name]) => {
 						ttiToNameMap[tti] = name;
 						return !prices[name];
@@ -131,7 +114,6 @@ const Router = ({
 								btcRate: number; // 1.843110962e-7
 							}[];
 						} = await res.json();
-						// console.log('data:', data);
 						data.forEach(({ tokenId, usdRate }) => {
 							prices[ttiToNameMap[tokenId]] = { usd: usdRate };
 						});
@@ -145,7 +127,7 @@ const Router = ({
 				console.log('error:', e);
 				setState({ toast: [e, 'error'] });
 			});
-	}, [currencyConversion, displayedTokenIdsAndNames, setState, toastError]);
+	}, [currencyConversion, homePageTokenIdsAndNames, setState, toastError]);
 
 	// Check if tti is listed on ViteX
 	// viteApi.request('dex_getTokenInfo', 'tti_5649544520544f4b454e6e40').then(
@@ -188,7 +170,7 @@ const Router = ({
 		}
 	}, [viteApi, activeAccount, setState]);
 
-	useEffect(updateViteBalanceInfo, [activeAccount, networkRpcUrl, updateViteBalanceInfo]);
+	useEffect(updateViteBalanceInfo, [activeAccount, activeNetwork.rpcUrl, updateViteBalanceInfo]);
 
 	useEffect(() => {
 		if (!activeAccount) return;

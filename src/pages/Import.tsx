@@ -15,7 +15,6 @@ import { State } from '../utils/types';
 
 const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 	const navigate = useNavigate();
-	const [mnemonics, mnemonicsSet] = useState('');
 	const [agreesToTerms, agreesToTermsSet] = useState(false);
 	const mnemonicRef = useTextInputRef();
 	const { state } = useLocation() as {
@@ -30,8 +29,6 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 				textarea
 				autoFocus
 				_ref={mnemonicRef}
-				value={mnemonics}
-				onUserInput={(v) => mnemonicsSet(v)}
 				label={i18n.mnemonicPhrase}
 				inputClassName="h-44"
 				getIssue={(v) => {
@@ -64,16 +61,17 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 						valid = false;
 					}
 					if (valid) {
-						const secrets = { mnemonics: mnemonics.trim() };
+						const secrets = { mnemonics: mnemonicRef.value.trim() };
 						sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
-						const accountList = [
-							wallet.deriveAddress({
-								...secrets,
-								index: 0,
-							}),
-						];
-						const contacts = { [accountList[0].address]: 'Account 0' };
+						const account = wallet.deriveAddress({
+							...secrets,
+							index: 0,
+						});
+						const { privateKey } = account;
+						delete account.privateKey;
+						const accountList = [account];
+						const contacts = { [account.address]: 'Account 0' };
 						setValue({ ...defaultStorage, encryptedSecrets, accountList, contacts });
 						setState({
 							...defaultStorage,
@@ -81,7 +79,7 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 							encryptedSecrets,
 							accountList,
 							contacts,
-							activeAccount: accountList[0],
+							activeAccount: { ...account, privateKey },
 						});
 						navigate(state?.routeAfterUnlock || '/home');
 					}
