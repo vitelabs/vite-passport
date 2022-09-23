@@ -292,6 +292,7 @@ const WalletContents = ({
 								numeric
 								_ref={amountRef}
 								label={i18n.amount}
+								maxDecimals={selectedToken.decimal}
 								value={amount}
 								onUserInput={(v) => amountSet(v)}
 							/>
