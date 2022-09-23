@@ -45,14 +45,15 @@ type Props = State &
 		compact?: boolean;
 	};
 
-const normalizeNumericInput = (str: string, decimals = 6, removeInsignificantZeros = false) => {
+const normalizeNumericInput = (str: string, decimals: number, removeInsignificantZeros = false) => {
 	if (Number.isNaN(+str) || !str) {
 		return '';
 	}
-	const firstDotIndex = str.indexOf('.');
-	if (str.slice(firstDotIndex + 1).length > decimals) {
-		str = str.slice(0, firstDotIndex + decimals + 1);
+	let firstDotIndex = str.indexOf('.');
+	if (firstDotIndex === -1) {
+		firstDotIndex = str.length;
 	}
+	str = str.slice(0, firstDotIndex + decimals + 1);
 	if (removeInsignificantZeros) {
 		str = +str + '';
 	}
@@ -71,7 +72,7 @@ const TextInput = ({
 	showPasswordRequirements,
 	initialValue,
 	resizable,
-	maxDecimals,
+	maxDecimals = 0,
 	disabled,
 	label,
 	placeholder = '',
@@ -156,7 +157,6 @@ const TextInput = ({
 					if (numeric && value) {
 						// eslint-disable-next-line
 						value = value.replace(/[^0123456789\.]/g, '');
-						// value = value.replace(/\.+/g, '.');
 						value = normalizeNumericInput(value, maxDecimals);
 					}
 					value = maxLength ? value.slice(0, maxLength) : value;

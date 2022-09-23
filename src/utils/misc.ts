@@ -1,5 +1,5 @@
 import { TextInputRefObject } from '../containers/TextInput';
-import { defaultStorage, getTokenIdSearchApiUrl } from './constants';
+import { getTokenIdSearchApiUrl } from './constants';
 import { TokenApiInfo } from './types';
 
 export const isDarkMode = () => document.documentElement.classList.contains('dark');

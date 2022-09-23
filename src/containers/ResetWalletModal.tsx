@@ -24,13 +24,12 @@ const ResetWalletModal = ({
 			buttonText={i18n.confirm}
 			onButtonClick={async () => {
 				const storage = await getValue(null);
-				removeKeys(Object.keys(storage) as StorageFields[]);
+				removeKeys(Object.keys(storage));
 				setValue(defaultStorage);
 				setState({
 					...defaultStorage,
 					secrets: undefined,
 					activeAccount: undefined,
-					accountList: undefined,
 				});
 				sendBgScriptPortMessage({ type: 'lock' });
 				navigate('/', { replace: true });

@@ -10,7 +10,7 @@ import { State } from '../utils/types';
 const Connect = ({
 	i18n,
 	contacts,
-	accountList,
+	derivedAddresses,
 	activeAccountIndex,
 	triggerInjectedScriptEvent,
 	connectedDomains,
@@ -20,6 +20,11 @@ const Connect = ({
 	const hostname = useMemo(() => searchParams.get('hostname'), [searchParams]);
 	if (!hostname) {
 		throw new Error('hostname not provided in search params');
+	}
+	if (!derivedAddresses) {
+		// This should never happen. If the wallet does not exist and a dapp tries to connect to VP,
+		// the user should be prompted with `/` route
+		throw new Error('derivedAddresses does not exist');
 	}
 
 	return (
@@ -31,7 +36,7 @@ const Connect = ({
 				</div>
 			</div>
 			<div className="flex-1 overflow-scroll">
-				{accountList.map(({ address }, i) => {
+				{derivedAddresses.map((address, i) => {
 					const active = i === lastActiveAccountIndex;
 					return (
 						<ModalListItem
@@ -53,7 +58,7 @@ const Connect = ({
 					theme="highlight"
 					label={i18n.confirm}
 					onClick={async () => {
-						const activeAddress = accountList[lastActiveAccountIndex].address;
+						const activeAddress = derivedAddresses[lastActiveAccountIndex];
 						triggerInjectedScriptEvent({ type: 'connectWallet', payload: { domain: hostname } });
 						triggerInjectedScriptEvent({
 							type: 'accountChange',

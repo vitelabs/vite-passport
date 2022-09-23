@@ -85,6 +85,7 @@ const SendTokenFlow = ({
 					<TextInput
 						numeric
 						_ref={amountRef}
+						maxDecimals={selectedToken.decimal}
 						label={i18n.amount}
 						getIssue={(v) => {
 							if (+v > +selectedTokenBalance!) {

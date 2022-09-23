@@ -9,15 +9,13 @@ import Checkbox from '../components/Checkbox';
 import { encrypt } from '../utils/encryption';
 import { wallet } from '@vite/vitejs';
 import { setValue } from '../utils/storage';
-import { defaultStorage } from '../utils/constants';
 import { useState } from 'react';
 import Button from '../components/Button';
+import { AddressObj } from '@vite/vitejs/distSrc/utils/type';
 
 const Create2 = ({ i18n, sendBgScriptPortMessage, setState, secrets }: State) => {
 	const navigate = useNavigate();
-	const {
-		state: { routeAfterUnlock },
-	} = useLocation() as {
+	const { state } = useLocation() as {
 		state: { routeAfterUnlock?: string };
 	};
 	const [agreesToTerms, agreesToTermsSet] = useState(false);
@@ -75,24 +73,21 @@ const Create2 = ({ i18n, sendBgScriptPortMessage, setState, secrets }: State) =>
 					if (valid) {
 						sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
-						const account = wallet.deriveAddress({
+						const account: AddressObj = wallet.deriveAddress({
 							...secrets,
 							index: 0,
 						});
-						const { privateKey } = account;
-						delete account.privateKey;
-						const accountList = [account];
+						const derivedAddresses = [account.address];
 						const contacts = { [account.address]: 'Account 0' };
-						setValue({ ...defaultStorage, encryptedSecrets, accountList, contacts });
+						setValue({ encryptedSecrets, derivedAddresses, contacts });
 						setState({
-							...defaultStorage,
 							secrets,
 							encryptedSecrets,
-							accountList,
+							derivedAddresses,
 							contacts,
-							activeAccount: { ...account, privateKey },
+							activeAccount: account,
 						});
-						navigate(routeAfterUnlock || '/home');
+						navigate(state.routeAfterUnlock || '/home');
 					}
 				}}
 			/>

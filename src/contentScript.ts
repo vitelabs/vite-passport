@@ -21,11 +21,12 @@ window.addEventListener('vitePassportMethodCalled', (async (
 ) => {
 	const hostname = getHostname(window.location.href);
 	const { connectedDomains } = await getValue('connectedDomains');
-	const { accountList, activeAccountIndex } = await getValue(['accountList', 'activeAccountIndex']);
-	const activeAccount = accountList ? accountList[activeAccountIndex!] : undefined;
-	const domainConnected = !activeAccount
-		? false
-		: !!connectedDomains?.[activeAccount.address]?.[hostname];
+	const { derivedAddresses, activeAccountIndex } = await getValue([
+		'derivedAddresses',
+		'activeAccountIndex',
+	]);
+	const activeAddress = derivedAddresses ? derivedAddresses[activeAccountIndex!] : undefined;
+	const domainConnected = !activeAddress ? false : !!connectedDomains?.[activeAddress]?.[hostname];
 
 	const reply = (message: Omit<ContentResponse, '_messageId'>) => {
 		window.postMessage({
@@ -43,11 +44,11 @@ window.addEventListener('vitePassportMethodCalled', (async (
 	switch (event.detail.method) {
 		case 'getConnectedAddress':
 			if (!domainConnected) return reply({ result: undefined });
-			reply({ result: activeAccount!.address });
+			reply({ result: activeAddress });
 			break;
 		case 'disconnectWallet':
 			if (!domainConnected) return connectError();
-			delete connectedDomains![activeAccount!.address][hostname];
+			delete connectedDomains![activeAddress!][hostname];
 			setValue({ connectedDomains });
 			reply({ result: undefined });
 			break;

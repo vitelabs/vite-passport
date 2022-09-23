@@ -1,4 +1,5 @@
 import { wallet } from '@vite/vitejs';
+import { AddressObj } from '@vite/vitejs/distSrc/utils/type';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import A from '../components/A';
@@ -6,7 +7,6 @@ import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import PageContainer from '../components/PageContainer';
 import TextInput, { useTextInputRef } from '../containers/TextInput';
-import { defaultStorage } from '../utils/constants';
 import { encrypt } from '../utils/encryption';
 import { connect } from '../utils/global-context';
 import { validateInputs } from '../utils/misc';
@@ -18,7 +18,7 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 	const [agreesToTerms, agreesToTermsSet] = useState(false);
 	const mnemonicRef = useTextInputRef();
 	const { state } = useLocation() as {
-		state: null | { routeAfterUnlock?: string };
+		state: { routeAfterUnlock?: string };
 	};
 	const passwordRef = useTextInputRef();
 	const confirmPasswordRef = useTextInputRef();
@@ -64,24 +64,21 @@ const Import = ({ i18n, sendBgScriptPortMessage, setState }: State) => {
 						const secrets = { mnemonics: mnemonicRef.value.trim() };
 						sendBgScriptPortMessage({ secrets, type: 'updateSecrets' });
 						const encryptedSecrets = await encrypt(JSON.stringify(secrets), passwordRef.value);
-						const account = wallet.deriveAddress({
+						const account: AddressObj = wallet.deriveAddress({
 							...secrets,
 							index: 0,
 						});
-						const { privateKey } = account;
-						delete account.privateKey;
-						const accountList = [account];
+						const derivedAddresses = [account.address];
 						const contacts = { [account.address]: 'Account 0' };
-						setValue({ ...defaultStorage, encryptedSecrets, accountList, contacts });
+						setValue({ encryptedSecrets, derivedAddresses, contacts });
 						setState({
-							...defaultStorage,
 							secrets,
 							encryptedSecrets,
-							accountList,
+							derivedAddresses,
 							contacts,
-							activeAccount: { ...account, privateKey },
+							activeAccount: account,
 						});
-						navigate(state?.routeAfterUnlock || '/home');
+						navigate(state.routeAfterUnlock || '/home');
 					}
 				}}
 			/>

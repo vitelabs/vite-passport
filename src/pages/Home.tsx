@@ -6,6 +6,7 @@ import {
 } from '@heroicons/react/outline';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { wallet } from '@vite/vitejs';
+import { AddressObj } from '@vite/vitejs/distSrc/utils/type';
 import { useEffect, useMemo, useState } from 'react';
 import ViteLogo from '../assets/ViteLogo';
 import A from '../components/A';
@@ -29,7 +30,7 @@ import {
 	validateHttpUrl,
 	validateWsUrl,
 } from '../utils/strings';
-import { State, TokenApiInfo } from '../utils/types';
+import { State, Storage, TokenApiInfo } from '../utils/types';
 
 // constant.Contracts.StakeForQuota_V1
 // constant.Contracts.StakeForQuota
@@ -44,7 +45,7 @@ const Home = ({
 	copyWithToast,
 	networkList,
 	activeNetworkIndex,
-	accountList,
+	derivedAddresses,
 	contacts,
 	toastSuccess,
 	triggerInjectedScriptEvent,
@@ -87,6 +88,11 @@ const Home = ({
 	useEffect(() => {
 		getCurrentTab().then((tab) => hostnameSet(getHostname(tab.url)));
 	}, []);
+
+	if (!derivedAddresses) {
+		// This should never happen. Wallet should be created before they can view `/home` route.
+		throw new Error('derivedAddresses does not exist');
+	}
 
 	return (
 		<TabContainer>
@@ -326,25 +332,22 @@ const Home = ({
 					onClose={() => changingActiveAccountSet(false)}
 					buttonText={i18n.deriveAddress}
 					onButtonClick={() => {
-						const newAccount = wallet.deriveAddress({
+						const newAccount: AddressObj = wallet.deriveAddress({
 							...secrets!,
-							index: accountList.length,
+							index: derivedAddresses.length,
 						});
-						delete newAccount.privateKey;
-						const newAccountList = [...accountList, newAccount];
-						const newContacts = {
-							...contacts,
-							[newAccount.address]: `Account ${accountList.length}`,
-						};
-						const data = {
-							accountList: newAccountList,
-							contacts: newContacts,
+						const data: Partial<Storage> = {
+							derivedAddresses: [...derivedAddresses, newAccount.address],
+							contacts: {
+								...contacts,
+								[newAccount.address]: `Account ${derivedAddresses.length}`,
+							},
 						};
 						setState(data);
 						setValue(data);
 					}}
 				>
-					{accountList.map(({ address }, i) => {
+					{derivedAddresses.map((address, i) => {
 						const active = i === activeAccountIndex;
 						return (
 							<ModalListItem
@@ -370,7 +373,7 @@ const Home = ({
 										});
 										setValue(data);
 										const { connectedDomains } = await getValue('connectedDomains');
-										const newActiveAddress = accountList[i].address;
+										const newActiveAddress = derivedAddresses[i];
 										const newActiveAccountConnected =
 											!!connectedDomains?.[newActiveAddress]?.[hostname];
 										const lastAccountWasConnected =
@@ -390,13 +393,18 @@ const Home = ({
 									changingActiveAccountSet(false);
 								}}
 								onX={
-									i + 1 !== accountList.length || i === 0
+									i + 1 !== derivedAddresses.length || i === 0
 										? undefined
 										: () => {
-												const data = {
-													accountList: [...accountList].slice(0, accountList.length - 1),
+												const data: Partial<Storage> = {
+													derivedAddresses: [...derivedAddresses].slice(
+														0,
+														derivedAddresses.length - 1
+													),
 													activeAccountIndex:
-														activeAccountIndex === accountList.length - 1 ? 0 : activeAccountIndex,
+														activeAccountIndex === derivedAddresses.length - 1
+															? 0
+															: activeAccountIndex,
 												};
 												setState(data);
 												setValue(data);
