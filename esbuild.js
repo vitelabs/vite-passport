@@ -23,13 +23,6 @@ require('esbuild')
 		minify: PROD,
 		treeShaking: PROD,
 		format: 'esm',
-		// globalName: '_contentScriptReturn',
-		// footer: { js: '_contentScriptReturn.default' }, // this allows the default export to be returned to global scope
-		banner: {
-			// https://github.com/evanw/esbuild/issues/1006
-			// js: `var regeneratorRuntime;`,
-			// js: `delete window.eval;`,
-		},
 		external: ['~@vite/vitejs-utils'],
 		loader: {
 			'.html': 'copy',

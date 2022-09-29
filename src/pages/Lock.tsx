@@ -28,7 +28,7 @@ const Lock = ({
 		const valid = validateInputs([passwordRef]);
 		if (valid) {
 			try {
-				const secrets = JSON.parse(await decrypt(encryptedSecrets, passwordRef.value));
+				const secrets = JSON.parse(await decrypt(encryptedSecrets!, passwordRef.value));
 				setState({
 					secrets,
 					activeAccount: wallet.deriveAddress({
