@@ -29,7 +29,9 @@ const searchTokenApiInfo = debounceAsync<TokenApiInfo[]>((rpcURL: string, query:
 		return [];
 	}
 	const url = getTokenFuzzySearchApiUrl(rpcURL, query);
-	console.log('url:', url);
+	if (!url) {
+		return [];
+	}
 	return fetch(url)
 		.then((res) => res.json())
 		.then((data: { data: { VITE: TokenApiInfo[] } }) => data?.data?.VITE || []);
@@ -65,6 +67,8 @@ const WalletContents = ({
 	const getPromise = useCallback(
 		() =>
 			getTokenApiInfo(
+				// NOTE: this will only work for testnet and mainnet
+				// TODO: make this work for other networks
 				activeNetwork.rpcUrl,
 				homePageTokenIdsAndNames.map(([tti]) => tti)
 			),
@@ -163,7 +167,8 @@ const WalletContents = ({
 							}
 						}}
 					/>
-					<div className="flex-1 overflow-scroll mt-4">
+					<div className="h-0.5 bg-skin-divider mt-4 mx-4" />
+					<div className="flex-1 overflow-scroll">
 						<FetchWidget
 							shouldFetch={!availableTokens}
 							getPromise={() => searchTokenApiInfo(activeNetwork.rpcUrl, editTokenQuery)}
@@ -171,7 +176,7 @@ const WalletContents = ({
 						>
 							{availableTokens &&
 								(!availableTokens.length ? (
-									<div className="xy min-h-8">
+									<div className="xy py-2">
 										<p className="text-skin-secondary text-center">{i18n.nothingFound}</p>
 									</div>
 								) : (
@@ -189,9 +194,6 @@ const WalletContents = ({
 										const tokenName = addIndexToTokenSymbol(symbol, tokenIndex);
 										return (
 											<React.Fragment key={tti}>
-												{(i === 0 || i === homePageTokenIdsAndNames.length) && (
-													<div className={`h-0.5 bg-skin-divider mx-4 ${i === 0 ? '' : 'mt-2'}`} />
-												)}
 												<div className="fx rounded-sm py-2 px-4">
 													{!icon ? (
 														<DeterministicIcon tti={tti} className="h-8 w-8 rounded-full mr-2" />

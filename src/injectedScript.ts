@@ -2,6 +2,9 @@ import { AccountBlockBlock } from '@vite/vitejs/distSrc/utils/type';
 import { joinWords, prefixName } from './utils/strings';
 import { Network } from './utils/types';
 
+// TODO: sign messages like `vite_signMessage` for ViteConnect
+// https://github.com/vitelabs/vite.js/blob/master/src/utils/ed25519.ts#L23
+
 type injectedScriptEvents = 'accountChange' | 'networkChange';
 type VitePassport = {
 	// These methods are relayed from contentScript.ts => injectedScript.ts
@@ -63,20 +66,22 @@ export type ContentResponse = {
 		);
 
 		return new Promise((resolve, reject) => {
+			const listener = ({ data }: MessageEvent<ContentResponse>) => {
+				if (_messageId === data._messageId) {
+					if (data.error) {
+						reject(data.error);
+					} else {
+						resolve(data.result);
+					}
+					window.removeEventListener('message', listener);
+				}
+			};
 			window.addEventListener(
 				// https://developer.mozilla.org/en-US/docs/Web/API/DedicatedWorkerGlobalScope/message_event
 				// https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
 				// Triggered by window.postMessage in contentScript.ts
 				'message',
-				({ data }: MessageEvent<ContentResponse>) => {
-					if (_messageId === data._messageId) {
-						if (data.error) {
-							reject(data.error);
-						} else {
-							resolve(data.result);
-						}
-					}
-				}
+				listener
 			);
 		});
 	};

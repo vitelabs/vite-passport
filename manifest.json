@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Vite Passport",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"icons": {
 		"1024": "src/assets/logo-blue-1024.png"
 	},
