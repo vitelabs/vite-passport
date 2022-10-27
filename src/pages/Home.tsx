@@ -16,20 +16,14 @@ import ModalListItem from '../components/ModalListItem';
 import QR from '../components/QR';
 import TabContainer from '../components/TabContainer';
 import SendTokenFlow from '../containers/SendTokenFlow';
-import TextInput, { useTextInputRef } from '../containers/TextInput';
+// import TextInput, { useTextInputRef } from '../containers/TextInput';
 import TokenCard from '../containers/TokenCard';
 import TokenSearchBar from '../containers/TokenSearchBar';
 import WalletContents from '../containers/WalletContents';
 import { connect } from '../utils/global-context';
-import { formatPrice, getCurrentTab, getTokenApiInfo, validateInputs } from '../utils/misc';
+import { formatPrice, getCurrentTab, getTokenApiInfo } from '../utils/misc';
 import { getValue, setValue } from '../utils/storage';
-import {
-	addIndexToTokenSymbol,
-	getHostname,
-	shortenAddress,
-	validateHttpUrl,
-	validateWsUrl,
-} from '../utils/strings';
+import { addIndexToTokenSymbol, getHostname, shortenAddress } from '../utils/strings';
 import { State, Storage, TokenApiInfo } from '../utils/types';
 
 // constant.Contracts.StakeForQuota_V1
@@ -58,11 +52,11 @@ const Home = ({
 }: State) => {
 	// const quotaBeneficiaryRef = useTextInputRef();
 	// const lockedAmountRef = useTextInputRef();
-	const networkNameRef = useTextInputRef();
-	const rpcUrlRef = useTextInputRef();
-	const blockExplorerUrlRef = useTextInputRef();
+	// const networkNameRef = useTextInputRef();
+	// const rpcUrlRef = useTextInputRef();
+	// const blockExplorerUrlRef = useTextInputRef();
 	const [editingNetwork, editingNetworkSet] = useState(false);
-	const [addingNetwork, addingNetworkSet] = useState(false);
+	// const [addingNetwork, addingNetworkSet] = useState(false);
 	const [changingActiveAccount, changingActiveAccountSet] = useState(false);
 	// const [votingModalOpen, votingModalOpenSet] = useState(false);
 	// const [quotaModalOpen, quotaModalOpenSet] = useState(false);
@@ -218,11 +212,11 @@ const Home = ({
 				<Modal
 					onClose={() => editingNetworkSet(false)}
 					heading={i18n.networks}
-					buttonText={i18n.addNetwork}
-					onButtonClick={() => {
-						editingNetworkSet(false);
-						addingNetworkSet(true);
-					}}
+					// buttonText={i18n.addNetwork}
+					// onButtonClick={() => {
+					// 	editingNetworkSet(false);
+					// 	addingNetworkSet(true);
+					// }}
 				>
 					{networkList.map((network, i) => {
 						const active = i === activeNetworkIndex;
@@ -270,7 +264,7 @@ const Home = ({
 					})}
 				</Modal>
 			)}
-			{addingNetwork && (
+			{/* {addingNetwork && (
 				<Modal
 					heading={i18n.addNetwork}
 					onClose={() => {
@@ -324,7 +318,7 @@ const Home = ({
 						/>
 					</div>
 				</Modal>
-			)}
+			)} */}
 			{changingActiveAccount && (
 				<Modal
 					plusIcon

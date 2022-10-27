@@ -1,4 +1,4 @@
-import { getValue, removeKeys, setValue, StorageFields } from '../utils/storage';
+import { getValue, removeKeys, setValue } from '../utils/storage';
 import Modal from '../components/Modal';
 import { connect } from '../utils/global-context';
 import { State } from '../utils/types';

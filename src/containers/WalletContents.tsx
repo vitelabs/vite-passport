@@ -180,7 +180,7 @@ const WalletContents = ({
 										<p className="text-skin-secondary text-center">{i18n.nothingFound}</p>
 									</div>
 								) : (
-									availableTokens.map((tokenApiInfo, i) => {
+									availableTokens.map((tokenApiInfo) => {
 										const {
 											symbol,
 											// name,
