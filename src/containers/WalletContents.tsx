@@ -30,7 +30,7 @@ const searchTokenApiInfo = debounceAsync<TokenApiInfo[]>((rpcURL: string, query:
 	}
 	const url = getTokenFuzzySearchApiUrl(rpcURL, query);
 	if (!url) {
-		return [];
+		return [defaultTokenList[0]];
 	}
 	return fetch(url)
 		.then((res) => res.json())

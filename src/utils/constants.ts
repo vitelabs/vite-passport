@@ -53,10 +53,10 @@ export const getTokenFuzzySearchApiUrl = (networkRpcUrl: string, query = '') => 
 		url = 'https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=';
 	}
 	if (
-		networkRpcUrl.startsWith(defaultStorage.networkList[0].rpcUrl) ||
-		networkRpcUrl.startsWith('https://node.vite.net/gvite')
+		networkRpcUrl.startsWith(defaultStorage.networkList[1].rpcUrl) ||
+		networkRpcUrl.startsWith('https://buidl.vite.net/gvite')
 	) {
-		url = 'https://vitex.vite.net/api/v1/cryptocurrency/info/search?fuzzy=';
+		url = 'https://buidl.vite.net/vitex/api/v1/cryptocurrency/info/search?fuzzy=';
 	}
 	return !url ? null : url + encodeURIComponent(query);
 };
