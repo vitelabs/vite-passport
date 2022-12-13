@@ -90,6 +90,12 @@ export type injectedScriptEventData =
 			payload: { activeAddress?: string };
 	  }
 	| {
+			type: 'networkChange';
+			payload: { activeNetwork: Network };
+	  }
+		// above are events that `vitePassport.on` takes
+		// below are events that trigger when a the resolving of a Promise
+	| {
 			type: 'writeAccountBlock';
 			payload: { block: AccountBlockBlock };
 	  }
@@ -97,10 +103,6 @@ export type injectedScriptEventData =
 			type: 'connectWallet';
 			payload: { domain: string };
 	  }
-	| {
-			type: 'networkChange';
-			payload: { activeNetwork: Network };
-	  };
 
 export type ViteBalanceInfo = {
 	balance: {
