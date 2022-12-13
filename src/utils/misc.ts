@@ -1,5 +1,5 @@
 import { TextInputRefObject } from '../containers/TextInput';
-import { getTokenIdSearchApiUrl } from './constants';
+import { defaultTokenList, getTokenIdSearchApiUrl } from './constants';
 import { TokenApiInfo } from './types';
 
 export const isDarkMode = () => document.documentElement.classList.contains('dark');
@@ -56,7 +56,7 @@ export const getTokenApiInfo = async (
 	}
 	const url = getTokenIdSearchApiUrl(rpcURL);
 	if (!url) {
-		return [];
+		return [defaultTokenList[0]];
 	}
 	if (!tokenApiInfoCache[url]) {
 		tokenApiInfoCache[url] = {};
